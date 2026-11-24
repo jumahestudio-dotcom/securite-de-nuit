@@ -277,28 +277,53 @@ func _build_model() -> bool:
 		return true
 	var lib := AnimationLibrary.new()
 	var matched := 0
+	# les préfixes Mixamo changent d'un fichier à l'autre (mixamorig_, mixamorig4_, mixamorig:) :
+	# on relie les pistes aux os par la fin du nom (Hips, Spine, LeftArm…)
+	var pre := RegEx.new()
+	pre.compile("^mixamorig\\d*[_:]")
+	var bmap := {}
+	var hips := -1
+	for bi in skel.get_bone_count():
+		var bnm := skel.get_bone_name(bi)
+		var suf := pre.sub(bnm, "")
+		bmap[suf] = bnm
+		if suf == "Hips": hips = bi
 	for key in Data.ANIMS.keys():
+		if not key in ["Idle", "Walk", "Run", "Dance", "Fight", "Fall", "Talk", "Drink", "Phone", "Sit", "Surrender"]: continue
 		var a: Animation = Data.ANIMS[key].duplicate(true)
-		var loop: bool = key in ["Idle", "Walk", "Run", "Dance", "Fight", "Talk", "Drink", "Phone", "Sit", "Surrender"]
+		var loop: bool = key != "Fall"
 		a.loop_mode = Animation.LOOP_LINEAR if loop else Animation.LOOP_NONE
+		# échelle des déplacements : hauteur des hanches du personnage / hauteur des hanches dans l'animation
+		var ratio := 1.0
+		var drop := []
 		for t in a.get_track_count():
 			var np: NodePath = a.track_get_path(t)
 			var bone := str(np.get_concatenated_subnames())
-			# certains imports FBX donnent des os sous forme de nœuds : « .../mixamorig_Hips »
 			if bone == "" and np.get_name_count() > 0:
 				bone = str(np.get_name(np.get_name_count() - 1))
 			if bone == "": continue
-			if skel.find_bone(bone) == -1:
-				if skel.find_bone(bone.replace(":", "_")) != -1: bone = bone.replace(":", "_")
-				elif skel.find_bone(bone.replace("_", ":")) != -1: bone = bone.replace("_", ":")
-			if skel.find_bone(bone) != -1: matched += 1
-			a.track_set_path(t, NodePath(skel_path + ":" + bone))
-			# marche « sur place » : on bloque le déplacement horizontal des hanches
-			if loop and a.track_get_type(t) == Animation.TYPE_POSITION_3D and bone.to_lower().ends_with("hips") and a.track_get_key_count(t) > 0:
+			var target: String = bmap.get(pre.sub(bone.replace(":", "_"), ""), "")
+			if target == "":
+				drop.append(t)
+				continue
+			matched += 1
+			a.track_set_path(t, NodePath(skel_path + ":" + target))
+			if a.track_get_type(t) == Animation.TYPE_POSITION_3D and target.ends_with("Hips") and a.track_get_key_count(t) > 0 and hips >= 0:
 				var v0: Vector3 = a.track_get_key_value(t, 0)
+				var rest_y: float = skel.get_bone_rest(hips).origin.y
+				if absf(v0.y) > 0.0001 and absf(rest_y) > 0.0001:
+					ratio = rest_y / v0.y
 				for k in a.track_get_key_count(t):
-					var v: Vector3 = a.track_get_key_value(t, k)
-					a.track_set_key_value(t, k, Vector3(v0.x, v.y, v0.z))
+					var v: Vector3 = a.track_get_key_value(t, k) * ratio
+					# marche « sur place » : on bloque le déplacement horizontal des hanches
+					if loop: v = Vector3(v0.x * ratio, v.y, v0.z * ratio)
+					a.track_set_key_value(t, k, v)
+			elif a.track_get_type(t) == Animation.TYPE_POSITION_3D:
+				# les autres os ne bougent pas en translation : on garde la pose du personnage
+				drop.append(t)
+		drop.reverse()
+		for t in drop:
+			a.remove_track(t)
 		lib.add_animation(key, a)
 	if glb_anim.has_animation_library("sdn"):
 		glb_anim.remove_animation_library("sdn")
