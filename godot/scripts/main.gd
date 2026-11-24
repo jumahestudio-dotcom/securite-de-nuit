@@ -5,10 +5,18 @@ const PersonScript = preload("res://scripts/person.gd")
 const WorldScript = preload("res://scripts/world.gd")
 const UIScript = preload("res://scripts/ui.gd")
 const FightScript = preload("res://scripts/fight.gd")
+const AudioScript = preload("res://scripts/audio.gd")
 
 var world
 var ui
 var fight
+var audio
+var env: Environment
+var moon: DirectionalLight3D
+var minimap: Control
+var compass: Control
+var sens := 1.0
+var hq := true
 var player: CharacterBody3D
 var pvis
 var cam: Camera3D
@@ -56,6 +64,22 @@ func _ready() -> void:
 	fight = FightScript.new()
 	fight.game = self
 	add_child(fight)
+	audio = AudioScript.new()
+	add_child(audio)
+	# minicarte (en bas à droite) et flèche vers l'incident (en haut au centre)
+	minimap = Control.new()
+	minimap.anchor_left = 1; minimap.anchor_right = 1; minimap.anchor_top = 1; minimap.anchor_bottom = 1
+	minimap.offset_left = -262; minimap.offset_right = -14; minimap.offset_top = -330; minimap.offset_bottom = -14
+	minimap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	minimap.draw.connect(_draw_minimap)
+	minimap.visible = false
+	ui.add_child(minimap)
+	compass = Control.new()
+	compass.anchor_left = 0.5; compass.anchor_right = 0.5
+	compass.offset_left = -160; compass.offset_right = 160; compass.offset_top = 14; compass.offset_bottom = 74
+	compass.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	compass.draw.connect(_draw_compass)
+	ui.add_child(compass)
 	cam = Camera3D.new()
 	cam.fov = 62
 	cam.far = 200
@@ -64,7 +88,7 @@ func _ready() -> void:
 	_menu()
 
 func _setup_env() -> void:
-	var env := Environment.new()
+	env = Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color(0.015, 0.01, 0.03)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
@@ -83,7 +107,7 @@ func _setup_env() -> void:
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
-	var moon := DirectionalLight3D.new()
+	moon = DirectionalLight3D.new()
 	moon.light_color = Color(0.55, 0.6, 0.9)
 	moon.light_energy = 0.35
 	moon.shadow_enabled = true
@@ -99,7 +123,7 @@ func _mk_person(o: Dictionary):
 func _menu() -> void:
 	phase = "menu"
 	ui.show_screen("Sécurité de nuit 3D",
-		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité au [b]Néon[/b], de 23 h à 5 h.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nMaj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  A : frapper  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
+		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité au [b]Néon[/b], de 23 h à 5 h.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nMaj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  A : frapper  ·  Tab : verrouiller un adversaire  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
 		[{"t": "Prendre son service", "k": "main", "cb": _start}])
 
 # =====================================================================
@@ -108,6 +132,8 @@ func _menu() -> void:
 func _start() -> void:
 	ui.hide_screen()
 	phase = "door"
+	audio.start()
+	minimap.visible = true
 	# joueur
 	player = CharacterBody3D.new()
 	player.motion_mode = CharacterBody3D.MOTION_MODE_FLOATING
@@ -712,6 +738,7 @@ func _spawn_incident(ty: String) -> void:
 		_set_radio("%s : « Problème zone %s : %s ! »" % [who.pname, WorldScript.ZLBL[z].to_lower(), Data.clean(d["t"]).to_lower()])
 	else:
 		_set_radio("Un barman : « Il se passe quelque chose côté %s ! »" % WorldScript.ZLBL[z].to_lower())
+	audio.sfx("radio")
 
 func _near_inc():
 	var best = null
@@ -991,8 +1018,8 @@ func _exclude() -> void:
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		cam_yaw -= e.relative.x * 0.0026
-		cam_pitch = clamp(cam_pitch + e.relative.y * 0.0022, -0.25, 1.0)
+		cam_yaw -= e.relative.x * 0.0026 * sens
+		cam_pitch = clamp(cam_pitch + e.relative.y * 0.0022 * sens, -0.25, 1.0)
 	if fight.active and not ui.panel_open and not ui.screen_open:
 		if e is InputEventMouseButton and e.pressed:
 			if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
@@ -1006,10 +1033,11 @@ func _unhandled_input(e: InputEvent) -> void:
 			match e.physical_keycode:
 				KEY_SPACE: fight.do_dodge(_move_dir())
 				KEY_Q, KEY_G: fight.punch()   # touche A sur clavier AZERTY
+				KEY_TAB: fight.toggle_lock()
 				KEY_T: fight.verbal()
 				KEY_E: fight.escort()
 				KEY_R: fight.backup()
-				KEY_ESCAPE: Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+				KEY_ESCAPE: _pause_menu()
 			return
 	if e is InputEventMouseButton and e.pressed and not ui.panel_open and not ui.screen_open and (phase == "door" or phase == "salle"):
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -1020,6 +1048,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			_radio_menu()
 		elif e.physical_keycode == KEY_ESCAPE:
 			if ui.panel_open: _close_panel()
+			elif phase == "door" or phase == "salle": _pause_menu()
 			else: Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _physics_process(delta: float) -> void:
@@ -1074,6 +1103,10 @@ func _physics_process(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	world.animate(delta)
+	if player != null:
+		audio.set_place(player.position.x, player.position.z)
+		minimap.queue_redraw()
+		compass.queue_redraw()
 	# repères d'incidents
 	var t := Time.get_ticks_msec() / 1000.0
 	for i in incs:
@@ -1116,3 +1149,95 @@ func _process(delta: float) -> void:
 		elif i["st"] == "assigned":
 			lst += "%s — %s en route\n" % [Data.clean(Data.INC[i["ty"]]["t"]), i["agent"].pname]
 	ui.incs.text = lst
+
+# =====================================================================
+#  PAUSE ET RÉGLAGES
+# =====================================================================
+func _pause_menu() -> void:
+	var body := "[color=#b9b3cc]Le temps est arrêté tant que ce menu est ouvert.[/color]\n\nSensibilité de la souris : [b]%d %%[/b]\nVolume : [b]%d %%[/b]\nEffets graphiques (brouillard, ombres, occlusion) : [b]%s[/b]\nPlein écran : [b]%s[/b]" % [
+		round(sens * 100), round(audio.volume_master * 100), "activés" if hq else "désactivés",
+		"oui" if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN else "non"]
+	ui.open_panel("Pause", "", body, [
+		{"t": "Reprendre", "k": "main", "cb": _close_panel},
+		{"row": [{"t": "Souris −", "cb": func(): sens = max(0.3, sens - 0.1); _pause_menu()}, {"t": "Souris +", "cb": func(): sens = min(3.0, sens + 0.1); _pause_menu()}]},
+		{"row": [{"t": "Volume −", "cb": func(): audio.set_master(audio.volume_master - 0.1); _pause_menu()}, {"t": "Volume +", "cb": func(): audio.set_master(audio.volume_master + 0.1); _pause_menu()}]},
+		{"t": "Effets graphiques : activer / désactiver (si le jeu rame)", "cb": _toggle_hq},
+		{"t": "Plein écran : activer / désactiver", "cb": _toggle_fullscreen},
+		{"t": "Abandonner la nuit et revenir au menu", "k": "bad", "cb": func(): get_tree().reload_current_scene()}])
+
+func _toggle_hq() -> void:
+	hq = not hq
+	env.volumetric_fog_enabled = hq
+	env.ssao_enabled = hq
+	env.glow_enabled = hq
+	moon.shadow_enabled = hq
+	_pause_menu()
+
+func _toggle_fullscreen() -> void:
+	if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	_pause_menu()
+
+# =====================================================================
+#  MINICARTE ET BOUSSOLE
+# =====================================================================
+func _mm(x: float, z: float, sz: Vector2) -> Vector2:
+	var sc: float = min(sz.x / 32.0, sz.y / 40.0)
+	var ox: float = (sz.x - 32.0 * sc) / 2.0
+	return Vector2(ox + (x + 16.0) * sc, (z + 31.0) * sc)
+
+func _draw_minimap() -> void:
+	var sz := minimap.size
+	var sc: float = min(sz.x / 32.0, sz.y / 40.0)
+	minimap.draw_rect(Rect2(Vector2.ZERO, sz), Color(0.04, 0.03, 0.07, 0.85))
+	minimap.draw_rect(Rect2(_mm(-15, -30, sz), Vector2(30, 30) * sc), Color(0.1, 0.08, 0.14))
+	minimap.draw_rect(Rect2(_mm(-16, 0, sz), Vector2(32, 7) * sc), Color(0.12, 0.12, 0.14))
+	var zc := {"piste": Color("#ff3d9a"), "bar": Color("#ffc04d"), "vip": Color("#b04dff"), "fumoir": Color("#99aaaa"), "toilettes": Color("#33e1ff"), "vestiaire": Color("#88aa66"), "secours": Color("#3ee08f"), "hall": Color("#5a1030"), "porte": Color("#444444")}
+	for k in WorldScript.ZR.keys():
+		var r: Array = WorldScript.ZR[k]
+		var c: Color = zc.get(k, Color.GRAY)
+		c.a = 0.35
+		minimap.draw_rect(Rect2(_mm(r[0], r[2], sz), Vector2(r[1] - r[0], r[3] - r[2]) * sc), c)
+	var t := Time.get_ticks_msec() / 1000.0
+	for i in incs:
+		if i["st"] != "open" and i["st"] != "assigned" and i["st"] != "fight": continue
+		var col := Color(0.3, 0.9, 1.0) if i["st"] == "assigned" else (Color(1, 0.25, 0.25) if sin(t * 8.0) > 0 else Color(1, 0.7, 0.7))
+		minimap.draw_circle(_mm(i["p"].x, i["p"].z, sz), 6.0, col)
+	for a in colleagues:
+		if is_instance_valid(a):
+			minimap.draw_circle(_mm(a.position.x, a.position.z, sz), 4.0, a.band_col if a.band_col != null else Color.CYAN)
+	if player != null:
+		var pp := _mm(player.position.x, player.position.z, sz)
+		var f := Vector2(sin(cam_yaw), cos(cam_yaw))
+		var rgt := Vector2(-f.y, f.x)
+		minimap.draw_colored_polygon(PackedVector2Array([pp + f * 10.0, pp - f * 6.0 + rgt * 6.0, pp - f * 6.0 - rgt * 6.0]), Color.WHITE)
+
+func _nearest_open_inc():
+	if player == null: return null
+	var best = null
+	var bd := 1e9
+	for i in incs:
+		if i["st"] != "open": continue
+		var d: float = player.position.distance_to(i["p"])
+		if d < bd:
+			bd = d; best = i
+	return best
+
+func _draw_compass() -> void:
+	if phase != "salle" or ui.panel_open or fight.active: return
+	var i = _nearest_open_inc()
+	if i == null: return
+	var dv: Vector3 = i["p"] - player.position
+	var dist := Vector2(dv.x, dv.z).length()
+	if dist < 2.5: return
+	var ang := atan2(dv.x, dv.z) - cam_yaw
+	var c := Vector2(30, 30)
+	var f := Vector2(-sin(ang), -cos(ang))
+	var rgt := Vector2(-f.y, f.x)
+	compass.draw_circle(c, 26.0, Color(0, 0, 0, 0.55))
+	compass.draw_colored_polygon(PackedVector2Array([c + f * 20.0, c - f * 10.0 + rgt * 11.0, c - f * 4.0, c - f * 10.0 - rgt * 11.0]), Color(1, 0.3, 0.3))
+	var font := ThemeDB.fallback_font
+	compass.draw_string(font, Vector2(66, 26), Data.clean(Data.INC[i["ty"]]["t"]), HORIZONTAL_ALIGNMENT_LEFT, 250, 16, Color.WHITE)
+	compass.draw_string(font, Vector2(66, 46), "%d m · %s" % [round(dist), WorldScript.ZLBL[i["z"]]], HORIZONTAL_ALIGNMENT_LEFT, 250, 14, Color(1, 0.7, 0.7))

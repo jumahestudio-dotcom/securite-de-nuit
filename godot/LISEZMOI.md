@@ -28,6 +28,8 @@ Au premier lancement, Godot peut mettre quelques secondes à importer les fichie
 | A (AZERTY) | Frapper |
 | F maintenu · Espace | Garde · esquive |
 | T · E · R | Injonction · escorter dehors · renfort |
+| Tab | Verrouiller un adversaire (la caméra le suit) |
+| Échap | Pause : sensibilité souris, volume, effets graphiques, plein écran |
 
 ## Si ça ne marche pas
 

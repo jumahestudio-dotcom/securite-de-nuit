@@ -15,6 +15,9 @@ var vcd := 0.0               # délai entre deux injonctions
 var end_t := -1.0
 var shake := 0.0
 var ui_t := 0.0
+var lock = null              # adversaire verrouillé (Tab)
+var witnesses: Array = []    # clients qui filment avec leur téléphone
+var fight_pos := Vector3.ZERO
 
 # état du joueur
 var hp := 100.0
@@ -38,7 +41,7 @@ func _mk_foe(npc, o := {}) -> Dictionary:
 	npc.anim = "fight"
 	return {"npc": npc, "name": o.get("name", Data.PREN_H.pick_random()), "hp": 100.0, "sta": 100.0,
 		"agit": o.get("agit", randf_range(62, 95)), "aggr": o.get("aggr", randf_range(0.45, 1.0)),
-		"weapon": o.get("weapon", false), "st": "active", "wind": 0.0, "cd": randf_range(0.6, 1.6),
+		"weapon": o.get("weapon", false), "wname": o.get("wname", "couteau"), "st": "active", "wind": 0.0, "cd": randf_range(0.6, 1.6),
 		"last_atk": -99.0, "stag": 0.0, "ctrl_t": 0.0, "ctrl_by": null, "warned": 0, "other": null,
 		"pushes": 0, "hit_by": 0, "aggro": o.get("aggro", false)}
 
@@ -51,7 +54,8 @@ func start(s: Dictionary) -> void:
 	end_t = -1.0
 	foes = []
 	log_lines = []
-	stats = {"push": 0, "grab": 0, "grab_ok": 0, "verb": 0, "verb_ok": 0, "hit_sd": 0, "hit_nosd": 0, "hit_down": 0,
+	lock = null
+	stats = {"cut": 0, "disarm": 0, "push": 0, "grab": 0, "grab_ok": 0, "verb": 0, "verb_ok": 0, "hit_sd": 0, "hit_nosd": 0, "hit_down": 0,
 		"blocked": 0, "dodged": 0, "taken": 0.0, "long_pin": 0, "escort": 0, "col_ctrl": 0}
 	hp = max(hp, 60.0)
 	sta = 100.0
@@ -60,7 +64,8 @@ func start(s: Dictionary) -> void:
 		inc["st"] = "fight"
 		var n: int = min(inc["actors"].size(), 8 if inc["ty"] == "rixe" else 2)
 		for k in n:
-			foes.append(_mk_foe(inc["actors"][k], {"weapon": inc["ty"] == "arme" and k == 0}))
+			var armed: bool = (inc["ty"] == "arme" or inc["ty"] == "bouteille") and k == 0
+			foes.append(_mk_foe(inc["actors"][k], {"weapon": armed, "wname": "tesson de bouteille" if inc["ty"] == "bouteille" else "couteau"}))
 		if foes.size() >= 2 and inc["ty"] != "arme":
 			for i in foes.size():
 				var j: int = i ^ 1
@@ -74,6 +79,23 @@ func start(s: Dictionary) -> void:
 			if randf() < 0.5:
 				foes.append(_mk_foe(m, {"aggro": true, "agit": randf_range(55, 85), "aggr": randf_range(0.4, 0.8)}))
 	game._set_radio("Toi : « %s »" % ("J'interviens !" if s.has("inc") else "Je suis pris à partie à la porte !"))
+	game.audio.sfx("radio")
+	# des clients sortent leur téléphone et filment
+	fight_pos = foes[0]["npc"].position if foes.size() > 0 else game.player.position
+	witnesses = []
+	for c in game.crowd:
+		if witnesses.size() >= 3: break
+		if not is_instance_valid(c): continue
+		var is_foe := false
+		for o in foes:
+			if o["npc"] == c: is_foe = true
+		if is_foe: continue
+		var dw: float = c.position.distance_to(fight_pos)
+		if dw > 3.0 and dw < 10.0 and randf() < 0.6:
+			c.set_meta("prev_anim", c.anim)
+			c.anim = "phone"
+			c.yaw = atan2(fight_pos.x - c.position.x, fight_pos.z - c.position.z)
+			witnesses.append(c)
 	game.ui.flash(Color(1, 0.2, 0.2, 0.25))
 	_log("Tu arrives au contact." if s.has("inc") else "Le client se jette sur toi.")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -122,6 +144,7 @@ func push() -> void:
 	if cd > 0 or sta < 10: return
 	cd = 0.45; sta -= 12
 	game.pvis.act("Shove", 0.45)
+	game.audio.sfx("whoosh")
 	var o = _target(1.6, ["active", "calm"])
 	if o == null:
 		_log("Tu pousses dans le vide.")
@@ -152,6 +175,9 @@ func punch() -> void:
 	o["agit"] = clamp(o["agit"] + (2 if lawful else 12), 0, 100)
 	shake = 0.12
 	o["npc"].act("Hit", 0.6)
+	o["npc"].position += _fwd() * 0.4
+	game.audio.sfx("punch")
+	_hitstop(0.06)
 	_log("Tu frappes %s." % o["name"])
 	if o["hp"] <= 0 and o["st"] != "down":
 		o["st"] = "down"
@@ -175,11 +201,23 @@ func grab() -> void:
 		o["st"] = "grabbed"; o["wind"] = 0.0; o["ctrl_t"] = 0.0
 		o["npc"].anim = "fight"
 		_log("Tu saisis %s (clé de bras). Il se débat…" % o["name"])
+		if o["weapon"]:
+			o["weapon"] = false
+			stats["disarm"] += 1
+			_log("Tu bloques son bras : le %s tombe au sol." % o["wname"])
 	else:
 		o["agit"] = clamp(o["agit"] + 6, 0, 100)
 		o["aggro"] = true
 		sta -= 8
-		_log("%s se dégage." % o["name"])
+		if o["weapon"]:
+			hp -= 18
+			stats["cut"] += 1
+			shake = 0.25
+			game.ui.flash(Color(1, 0, 0, 0.5))
+			game.audio.sfx("hurt")
+			_log("%s se dégage et te blesse avec son %s !" % [o["name"], o["wname"]])
+		else:
+			_log("%s se dégage." % o["name"])
 
 func verbal() -> void:
 	if vcd > 0: return
@@ -228,6 +266,25 @@ func _escort_out(o: Dictionary, by: String) -> void:
 	o["npc"].walk_to(pts, func(q): q.queue_free())
 	_log("Tu raccompagnes %s vers la sortie, bras tenu." % o["name"] if by == "toi" else "%s sort %s." % [by, o["name"]])
 
+func toggle_lock() -> void:
+	if lock != null:
+		lock = null
+		_log("Verrouillage désactivé.")
+		return
+	var P: Vector3 = _p().position
+	var bd := 8.0
+	for o in foes:
+		if not o["st"] in ["active", "calm", "grabbed"]: continue
+		var d: float = o["npc"].position.distance_to(P)
+		if d < bd:
+			bd = d; lock = o
+	if lock != null: _log("Cible verrouillée : %s." % lock["name"])
+
+func _hitstop(dur := 0.07) -> void:
+	Engine.time_scale = 0.06
+	await get_tree().create_timer(dur, true, false, true).timeout
+	Engine.time_scale = 1.0
+
 func backup() -> void:
 	var free := []
 	for a in game.colleagues:
@@ -260,6 +317,13 @@ func step(dt: float, mv: Vector3) -> void:
 		pl.velocity = dodge_dir * 6.5
 		pl.move_and_slide()
 	if blocking: game.pvis.act("Block", 0.08)
+	# caméra qui suit la cible verrouillée
+	if lock != null:
+		if not lock["st"] in ["active", "calm", "grabbed"] or not is_instance_valid(lock["npc"]):
+			lock = null
+		else:
+			var lp: Vector3 = lock["npc"].position - P
+			game.cam_yaw = lerp_angle(game.cam_yaw, atan2(lp.x, lp.z), clamp(dt * 6.0, 0.0, 1.0))
 	game.pvis.yaw = game.pvis.turn_to(game.pvis.yaw, game.cam_yaw, dt * 14.0)
 	for o in foes:
 		var n = o["npc"]
@@ -369,9 +433,14 @@ func step(dt: float, mv: Vector3) -> void:
 						hp -= dmg
 						stats["taken"] += dmg
 						shake = 0.08 if blocking else 0.22
+						game.audio.sfx("block" if blocking else "punch")
+						if not blocking:
+							var back: Vector3 = -d3.normalized() * -0.25
+							pl.position += Vector3(back.x, 0, back.z)
+							_hitstop(0.05)
 						if not blocking: game.pvis.act("Hit", 0.4)
 						game.ui.flash(Color(1, 0, 0, 0.45) if o["weapon"] else Color(1, 0.15, 0.15, 0.25))
-						if o["weapon"]: _log("%s te touche avec la lame !" % o["name"])
+						if o["weapon"]: _log("%s te touche avec son %s !" % [o["name"], o["wname"]])
 						elif blocking: _log("Tu bloques le coup de %s." % o["name"])
 						else: _log("%s te frappe !" % o["name"])
 			continue
@@ -458,13 +527,15 @@ func _update_tag(o: Dictionary) -> void:
 		n.set_tag("")
 		return
 	var bars := int(round(o["agit"] / 10.0))
-	var txt: String = o["name"] + ("  [lame]" if o["weapon"] else "") + "\n" + "|".repeat(bars) + ".".repeat(10 - bars)
+	var txt: String = o["name"] + ("  [%s]" % o["wname"] if o["weapon"] else "") + "\n" + "|".repeat(bars) + ".".repeat(10 - bars)
 	var col := Color(1, 0.3, 0.45)
 	match st:
 		"calm": col = Color(1, 0.8, 0.2); txt = o["name"] + "\nse rend"
 		"grabbed": col = Color(0.3, 0.9, 1); txt = o["name"] + "\nsaisi"
 		"controlled": col = Color(0.3, 0.9, 1); txt = o["name"] + "\nmaîtrisé"
 		"down": col = Color(1, 0.2, 0.2); txt = o["name"] + "\ninconscient"
+	if lock != null and is_same(lock, o):
+		txt = "> " + txt + " <"
 	if st == "active" and o["wind"] > 0:
 		col = Color(1, 0.1, 0.1)
 		txt = "!! " + txt
@@ -482,7 +553,7 @@ func _hud() -> void:
 	s += "\n[color=#ffd6de]"
 	for i in log_lines.size():
 		s += log_lines[i] + "\n"
-	s += "[/color]\n[color=#b9a0a8][font_size=12]Clic G repousser · Clic D saisir · F garde · Espace esquive · A frapper · T injonction · E escorter · R renfort[/font_size][/color]"
+	s += "[/color]\n[color=#b9a0a8][font_size=12]Tab verrouiller · Clic G repousser · Clic D saisir · F garde · Espace esquive · A frapper · T injonction · E escorter · R renfort[/font_size][/color]"
 	game.ui.set_fight(s)
 
 # =====================================================================
@@ -547,6 +618,34 @@ func finish(ko: bool) -> void:
 		game._good("%s : maîtrise par saisie sans coup inutile." % Data.clean(title))
 	if S["escort"] > 0:
 		game._good("%s : %d personne(s) sortie(s) de l'établissement." % [Data.clean(title), S["escort"]])
+	if S["disarm"] > 0:
+		ds += 3
+		game._good("%s : adversaire désarmé." % Data.clean(title))
+	if S["cut"] > 0:
+		res.append(["b", "Tu as été blessé en tentant de saisir une personne armée. Face à une arme, la priorité est la distance, l'alerte (17) et la protection du public.", ""])
+	# vidéos des témoins
+	var bad_gesture: bool = S["hit_nosd"] > 0 or S["hit_down"] > 0 or S["long_pin"] > 0
+	if witnesses.size() > 0:
+		if bad_gesture:
+			dr -= 6
+			res.append(["b", "Des clients ont filmé : la vidéo de tes coups circule déjà sur les réseaux sociaux.", ""])
+		else:
+			dr += 2
+			res.append(["", "Des clients ont filmé : on y voit une intervention calme et maîtrisée.", ""])
+	for w in witnesses:
+		if is_instance_valid(w): w.anim = w.get_meta("prev_anim", "idle")
+	witnesses = []
+	# police : arme, blessé ou personne interpellée
+	var handed := []
+	var armed_seen := false
+	for o in foes:
+		if o["wname"] != "" and (o["weapon"] or S["disarm"] > 0): armed_seen = true
+		if o["st"] == "controlled" and is_instance_valid(o["npc"]): handed.append(o)
+	if handed.size() > 0 or down.size() > 0 or armed_seen or ko:
+		_call_police(handed, fight_pos)
+		if handed.size() > 0:
+			game._good("%s : %d personne(s) interpellée(s) et remise(s) à la police." % [Data.clean(title), handed.size()])
+			res.append(["", "La police arrive et prend en charge la personne maîtrisée.", "Art. 73 du Code de procédure pénale : en cas de délit flagrant, toute personne peut appréhender l'auteur et le conduire devant l'officier de police judiciaire le plus proche."])
 	if S["hit_sd"] > 0 and S["hit_nosd"] == 0:
 		game._good("%s : riposte en légitime défense, proportionnée." % Data.clean(title))
 	if not ko and S["hit_nosd"] == 0 and S["hit_down"] == 0 and down.is_empty() and S["long_pin"] == 0:
@@ -569,7 +668,10 @@ func finish(ko: bool) -> void:
 		game._end_inc(inc)
 	var body := ""
 	for r in res:
-		body += "[color=%s]%s[/color]\n\n" % ["#ff8a8a" if r[0] == "b" else "#ffd27a", r[1]]
+		var rc := "#ff8a8a" if r[0] == "b" else ("#9fe0b4" if r[0] == "" else "#ffd27a")
+		body += "[color=%s]%s[/color]\n" % [rc, r[1]]
+		if r[2] != "": body += "[color=#b9b3cc][i]Loi : %s[/i][/color]\n" % r[2]
+		body += "\n"
 	body += "[color=#b9b3cc]Coups reçus : %d PV · bloqués %d · esquivés %d\nPoussées %d · saisies réussies %d/%d · injonctions %d · maîtrises par collègues %d\nCoups portés : %d[/color]\n\n" % [
 		round(S["taken"]), S["blocked"], S["dodged"], S["push"], S["grab_ok"], S["grab"], S["verb"], S["col_ctrl"], S["hit_sd"] + S["hit_nosd"] + S["hit_down"]]
 	body += "[i]Le détail juridique est dans le bilan de fin de nuit.[/i]"
@@ -584,3 +686,36 @@ func _recover() -> void:
 	await get_tree().create_timer(3.5).timeout
 	if is_instance_valid(game.pvis): game.pvis.anim = "idle"
 	hp = 55.0
+
+## La police arrive par la rue, rejoint la scène et repart avec les personnes interpellées
+func _call_police(handed: Array, where: Vector3) -> void:
+	game._set_radio("Police : « Équipage en route, deux minutes. »")
+	game._mc("Appel police (17) : %s" % Data.clean(title))
+	var cops := []
+	for k in 2:
+		var c = game._mk_person({"prim": true, "sex": "H", "pos": Vector3(3 + k * 0.8, 0, 6.5), "top": "#1c2a4a", "bottom": "#1c2a4a", "cap": "#16213a", "shoes": "#0d0d0d", "band": "#3a7bff", "no_beard": true, "hs": "buzz"})
+		c.pname = "Policier"
+		cops.append(c)
+	for o in handed:
+		o["st"] = "out"
+		o["npc"].set_tag("")
+	await get_tree().create_timer(6.0).timeout
+	for k in cops.size():
+		var c = cops[k]
+		if not is_instance_valid(c): continue
+		c.run = true
+		c.walk_to(game.world.route(c.position, where + Vector3(0.8 * k, 0, 0.8)))
+	await get_tree().create_timer(12.0).timeout
+	game._set_radio("Police : « On prend le relais. Merci pour la main courante. »")
+	for o in handed:
+		if not is_instance_valid(o["npc"]): continue
+		o["npc"].anim = "walk"
+		var pts: Array = game.world.route(o["npc"].position, Vector3(0, 0, 2))
+		pts.append(Vector2(10, 7)); pts.append(Vector2(30, 7))
+		o["npc"].walk_to(pts, func(q): q.queue_free())
+	for c in cops:
+		if not is_instance_valid(c): continue
+		c.run = false
+		var pts2: Array = game.world.route(c.position, Vector3(0.5, 0, 2))
+		pts2.append(Vector2(10, 7.4)); pts2.append(Vector2(30, 7.4))
+		c.walk_to(pts2, func(q): q.queue_free())
