@@ -164,6 +164,18 @@ func build() -> void:
 	neons.append(box(Vector3(0, 3.85, 0.16), Vector3(4.4, 0.06, 0.04), "#000000", false, "#ff3d9a", 4.0))
 	neon_light = omni(Vector3(0, 4.3, 1.6), "#ff3d9a", 9.0, 2.0, true)
 	box(Vector3(0, 3.45, 0.9), Vector3(3.6, 0.12, 1.8), "#300c22")
+	# éclairage de la porte : on doit voir les visages des clients
+	var spot := SpotLight3D.new()
+	spot.position = Vector3(0.4, 3.3, 1.6)
+	spot.rotation = Vector3(-1.25, 0, 0)
+	spot.light_color = Color("#ffe6c4")
+	spot.light_energy = 6.0
+	spot.spot_range = 7.0
+	spot.spot_angle = 40.0
+	spot.shadow_enabled = true
+	add_child(spot)
+	omni(Vector3(1.5, 2.6, 3.4), "#ffd9b0", 6.0, 1.6)
+	omni(Vector3(6.5, 3.0, 4.0), "#ffcf9a", 9.0, 1.4)
 	for lx in [-12.0, 9.0, 22.0]:
 		cyl(Vector3(lx, 2.5, 5.6), 0.07, 5.0, "#2a2a33", true)
 		box(Vector3(lx, 5, 5.2), Vector3(0.15, 0.1, 0.8), "#2a2a33")

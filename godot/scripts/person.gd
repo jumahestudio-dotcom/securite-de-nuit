@@ -254,17 +254,6 @@ func _build_model() -> bool:
 	var skel: Skeleton3D = null
 	var skels: Array = glb.find_children("*", "Skeleton3D", true, false)
 	if skels.size() > 0: skel = skels[0]
-	if not Data.diag_done:
-		Data.diag_done = true
-		var bn := []
-		if skel != null:
-			for bi in min(4, skel.get_bone_count()): bn.append(skel.get_bone_name(bi))
-		print("[DIAG] modèle=%s · squelette=%s · os=%d %s · AnimationPlayer racine=%s · animations chargées=%s" % [model_path.get_file(), str(skel.name) if skel != null else "AUCUN", skel.get_bone_count() if skel != null else 0, str(bn), (str(glb_anim.get_node(glb_anim.root_node).name) + " → " + str(glb_anim.get_node(glb_anim.root_node).get_path_to(skel))) if (skel != null and glb_anim.has_node(glb_anim.root_node)) else "?", str(Data.ANIMS.keys())])
-		for key in Data.ANIMS.keys():
-			var an: Animation = Data.ANIMS[key]
-			var ex := []
-			for t in min(3, an.get_track_count()): ex.append(str(an.track_get_path(t)))
-			print("[DIAG] anim %s : %d pistes, ex. %s" % [key, an.get_track_count(), str(ex)])
 	if skel == null or Data.ANIMS.is_empty():
 		return true
 	var root: Node = glb_anim.get_node(glb_anim.root_node)
@@ -329,7 +318,6 @@ func _build_model() -> bool:
 		glb_anim.remove_animation_library("sdn")
 	glb_anim.add_animation_library("sdn", lib)
 	Data.LIB_CACHE[ckey] = lib
-	print("[DIAG] bibliothèque créée pour %s : chemin squelette « %s », pistes reliées à un os : %d, animations : %s" % [model_path.get_file(), skel_path, matched, str(lib.get_animation_list())])
 	return true
 
 func set_pose(p: Dictionary, dur: float) -> void:
@@ -382,9 +370,6 @@ func _anim_glb() -> void:
 		"drink": ["Drink", "Talk", "Idle"], "talk": ["Talk", "Idle"], "phone": ["Phone", "Talk", "Idle"], "raise": ["Surrender", "Idle"], "idle": ["Idle"]}
 	var list: Array = wanted.get(anim, ["Idle"])
 	if run and anim == "walk": list = ["Run", "Walk"]
-	if not Data.diag_play:
-		Data.diag_play = true
-		print("[DIAG] lecture demandée : anim=%s · disponibles=%s" % [anim, str(glb_anim.get_animation_list())])
 	for n in list:
 		var full: String = "sdn/" + n
 		if glb_anim.has_animation(full):
