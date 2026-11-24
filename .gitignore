@@ -6,8 +6,12 @@ export/
 .DS_Store
 Thumbs.db
 
-# Modèles et animations Mixamo : licence Adobe = utilisables dans le jeu,
-# mais pas redistribuables tels quels dans un dépôt public.
-godot/assets/characters/**/*.fbx
-godot/assets/animations/*.fbx
-godot/assets/characters/**/*.glb
+# Modèles, textures et animations Mixamo : licence Adobe = utilisables dans le jeu,
+# mais pas redistribuables tels quels dans un dépôt public. Tout reste sur le PC.
+godot/assets/characters/**
+!godot/assets/characters/**/
+!godot/assets/characters/personnages.json
+!godot/assets/characters/personnages.exemple.json
+!godot/assets/characters/**/.gitkeep
+godot/assets/animations/*
+!godot/assets/animations/.gitkeep
