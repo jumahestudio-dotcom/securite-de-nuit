@@ -1,0 +1,3605 @@
+{
+ "rixe": {
+  "t": "RIXE GÉNÉRALE",
+  "need": 4,
+  "zones": [
+   "piste"
+  ],
+  "dl": 30,
+  "hard": 0.05,
+  "desc": "Deux bandes rivales s'affrontent au milieu de la piste : une dizaine de personnes, des chaises et des verres qui volent. Les clients paniquent.",
+  "o": [
+   {
+    "t": "Faire couper la musique et rallumer la lumière, intervenir en groupe, isoler les meneurs, écarter les clients, appeler immédiatement le 17",
+    "s": 12,
+    "r": 4,
+    "g": "Lumière, musique coupée, intervention groupée et police alertée : la rixe s'éteint sans blessé grave.",
+    "b": 22
+   },
+   {
+    "t": "Foncer dans le tas pour attraper les plus violents un par un",
+    "s": -10,
+    "f": "Agents engagés au milieu d'une rixe sans coordination.",
+    "law": "Mise en danger de l'équipe : on intervient en groupe, de façon coordonnée, et on alerte la police.",
+    "b": 20
+   },
+   {
+    "t": "Fermer les portes pour que personne ne sorte avant la police",
+    "s": -14,
+    "f": "Public enfermé avec une rixe en cours.",
+    "law": "Bloquer les sorties d'un ERP est interdit et dangereux (bousculade, séquestration).",
+    "b": 10
+   },
+   {
+    "t": "Attendre que ça se calme depuis le bar",
+    "s": -14,
+    "r": -8,
+    "txt": "La rixe s'étend à toute la salle : cinq blessés, dont un grave.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -24,
+   "r": -15,
+   "txt": "Rixe générale : sept blessés, le préfet envisage une fermeture administrative.",
+   "f": "Rixe générale sans intervention suffisante."
+  }
+ },
+ "bagarre": {
+  "t": "Bagarre",
+  "need": 2,
+  "zones": [
+   "piste",
+   "bar",
+   "vip"
+  ],
+  "dl": 24,
+  "desc": "Deux clients se poussent, un verre vole. Le ton monte, des gens filment.",
+  "o": [
+   {
+    "t": "Appeler un 2e agent, séparer les deux, les faire sortir l'un après l'autre par des issues différentes",
+    "s": 8,
+    "r": 3,
+    "g": "Séparer à deux et faire sortir en décalé : la méthode pro, ça évite que ça reprenne dehors.",
+    "b": 14
+   },
+   {
+    "t": "Plaquer le plus agité au sol et rester sur lui jusqu'à ce qu'il se calme",
+    "s": -6,
+    "r": -2,
+    "f": "Maintien au sol prolongé sur le ventre : risque d'asphyxie posturale.",
+    "law": "La force doit rester nécessaire et proportionnée (légitime défense, art. 122-5 Code pénal).",
+    "b": 10
+   },
+   {
+    "t": "Lui mettre un coup pour le calmer",
+    "s": -10,
+    "r": -10,
+    "f": "Coup porté par un agent hors légitime défense.",
+    "law": "Violences volontaires (art. 222-11 et suivants du Code pénal) : un agent n'a aucun droit particulier d'usage de la force.",
+    "b": 8
+   },
+   {
+    "t": "Attendre que ça se calme",
+    "s": -8,
+    "r": -5,
+    "txt": "Ça dégénère : un client a l'arcade ouverte.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -10,
+   "r": -8,
+   "txt": "Personne n'est intervenu : bagarre générale, un blessé."
+  }
+ },
+ "malaise": {
+  "t": "Client inconscient",
+  "zones": [
+   "toilettes",
+   "bar",
+   "fumoir"
+  ],
+  "dl": 20,
+  "q": "sst",
+  "desc": "Un jeune homme est affalé par terre, il respire mais ne répond pas. Son ami dit qu'il a « beaucoup bu ».",
+  "o": [
+   {
+    "t": "Le mettre en PLS, faire appeler le 15 (ou 18 / 112), rester avec lui jusqu'aux secours",
+    "s": 8,
+    "r": 4,
+    "g": "PLS, alerte, surveillance continue : c'est le bon réflexe.",
+    "b": 20,
+    "q": 1
+   },
+   {
+    "t": "Le sortir sur le trottoir pour qu'il prenne l'air",
+    "s": -12,
+    "r": -8,
+    "f": "Personne inconsciente laissée dehors.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal) : risque d'hypothermie, d'étouffement.",
+    "b": 8
+   },
+   {
+    "t": "Lui faire boire de l'eau et le laisser dormir dans un coin",
+    "s": -6,
+    "f": "On ne fait jamais boire une personne inconsciente (risque de fausse route), et on alerte les secours.",
+    "law": "Obligation de porter secours (art. 223-6 Code pénal).",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -15,
+   "r": -10,
+   "txt": "Découvert trop tard en détresse respiratoire. Les pompiers l'ont récupéré de justesse.",
+   "f": "Défaut de surveillance d'une personne en danger."
+  }
+ },
+ "vol": {
+  "t": "Vol de téléphone",
+  "zones": [
+   "bar",
+   "vestiaire",
+   "piste"
+  ],
+  "dl": 24,
+  "desc": "Une cliente dit qu'un homme en veste noire vient de prendre son téléphone sur le comptoir. La barmaid a vu la scène.",
+  "o": [
+   {
+    "t": "Garder le suspect près de la sortie, lui demander s'il accepte de montrer ses poches ; s'il refuse, l'empêcher de partir et appeler le 17",
+    "s": 6,
+    "r": 5,
+    "g": "Flagrant délit avec témoin : tout citoyen peut appréhender l'auteur et le remettre à un OPJ (art. 73 Code de procédure pénale). Pas de fouille sans accord.",
+    "b": 18
+   },
+   {
+    "t": "Le fouiller de force",
+    "s": -2,
+    "r": -6,
+    "f": "Fouille forcée par un agent privé.",
+    "law": "La fouille est un acte de police judiciaire. Un agent ne peut faire qu'une palpation avec consentement (art. L613-2 CSI).",
+    "b": 8
+   },
+   {
+    "t": "Dire à la cliente qu'on n'y peut rien",
+    "r": -6,
+    "txt": "La cliente porte plainte et laisse un avis assassin en ligne.",
+    "b": 3
+   }
+  ],
+  "fail": {
+   "r": -5,
+   "txt": "Le voleur est reparti tranquillement."
+  }
+ },
+ "angela": {
+  "t": "« Je cherche Angela »",
+  "zones": [
+   "bar",
+   "piste"
+  ],
+  "dl": 22,
+  "desc": "Une cliente vient au bar et demande « Angela ». Un homme la colle depuis une heure malgré ses refus.",
+  "o": [
+   {
+    "t": "Mettre la cliente à l'abri, exclure l'individu, lui proposer d'appeler un proche, un taxi ou la police",
+    "s": 5,
+    "r": 8,
+    "g": "C'est exactement le protocole « Demandez Angela ».",
+    "b": 15
+   },
+   {
+    "t": "Dire à l'homme de « se calmer un peu » et repartir",
+    "s": -3,
+    "r": -5,
+    "txt": "Il recommence dix minutes plus tard, la cliente part en pleurs.",
+    "b": 4
+   },
+   {
+    "t": "Conseiller à la cliente de rentrer chez elle",
+    "r": -8,
+    "f": "La victime mise dehors à la place de l'auteur.",
+    "law": "Le protocole impose de protéger la personne et d'écarter l'auteur.",
+    "b": 3
+   }
+  ],
+  "fail": {
+   "s": -5,
+   "r": -8,
+   "txt": "Personne ne l'a aidée. Elle témoigne sur les réseaux sociaux."
+  }
+ },
+ "deal": {
+  "t": "Deal aux toilettes",
+  "zones": [
+   "toilettes",
+   "fumoir"
+  ],
+  "dl": 26,
+  "desc": "Un client fait des allers-retours entre les toilettes et le fumoir, échanges de billets discrets.",
+  "o": [
+   {
+    "t": "L'exclure sans le fouiller, noter son signalement, prévenir le 17",
+    "s": 6,
+    "r": 3,
+    "g": "L'exploitant doit agir contre le trafic. Pas de fouille sans accord, mais exclusion et signalement.",
+    "b": 14,
+    "bl": 1
+   },
+   {
+    "t": "Vider ses poches et confisquer la drogue",
+    "s": -2,
+    "r": -4,
+    "f": "Fouille forcée et saisie par un agent privé.",
+    "law": "Seuls policiers et gendarmes peuvent fouiller et saisir.",
+    "b": 10
+   },
+   {
+    "t": "Fermer les yeux, ça fait venir du monde",
+    "s": -8,
+    "r": -5,
+    "f": "Trafic toléré dans l'établissement.",
+    "law": "Fermeture administrative possible (art. L3332-15 Code de la santé publique).",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "f": "Trafic non traité dans l'établissement.",
+   "txt": "Le trafic continue toute la nuit."
+  }
+ },
+ "arme": {
+  "t": "Couteau sorti",
+  "zones": [
+   "fumoir",
+   "piste"
+  ],
+  "dl": 16,
+  "desc": "Un client que tu as fait entrer sans palpation sort un couteau pliant pendant une dispute.",
+  "o": [
+   {
+    "t": "Faire reculer les clients, garder la distance, dialoguer, appeler tout de suite le 17 et préparer les premiers secours",
+    "s": 5,
+    "r": 2,
+    "g": "Bonne priorité : protéger le public, ne pas aller au contact d'une arme sans nécessité, alerter tôt.",
+    "b": 20,
+    "bl": 1
+   },
+   {
+    "t": "Se jeter sur lui pour le désarmer seul",
+    "s": -10,
+    "f": "L'agent est blessé à l'avant-bras.",
+    "law": "Prise de risque inutile : un agent privé n'est ni équipé ni formé comme les forces de l'ordre.",
+    "b": 22
+   },
+   {
+    "t": "Le pousser vers l'issue de secours et le laisser partir",
+    "s": -6,
+    "f": "Pas d'alerte 17 alors qu'une arme a été sortie.",
+    "law": "La police doit être prévenue : il est reparti armé dans la rue.",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -20,
+   "r": -15,
+   "txt": "Un client a été blessé au couteau.",
+   "f": "Agression au couteau : une palpation à l'entrée aurait pu l'éviter."
+  }
+ },
+ "secours": {
+  "t": "Issue de secours bloquée",
+  "zones": [
+   "secours"
+  ],
+  "dl": 28,
+  "desc": "Des caisses de bouteilles et des clients bloquent l'issue de secours n°2. La piste est saturée.",
+  "o": [
+   {
+    "t": "Dégager l'issue tout de suite, prévenir le bar, demander à la porte de suspendre les entrées",
+    "s": 8,
+    "g": "Les issues de secours doivent rester libres en permanence.",
+    "b": 10
+   },
+   {
+    "t": "Laisser, c'est juste pour un moment",
+    "s": -8,
+    "f": "Issue de secours obstruée.",
+    "law": "Règlement de sécurité incendie des ERP : les dégagements doivent toujours rester libres.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "f": "Issue de secours restée obstruée une bonne partie de la nuit."
+  }
+ },
+ "refus": {
+  "t": "Client qui refuse de partir",
+  "zones": [
+   "bar",
+   "piste"
+  ],
+  "dl": 24,
+  "desc": "Le barman refuse de servir un client trop alcoolisé. Il insulte le personnel et refuse de partir.",
+  "o": [
+   {
+    "t": "Lui parler calmement, rappeler le règlement, l'escorter à deux ; s'il menace ou résiste, appeler le 17",
+    "s": 6,
+    "r": 2,
+    "g": "Le dialogue d'abord, l'escorte à deux ensuite : la bonne progression.",
+    "b": 12
+   },
+   {
+    "t": "Le traîner par le col jusqu'à la sortie",
+    "s": -3,
+    "r": -5,
+    "f": "Force disproportionnée sur un client non violent.",
+    "law": "Usage de la force seulement s'il est nécessaire et proportionné (art. 122-5 Code pénal).",
+    "b": 8
+   },
+   {
+    "t": "Lui resservir un verre pour qu'il se calme",
+    "s": -6,
+    "f": "Alcool servi à une personne manifestement ivre.",
+    "law": "Interdit par le Code de la santé publique.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "r": -4,
+   "txt": "Il casse un verre sur le comptoir, le barman est coupé."
+  }
+ },
+ "mineur": {
+  "t": "Mineure au bar",
+  "zones": [
+   "bar"
+  ],
+  "dl": 24,
+  "desc": "Le barman soupçonne une cliente entrée plus tôt d'avoir 16 ans. Elle commande des shots.",
+  "o": [
+   {
+    "t": "Vérifier son identité discrètement, arrêter le service d'alcool, la faire sortir en sécurité et prévenir un parent (ou les secours si elle est ivre)",
+    "s": 3,
+    "r": 2,
+    "g": "Correct : la mineure est protégée et le service d'alcool s'arrête.",
+    "b": 15
+   },
+   {
+    "t": "La laisser, elle a l'air plus âgée",
+    "s": -4,
+    "r": -6,
+    "f": "Mineure servie en alcool dans l'établissement.",
+    "law": "Art. L3342-1 Code de la santé publique : 7 500 € d'amende.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "r": -6,
+   "f": "Mineure restée et servie en alcool toute la nuit."
+  }
+ },
+ "cigarette": {
+  "t": "Cigarette sur la piste",
+  "zones": [
+   "piste",
+   "vip"
+  ],
+  "dl": 22,
+  "desc": "Un client allume une cigarette au milieu de la piste.",
+  "o": [
+   {
+    "t": "Lui rappeler poliment l'interdiction et l'envoyer au fumoir",
+    "r": 2,
+    "g": "Interdiction de fumer dans les lieux publics fermés : un rappel courtois suffit.",
+    "b": 6
+   },
+   {
+    "t": "Le mettre dehors sur-le-champ",
+    "r": -3,
+    "txt": "Réaction excessive pour une première fois : il fait un scandale.",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "r": -2,
+   "txt": "D'autres l'imitent, l'alarme incendie manque de se déclencher."
+  }
+ },
+ "ghb": {
+  "t": "Soupçon de GHB",
+  "zones": [
+   "bar",
+   "piste"
+  ],
+  "dl": 20,
+  "q": "sst",
+  "desc": "Une cliente devient soudain confuse et ne tient plus debout après un verre. Son amie jure qu'elle n'a presque rien bu. Un homme qui lui avait offert le verre s'éloigne.",
+  "o": [
+   {
+    "t": "La mettre à l'abri avec son amie, appeler le 15, garder le verre pour la police, faire surveiller l'homme et prévenir le 17",
+    "s": 8,
+    "r": 6,
+    "g": "Exactement ça : secours, preuve conservée, suspect repéré.",
+    "b": 20,
+    "q": 1
+   },
+   {
+    "t": "La faire sortir prendre l'air seule",
+    "s": -12,
+    "r": -8,
+    "f": "Personne vulnérable laissée seule dehors.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal). Une personne droguée est une proie facile.",
+    "b": 6
+   },
+   {
+    "t": "Lui dire qu'elle a trop bu et qu'elle doit partir",
+    "s": -8,
+    "r": -8,
+    "f": "Signes d'une soumission chimique ignorés.",
+    "law": "Administrer une substance à quelqu'un à son insu est un délit (art. 222-15-1 Code pénal) ; la victime doit être secourue, pas exclue.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -14,
+   "r": -12,
+   "txt": "La cliente a été retrouvée inconsciente sur le parking.",
+   "f": "Victime présumée de soumission chimique non prise en charge."
+  }
+ },
+ "feu": {
+  "t": "Début de feu",
+  "zones": [
+   "vestiaire",
+   "bar"
+  ],
+  "dl": 18,
+  "q": "ssiap",
+  "desc": "De la fumée sort du local poubelles derrière le bar. On voit des flammes dans un conteneur.",
+  "o": [
+   {
+    "t": "Donner l'alerte, attaquer avec l'extincteur adapté si le feu reste petit, préparer l'évacuation, appeler le 18",
+    "s": 10,
+    "r": 3,
+    "g": "Alerte, attaque avec le bon extincteur, évacuation prête : la doctrine incendie.",
+    "b": 16,
+    "q": 1
+   },
+   {
+    "t": "Jeter des seaux d'eau du bar dessus",
+    "s": -4,
+    "txt": "Le conteneur est près d'une prise électrique, l'eau fait sauter le disjoncteur : panique dans le noir.",
+    "b": 10
+   },
+   {
+    "t": "Ne rien dire pour ne pas affoler les clients",
+    "s": -14,
+    "f": "Feu caché au public et aux secours.",
+    "law": "Règlement de sécurité incendie des ERP : alerte et appel des sapeurs-pompiers sans délai.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -20,
+   "r": -12,
+   "txt": "Le feu a pris dans le local, évacuation en catastrophe, deux intoxiqués.",
+   "f": "Départ de feu non traité."
+  }
+ },
+ "chute": {
+  "t": "Chute dans l'escalier",
+  "zones": [
+   "vip"
+  ],
+  "dl": 22,
+  "q": "sst",
+  "desc": "Une cliente a chuté dans l'escalier du carré VIP. Elle se plaint du cou et ne sent plus bien ses doigts.",
+  "o": [
+   {
+    "t": "Ne pas la bouger, lui maintenir la tête, appeler le 15, baliser l'escalier",
+    "s": 8,
+    "r": 4,
+    "g": "Suspicion de lésion du rachis : immobiliser et alerter. Parfait.",
+    "b": 18,
+    "q": 1
+   },
+   {
+    "t": "La relever et l'asseoir au bar",
+    "s": -10,
+    "f": "Victime bougée alors qu'une lésion de la colonne était possible.",
+    "law": "Gestes de secours : on ne déplace pas une victime qui se plaint du cou.",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -6,
+   "txt": "Des clients l'ont relevée eux-mêmes… elle repart en ambulance."
+  }
+ },
+ "exterieur": {
+  "t": "Rixe devant l'entrée",
+  "zones": [
+   "porte"
+  ],
+  "dl": 20,
+  "desc": "Deux clients exclus se battent sur le trottoir juste devant l'entrée. L'un est à terre.",
+  "o": [
+   {
+    "t": "Protéger l'entrée, appeler le 17 et le 15, porter secours au blessé, sans poursuivre dans la rue",
+    "s": 7,
+    "r": 3,
+    "g": "Sur la voie publique, c'est la police qui gère : alerte, protection, secours.",
+    "b": 14
+   },
+   {
+    "t": "Sortir à trois et régler ça dans la rue",
+    "s": -8,
+    "r": -4,
+    "f": "Intervention musclée sur la voie publique.",
+    "law": "Hors de l'établissement, les agents n'ont pas de mission de maintien de l'ordre (art. L613-1 CSI).",
+    "b": 12
+   },
+   {
+    "t": "Fermer la porte et attendre",
+    "s": -6,
+    "txt": "Le blessé reste au sol plusieurs minutes sans secours.",
+    "f": "Aucune alerte pour un blessé devant la porte.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal).",
+    "b": 3
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -5,
+   "txt": "La rixe se termine avec un blessé grave devant ta porte."
+  }
+ },
+ "coupure": {
+  "t": "Coupure de courant",
+  "zones": [
+   "piste"
+  ],
+  "dl": 20,
+  "q": "ssiap",
+  "desc": "Le courant saute : musique coupée, seul l'éclairage de sécurité reste allumé. Des cris dans la foule.",
+  "o": [
+   {
+    "t": "Parler fort et calmement, rassurer, dégager les issues, prévenir le gérant ; évacuer dans le calme si ça dure",
+    "s": 8,
+    "r": 4,
+    "g": "Le calme évite la bousculade : l'éclairage de sécurité est fait pour ça.",
+    "b": 12,
+    "q": 1
+   },
+   {
+    "t": "Crier « Tout le monde dehors ! »",
+    "s": -10,
+    "r": -4,
+    "f": "Ordre d'évacuation paniqué : bousculade dans l'escalier.",
+    "law": "L'évacuation doit être organisée (règlement de sécurité ERP) : ne jamais déclencher de panique.",
+    "b": 8
+   },
+   {
+    "t": "Attendre sans rien dire",
+    "s": -5,
+    "txt": "Les clients allument leurs téléphones et se ruent vers le vestiaire.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -5,
+   "txt": "Bousculade dans le noir, deux personnes piétinées."
+  }
+ },
+ "verre": {
+  "t": "Coupure sur verre brisé",
+  "zones": [
+   "piste",
+   "bar"
+  ],
+  "dl": 22,
+  "q": "sst",
+  "desc": "Une bouteille s'est brisée sur la piste. Une cliente saigne abondamment de la main.",
+  "o": [
+   {
+    "t": "Comprimer la plaie avec un tissu propre, appeler le 15 si ça saigne beaucoup, faire nettoyer et baliser la zone",
+    "s": 7,
+    "r": 3,
+    "g": "Compression directe et zone sécurisée : bonne réaction.",
+    "b": 14,
+    "q": 1,
+    "gl": 1
+   },
+   {
+    "t": "Lui donner des serviettes en papier et retourner à son poste",
+    "s": -5,
+    "r": -3,
+    "txt": "Elle s'évanouit dix minutes plus tard aux toilettes.",
+    "b": 3
+   },
+   {
+    "t": "Ramasser d'abord les débris à mains nues",
+    "s": -4,
+    "txt": "L'agent se coupe à son tour.",
+    "b": 6,
+    "gl": -1
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "r": -4,
+   "txt": "Les débris restent sur la piste : trois autres coupures."
+  }
+ },
+ "overdose": {
+  "t": "Convulsions",
+  "zones": [
+   "fumoir",
+   "toilettes"
+  ],
+  "dl": 16,
+  "q": "sst",
+  "desc": "Un client convulse, mâchoires serrées. Son ami avoue qu'il a pris « un truc » en plus de l'alcool.",
+  "o": [
+   {
+    "t": "Écarter les objets dangereux, ne rien mettre dans sa bouche, appeler le 15 en donnant les produits pris, PLS après la crise",
+    "s": 9,
+    "r": 3,
+    "g": "Protéger, alerter avec toutes les infos, PLS après la crise : parfait.",
+    "b": 20,
+    "q": 1
+   },
+   {
+    "t": "Le maintenir fermement au sol pour arrêter les convulsions",
+    "s": -6,
+    "f": "On ne bloque pas une personne qui convulse (risque de blessures).",
+    "law": "Gestes de premiers secours : protéger sans contraindre.",
+    "b": 10
+   },
+   {
+    "t": "Le faire sortir discrètement pour éviter la police",
+    "s": -15,
+    "r": -6,
+    "f": "Personne en danger vital cachée aux secours.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal).",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -15,
+   "r": -10,
+   "txt": "Les pompiers arrivent tard, il part en réanimation."
+  }
+ },
+ "arret": {
+  "t": "Arrêt cardiaque",
+  "zones": [
+   "piste",
+   "vip",
+   "bar"
+  ],
+  "dl": 14,
+  "q": "sst",
+  "desc": "Un homme d'une cinquantaine d'années s'effondre près du bar. Il ne respire plus.",
+  "o": [
+   {
+    "t": "Faire appeler le 15, commencer le massage cardiaque immédiatement, faire apporter le défibrillateur",
+    "s": 10,
+    "r": 6,
+    "g": "Appel, massage, défibrillateur : la chaîne de survie.",
+    "b": 24,
+    "q": 1,
+    "dae": 1
+   },
+   {
+    "t": "Le mettre en PLS et attendre les pompiers",
+    "s": -12,
+    "f": "PLS sur une personne qui ne respire pas : il fallait masser.",
+    "law": "Arrêt cardiaque : massage cardiaque + défibrillateur sans attendre.",
+    "b": 12
+   },
+   {
+    "t": "Lui jeter de l'eau froide au visage",
+    "s": -12,
+    "f": "Minutes vitales perdues.",
+    "law": "Chaque minute sans massage réduit les chances de survie d'environ 10 %.",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "s": -25,
+   "r": -15,
+   "txt": "Personne n'a commencé le massage à temps. Il est décédé.",
+   "f": "Arrêt cardiaque sans prise en charge."
+  }
+ },
+ "bombe": {
+  "t": "Alerte à la bombe",
+  "zones": [
+   "porte"
+  ],
+  "dl": 22,
+  "desc": "Le gérant reçoit un appel anonyme : « une bombe va sauter dans 30 minutes ». Il te demande quoi faire.",
+  "o": [
+   {
+    "t": "Appeler le 17 immédiatement, suivre ses consignes, préparer une évacuation calme par toutes les issues",
+    "s": 8,
+    "r": 2,
+    "g": "C'est à la police d'évaluer la menace ; toi tu prépares une évacuation sans panique.",
+    "b": 16
+   },
+   {
+    "t": "Fouiller la salle avec l'équipe sans prévenir personne",
+    "s": -8,
+    "f": "Pas d'alerte aux autorités.",
+    "law": "Toute menace doit être signalée au 17 ; ne jamais toucher un objet suspect.",
+    "b": 12
+   },
+   {
+    "t": "Ignorer, c'est sûrement une blague",
+    "s": -10,
+    "f": "Menace ignorée.",
+    "law": "On ne décide pas seul qu'une menace est fausse : alerte au 17 obligatoire.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -10,
+   "r": -5,
+   "txt": "La police arrive, alertée par un client… et découvre que rien n'a été fait."
+  }
+ },
+ "agentagresse": {
+  "t": "Agent pris à partie",
+  "zones": [
+   "piste",
+   "fumoir",
+   "bar"
+  ],
+  "dl": 16,
+  "desc": "Un groupe encercle un de tes agents et le bouscule. L'un d'eux cherche la bagarre.",
+  "o": [
+   {
+    "t": "Envoyer du renfort, faire reculer l'agent vers une zone dégagée, appeler le 17",
+    "s": 8,
+    "r": 2,
+    "g": "Renfort, repli, alerte : on protège l'équipe sans faire monter la tension.",
+    "b": 16
+   },
+   {
+    "t": "Sortir une bombe lacrymogène et gazer le groupe",
+    "s": -10,
+    "r": -8,
+    "f": "Agent armé d'une bombe lacrymogène en discothèque.",
+    "law": "Les agents de sécurité privée ne peuvent être armés que dans des cas très encadrés (art. L613-5 CSI), pas en discothèque. Le gaz blesse aussi les clients.",
+    "b": 12
+   },
+   {
+    "t": "Laisser ton agent se débrouiller",
+    "s": -10,
+    "txt": "Ton agent est frappé : 10 jours d'arrêt de travail.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -12,
+   "r": -5,
+   "txt": "Ton agent est blessé, il ne pourra plus travailler cette nuit."
+  }
+ },
+ "issue": {
+  "t": "Issue de secours ouverte",
+  "zones": [
+   "secours"
+  ],
+  "dl": 22,
+  "desc": "Un client a ouvert l'issue de secours pour faire entrer cinq potes sans payer.",
+  "o": [
+   {
+    "t": "Refermer l'issue, faire ressortir les entrants par l'entrée principale, vérifier le comptage",
+    "s": 6,
+    "r": 2,
+    "g": "Jauge et comptage préservés, issue refermée.",
+    "b": 12
+   },
+   {
+    "t": "Bloquer l'issue avec un cadenas pour la nuit",
+    "s": -12,
+    "f": "Issue de secours verrouillée.",
+    "law": "Interdit : une issue de secours doit pouvoir s'ouvrir de l'intérieur à tout moment (règlement de sécurité ERP).",
+    "b": 6
+   },
+   {
+    "t": "Laisser, ils ont l'air sympas",
+    "s": -5,
+    "txt": "Jauge faussée, et l'un d'eux est sur la liste noire.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "txt": "Une dizaine d'entrées gratuites et non comptées."
+  }
+ },
+ "terrasse": {
+  "t": "Terrasse qui déborde",
+  "zones": [
+   "fumoir"
+  ],
+  "dl": 24,
+  "desc": "Après le but, la terrasse déborde sur le trottoir, des clients chantent et bloquent la rue.",
+  "o": [
+   {
+    "t": "Faire revenir les clients dans le périmètre autorisé de la terrasse, faire baisser le volume, rappeler l'heure de fermeture",
+    "s": 4,
+    "r": 5,
+    "g": "La terrasse a un périmètre autorisé par la mairie : on le fait respecter poliment.",
+    "b": 10
+   },
+   {
+    "t": "Laisser faire, c'est la fête",
+    "r": -6,
+    "f": "Occupation du trottoir au-delà de l'autorisation et nuisances.",
+    "law": "Amende possible, et fermeture administrative en cas de nuisances répétées (art. L3332-15 CSP).",
+    "b": 2
+   },
+   {
+    "t": "Repousser les clients physiquement vers l'intérieur",
+    "s": -4,
+    "r": -4,
+    "f": "Usage de la force sur le trottoir.",
+    "law": "Sur la voie publique, les agents n'ont pas de mission de maintien de l'ordre (art. L613-1 CSI).",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "r": -6,
+   "txt": "La police municipale verbalise l'établissement."
+  }
+ },
+ "baignade": {
+  "t": "Bain de minuit",
+  "zones": [
+   "secours"
+  ],
+  "dl": 16,
+  "q": "sst",
+  "desc": "Un client très alcoolisé court vers la mer pour « un bain de minuit ». Ses amis rigolent.",
+  "o": [
+   {
+    "t": "L'arrêter avant l'eau en lui parlant, le ramener à ses amis ; s'il est déjà dans l'eau, appeler le 196 (secours en mer) et lancer une bouée",
+    "s": 9,
+    "r": 4,
+    "g": "Alcool + nuit + mer = noyade. On arrête avant, et en mer on alerte (196 / 112).",
+    "b": 16,
+    "q": 1
+   },
+   {
+    "t": "Plonger seul pour aller le chercher",
+    "s": -8,
+    "f": "Sauvetage improvisé de nuit, sans moyens.",
+    "law": "Risque de deux noyés au lieu d'un : alerter et lancer une bouée.",
+    "b": 20
+   },
+   {
+    "t": "Le laisser, il est majeur",
+    "s": -14,
+    "r": -8,
+    "f": "Personne en danger laissée sans aide.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal).",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -20,
+   "r": -12,
+   "txt": "Repêché en hypothermie par des passants, évacué par les pompiers."
+  }
+ },
+ "foule": {
+  "t": "Mouvement de foule",
+  "zones": [
+   "piste",
+   "vip"
+  ],
+  "dl": 18,
+  "desc": "Le DJ annonce son dernier morceau : la foule pousse vers la scène, des gens sont écrasés contre les barrières.",
+  "o": [
+   {
+    "t": "Faire couper la musique via le DJ, annoncer au micro de reculer, sortir les personnes écrasées par les côtés",
+    "s": 10,
+    "r": 3,
+    "g": "Couper le son et parler au micro : le geste qui arrête une poussée de foule.",
+    "b": 14
+   },
+   {
+    "t": "Pousser la foule en arrière à plusieurs agents",
+    "s": -8,
+    "f": "Pousser une foule compacte aggrave l'écrasement.",
+    "law": "La régulation de foule se fait par l'information et la baisse de pression, jamais par la force.",
+    "b": 10
+   },
+   {
+    "t": "Attendre la fin du morceau",
+    "s": -10,
+    "txt": "Une cliente fait un malaise contre la barrière.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -14,
+   "r": -8,
+   "txt": "Plusieurs personnes blessées contre les barrières."
+  }
+ },
+ "faux": {
+  "t": "Panique : un pistolet ?!",
+  "zones": [
+   "piste"
+  ],
+  "dl": 16,
+  "desc": "Un client hurle « il y a un flingue ! » : une des futures mariées brandit un pistolet en plastique pour une photo. Des gens se jettent au sol.",
+  "o": [
+   {
+    "t": "S'approcher calmement, vérifier que c'est un jouet, le récupérer pour le vestiaire, faire annoncer au micro que tout va bien",
+    "s": 8,
+    "r": 3,
+    "g": "Levée de doute rapide et annonce rassurante : la panique retombe.",
+    "b": 10
+   },
+   {
+    "t": "Plaquer la femme au sol",
+    "s": -6,
+    "r": -8,
+    "f": "Usage de la force sur une cliente qui tenait un jouet.",
+    "law": "La force doit être nécessaire et proportionnée (art. 122-5 Code pénal) : vérifier d'abord.",
+    "b": 10
+   },
+   {
+    "t": "Faire évacuer toute la salle",
+    "s": -6,
+    "r": -5,
+    "txt": "Évacuation inutile, bousculade dans l'escalier, soirée gâchée.",
+    "b": 12
+   }
+  ],
+  "fail": {
+   "s": -10,
+   "r": -6,
+   "txt": "Quelqu'un a appelé la police : intervention armée en pleine salle pour… un jouet."
+  }
+ },
+ "fuite": {
+  "t": "Fuite d'eau aux toilettes",
+  "zones": [
+   "toilettes"
+  ],
+  "dl": 24,
+  "desc": "Un lavabo arraché : l'eau coule sur le carrelage jusque dans le couloir, près d'une multiprise.",
+  "o": [
+   {
+    "t": "Couper l'arrivée d'eau, faire couper l'électricité de la zone, baliser le sol glissant, prévenir le gérant",
+    "s": 7,
+    "r": 2,
+    "g": "Eau + électricité : on coupe tout, on balise. Réflexe sécurité.",
+    "b": 12
+   },
+   {
+    "t": "Mettre des serviettes par terre et continuer",
+    "s": -5,
+    "txt": "Une cliente glisse et se fracture le poignet.",
+    "b": 4
+   },
+   {
+    "t": "Fermer les toilettes à clé toute la nuit sans rien dire",
+    "s": -2,
+    "r": -4,
+    "txt": "Les clients vont uriner dehors… et contre l'issue de secours.",
+    "b": 3
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "txt": "Court-circuit : coupure de courant dans toute la zone et une cliente blessée en glissant."
+  }
+ },
+ "objet": {
+  "t": "Sac abandonné",
+  "zones": [
+   "piste",
+   "bar",
+   "vestiaire"
+  ],
+  "dl": 22,
+  "desc": "Un sac à dos noir est posé contre un pilier depuis une heure. Personne ne le réclame. Le plan Vigipirate est au niveau « urgence attentat ».",
+  "o": [
+   {
+    "t": "Ne pas le toucher, faire un appel au micro pour retrouver le propriétaire, éloigner les clients autour, appeler le 17 si personne ne se manifeste",
+    "s": 8,
+    "r": 2,
+    "g": "Colis suspect : on ne touche pas, on éloigne, on alerte. La police décide de la suite.",
+    "b": 14
+   },
+   {
+    "t": "L'ouvrir pour voir ce qu'il y a dedans",
+    "s": -10,
+    "f": "Manipulation d'un colis suspect.",
+    "law": "Consigne Vigipirate : ne jamais toucher ni ouvrir un objet suspect, alerter le 17.",
+    "b": 8
+   },
+   {
+    "t": "Le déposer au vestiaire avec les objets trouvés",
+    "s": -6,
+    "f": "Colis suspect déplacé au milieu des vêtements.",
+    "law": "On ne déplace pas un objet suspect : périmètre et alerte.",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -4,
+   "txt": "Un client affolé crie « une bombe ! » : bousculade vers la sortie. C'était un sac oublié… mais trois blessés légers."
+  }
+ },
+ "epilepsie": {
+  "t": "Crise d'épilepsie",
+  "zones": [
+   "piste"
+  ],
+  "dl": 16,
+  "q": "sst",
+  "desc": "Sous les stroboscopes, une cliente s'effondre et convulse. Ses amies hurlent.",
+  "o": [
+   {
+    "t": "Faire couper les stroboscopes, écarter la foule et les objets, protéger sa tête sans la maintenir, chronométrer la crise, appeler le 15, PLS après",
+    "s": 9,
+    "r": 4,
+    "g": "Couper la cause, protéger sans contraindre, chronométrer : gestes parfaits.",
+    "b": 18,
+    "q": 1
+   },
+   {
+    "t": "Lui mettre quelque chose dans la bouche pour qu'elle ne avale pas sa langue",
+    "s": -8,
+    "f": "Objet mis dans la bouche pendant une crise.",
+    "law": "Idée reçue dangereuse : on ne met rien dans la bouche (dents cassées, étouffement).",
+    "b": 10
+   },
+   {
+    "t": "La porter dehors immédiatement",
+    "s": -6,
+    "f": "Personne en crise déplacée.",
+    "law": "Pendant la crise, on protège sur place ; on ne transporte pas.",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "s": -10,
+   "r": -5,
+   "txt": "Elle s'est cogné la tête contre une marche pendant la crise."
+  }
+ },
+ "coma": {
+  "t": "Défi des 10 shots",
+  "zones": [
+   "bar",
+   "vip"
+  ],
+  "dl": 16,
+  "q": "sst",
+  "desc": "Un groupe filme un jeune qui vient d'enchaîner 10 shots pour un défi. Il s'effondre, ne réagit presque plus et vomit.",
+  "o": [
+   {
+    "t": "PLS, appeler le 15 en précisant l'alcool ingéré, rester avec lui, et faire arrêter le service au groupe",
+    "s": 9,
+    "r": 4,
+    "g": "Coma éthylique possible : PLS, 15, surveillance. Et on arrête la source.",
+    "b": 20,
+    "q": 1
+   },
+   {
+    "t": "Lui faire boire du café salé pour le faire vomir",
+    "s": -10,
+    "f": "Faire vomir une personne à moitié inconsciente.",
+    "law": "Risque d'étouffement : aucun remède de grand-mère, seulement PLS et 15.",
+    "b": 8
+   },
+   {
+    "t": "Le laisser cuver sur une banquette",
+    "s": -12,
+    "f": "Personne en coma éthylique laissée sans surveillance.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal).",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -16,
+   "r": -10,
+   "txt": "Retrouvé inconscient une heure plus tard : réanimation."
+  }
+ },
+ "racket": {
+  "t": "Racket aux toilettes",
+  "zones": [
+   "toilettes"
+  ],
+  "dl": 18,
+  "desc": "Un jeune client sort des toilettes en tremblant : trois types l'ont coincé et lui ont pris 80 € et sa montre.",
+  "o": [
+   {
+    "t": "Mettre la victime à l'abri, repérer le groupe, le retenir à la sortie sans violence avec plusieurs agents, appeler le 17",
+    "s": 7,
+    "r": 6,
+    "g": "Extorsion en flagrant délit : on protège la victime, on retient les auteurs pour la police.",
+    "b": 18
+   },
+   {
+    "t": "Aller récupérer l'argent de force dans leurs poches",
+    "s": -6,
+    "r": -4,
+    "f": "Fouille et reprise de force.",
+    "law": "Même pour rendre l'argent, pas de fouille : c'est la police qui saisit.",
+    "b": 12
+   },
+   {
+    "t": "Dire au jeune de porter plainte demain",
+    "s": -4,
+    "r": -6,
+    "txt": "Le groupe recommence sur un autre client une heure plus tard.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -8,
+   "txt": "Le groupe a racketté deux autres clients avant de partir."
+  }
+ },
+ "serveuse": {
+  "t": "Serveuse harcelée",
+  "zones": [
+   "vip"
+  ],
+  "dl": 20,
+  "desc": "Au carré VIP, un gros client met la main aux fesses d'une serveuse à chaque passage. Elle vient te voir en larmes.",
+  "o": [
+   {
+    "t": "Retirer la serveuse du carré, signifier au client qu'il est exclu, lui proposer de porter plainte, prévenir le gérant",
+    "s": 6,
+    "r": 6,
+    "g": "Le personnel aussi doit être protégé : l'employeur a une obligation de sécurité envers ses salariés.",
+    "b": 14,
+    "sat": -2
+   },
+   {
+    "t": "Lui demander de supporter, c'est un très gros client",
+    "r": -10,
+    "f": "Agression sexuelle sur une salariée tolérée.",
+    "law": "Agression sexuelle (art. 222-22 Code pénal) et obligation de sécurité de l'employeur (Code du travail).",
+    "b": 2
+   },
+   {
+    "t": "Lui dire de changer de zone et ne rien dire au client",
+    "r": -5,
+    "txt": "Le client recommence avec une autre serveuse.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "r": -8,
+   "txt": "La serveuse a démissionné le lendemain et porte plainte contre l'établissement."
+  }
+ },
+ "laser": {
+  "t": "Pointeur laser",
+  "zones": [
+   "piste"
+  ],
+  "dl": 22,
+  "desc": "Un client s'amuse à pointer un laser vert puissant dans les yeux du DJ et des danseurs.",
+  "o": [
+   {
+    "t": "Lui demander de le ranger et de le déposer au vestiaire jusqu'à la sortie ; exclusion s'il recommence",
+    "s": 5,
+    "r": 3,
+    "g": "Les lasers puissants peuvent brûler la rétine : on retire l'objet par la discussion.",
+    "b": 8
+   },
+   {
+    "t": "Lui arracher le laser des mains",
+    "s": -2,
+    "r": -3,
+    "txt": "Il crie au vol devant tout le monde.",
+    "b": 6
+   },
+   {
+    "t": "Laisser, ça fait partie du show",
+    "s": -6,
+    "txt": "Le DJ a une tache dans l'œil : consultation en urgence ophtalmo.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -5,
+   "r": -3,
+   "txt": "Un danseur a été ébloui et est tombé de son podium."
+  }
+ },
+ "live": {
+  "t": "Live sur les réseaux",
+  "zones": [
+   "piste",
+   "vip"
+  ],
+  "dl": 24,
+  "desc": "Une influenceuse filme en direct les clients de près, se moque d'eux et zoome sur une cliente qui ne veut pas être filmée.",
+  "o": [
+   {
+    "t": "Lui demander poliment d'arrêter de filmer les personnes qui refusent, rappeler le règlement intérieur, exclure si elle continue",
+    "r": 5,
+    "g": "Droit à l'image des clients : on fait respecter le règlement par le dialogue.",
+    "b": 8
+   },
+   {
+    "t": "Lui prendre le téléphone",
+    "r": -8,
+    "f": "Téléphone saisi de force.",
+    "law": "On ne s'empare jamais du bien d'un client : vol ou violence.",
+    "b": 6
+   },
+   {
+    "t": "Laisser faire, c'est de la pub gratuite",
+    "r": -6,
+    "txt": "La cliente filmée porte plainte pour atteinte à son droit à l'image.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "r": -6,
+   "txt": "La vidéo moqueuse fait 200 000 vues. Plusieurs clients ne reviendront pas."
+  }
+ },
+ "fumigene": {
+  "t": "Fumigène dans la fosse",
+  "zones": [
+   "piste"
+  ],
+  "dl": 16,
+  "desc": "Des fans allument un fumigène rouge au milieu de la fosse. Fumée épaisse, des gens toussent.",
+  "o": [
+   {
+    "t": "Faire évacuer la zone autour, faire couper le concert, éteindre le fumigène dans un seau de sable, ventiler, repérer l'auteur",
+    "s": 8,
+    "r": 2,
+    "g": "Pyrotechnie en lieu clos : on met les gens à distance, on neutralise, on ventile.",
+    "b": 14
+   },
+   {
+    "t": "Le prendre à mains nues pour le jeter dehors",
+    "s": -6,
+    "txt": "Ton agent se brûle sérieusement la main.",
+    "f": "Fumigène manipulé sans protection (plus de 1 000 °C).",
+    "law": "Un fumigène se neutralise dans le sable ou un seau, avec des gants, pas à la main.",
+    "b": 16,
+    "gl": -1
+   },
+   {
+    "t": "Laisser brûler, ça va s'éteindre",
+    "s": -12,
+    "txt": "La fumée déclenche l'alarme : évacuation générale en panique.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -14,
+   "r": -6,
+   "txt": "Intoxications à la fumée et bousculade vers la sortie."
+  }
+ },
+ "ascenseur": {
+  "t": "Clients coincés dans l'ascenseur",
+  "zones": [
+   "vestiaire"
+  ],
+  "dl": 24,
+  "desc": "L'ascenseur qui monte au toit est bloqué entre deux étages avec six clients dedans. L'une d'elles panique.",
+  "o": [
+   {
+    "t": "Leur parler par l'interphone pour les rassurer, appeler le dépanneur d'ascenseur, appeler le 18 si quelqu'un fait un malaise, ne pas forcer les portes",
+    "s": 7,
+    "r": 3,
+    "g": "On rassure et on appelle les professionnels : jamais de désincarcération improvisée.",
+    "b": 16
+   },
+   {
+    "t": "Forcer les portes avec un pied-de-biche",
+    "s": -12,
+    "f": "Ouverture forcée d'une cabine bloquée entre deux étages.",
+    "law": "Risque de chute dans la gaine : seuls l'ascensoriste ou les pompiers interviennent.",
+    "b": 12
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "r": -6,
+   "txt": "Une heure bloqués sans nouvelles : malaise d'une cliente, pompiers appelés en urgence."
+  }
+ },
+ "jackpot": {
+  "t": "Litige au jackpot",
+  "zones": [
+   "piste"
+  ],
+  "dl": 24,
+  "desc": "Un joueur hurle que la machine lui doit 5 000 € : l'écran a affiché un gain puis s'est éteint. Il refuse de quitter la machine.",
+  "o": [
+   {
+    "t": "Faire appeler le directeur des jeux et le technicien, sécuriser la machine (personne n'y touche), rester calme auprès du joueur",
+    "s": 6,
+    "r": 4,
+    "g": "Litige de jeu : la direction des jeux et le contrôle des machines tranchent, la sécurité garde la machine en l'état.",
+    "b": 14
+   },
+   {
+    "t": "Débrancher la machine pour régler le problème",
+    "s": -4,
+    "r": -6,
+    "f": "Preuve du litige effacée.",
+    "law": "Les machines sont sous contrôle réglementaire : on ne touche à rien avant vérification.",
+    "b": 6
+   },
+   {
+    "t": "Le sortir du casino parce qu'il crie",
+    "r": -6,
+    "txt": "Il revient avec un avocat, et l'histoire fait la une du journal local.",
+    "b": 10
+   }
+  ],
+  "fail": {
+   "r": -6,
+   "txt": "Le joueur a cassé l'écran de la machine."
+  }
+ },
+ "feucamp": {
+  "t": "Feu de camp sur la plage",
+  "zones": [
+   "secours"
+  ],
+  "dl": 22,
+  "desc": "Des clients ont allumé un feu avec des palettes sur la plage, juste derrière les paillotes en bois. Le vent souffle.",
+  "o": [
+   {
+    "t": "Faire éteindre le feu avec les extincteurs et du sable, éloigner les clients, prévenir le gérant",
+    "s": 7,
+    "r": 2,
+    "g": "Feu sauvage près de structures en bois par vent fort : on éteint tout de suite.",
+    "b": 12
+   },
+   {
+    "t": "Laisser, c'est l'ambiance plage",
+    "s": -10,
+    "f": "Feu toléré près des installations.",
+    "law": "Les feux sur la plage sont en général interdits par arrêté, et la paillote est un ERP à protéger.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -16,
+   "r": -8,
+   "txt": "Une paillote a pris feu. Les pompiers interviennent."
+  }
+ },
+ "cave": {
+  "t": "Client dans la cave",
+  "zones": [
+   "vestiaire"
+  ],
+  "dl": 22,
+  "desc": "Un client éméché est descendu à la cave par l'escalier raide « pour chercher des toilettes ». On entend du bruit de casse.",
+  "o": [
+   {
+    "t": "Descendre le chercher en allumant tout, vérifier qu'il n'est pas blessé, le remonter, fermer la cave à clé",
+    "s": 6,
+    "r": 2,
+    "g": "Zone interdite au public : on récupère la personne et on sécurise l'accès.",
+    "b": 10
+   },
+   {
+    "t": "Fermer la porte de la cave à clé avec lui dedans pour lui « donner une leçon »",
+    "s": -12,
+    "f": "Client enfermé volontairement.",
+    "law": "Séquestration (art. 224-1 Code pénal) : on n'enferme jamais quelqu'un.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "txt": "Il est tombé dans l'escalier de la cave : poignet cassé, et il a vidé deux bouteilles."
+  }
+ },
+ "barman": {
+  "t": "Le barman sert trop",
+  "zones": [
+   "bar"
+  ],
+  "dl": 26,
+  "desc": "Un barman enchaîne les tournées de shots offertes à un groupe déjà très éméché : « c'est des potes ».",
+  "o": [
+   {
+    "t": "Lui demander d'arrêter le service à ce groupe, informer le gérant, proposer de l'eau au groupe",
+    "s": 6,
+    "r": 2,
+    "g": "Servir une personne ivre engage l'établissement : l'agent alerte, le gérant tranche.",
+    "b": 10
+   },
+   {
+    "t": "Ne rien dire, ce n'est pas ton rôle",
+    "s": -6,
+    "f": "Personnes manifestement ivres resservies sous tes yeux.",
+    "law": "Code de la santé publique : interdit de servir une personne manifestement ivre. C'est l'établissement qui en répond.",
+    "b": 2
+   },
+   {
+    "t": "Engueuler le barman devant les clients",
+    "r": -4,
+    "txt": "Clash public entre employés, le gérant n'apprécie pas du tout.",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "txt": "Le groupe finit ivre mort : un malaise et une bagarre plus tard."
+  }
+ },
+ "pickpockets": {
+  "t": "Pickpockets en équipe",
+  "zones": [
+   "piste",
+   "bar"
+  ],
+  "dl": 22,
+  "desc": "Trois personnes frôlent les clients sur la piste ; deux sacs ont déjà été ouverts.",
+  "o": [
+   {
+    "t": "Les suivre discrètement, prévenir les autres agents, appeler le 17 et les retenir à la sortie si un vol est constaté",
+    "s": 7,
+    "r": 4,
+    "g": "Surveillance, alerte, appréhension en flagrant délit (art. 73 Code de procédure pénale).",
+    "b": 18
+   },
+   {
+    "t": "Les fouiller de force sur la piste",
+    "s": -3,
+    "r": -6,
+    "f": "Fouille forcée par des agents privés.",
+    "law": "Seuls policiers et gendarmes peuvent fouiller. L'agent appréhende en flagrant délit et attend la police.",
+    "b": 10
+   },
+   {
+    "t": "Les mettre dehors sans rien dire",
+    "r": -3,
+    "txt": "Ils repartent avec trois portefeuilles.",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "r": -7,
+   "txt": "Une dizaine de plaintes pour vol le lendemain, avis catastrophiques en ligne."
+  }
+ },
+ "evg": {
+  "t": "Enterrement de vie de garçon déchaîné",
+  "zones": [
+   "piste",
+   "vip"
+  ],
+  "dl": 24,
+  "desc": "Le futur marié, en costume de bébé, est porté à bout de bras par ses potes, qui renversent tout sur leur passage.",
+  "o": [
+   {
+    "t": "Parler au témoin (le plus sobre), fixer les règles : on le pose, on se calme, sinon c'est la sortie",
+    "s": 4,
+    "r": 5,
+    "g": "On s'appuie sur le meneur du groupe : recadrage efficace sans exclusion.",
+    "b": 8
+   },
+   {
+    "t": "Les sortir tous immédiatement",
+    "r": -4,
+    "txt": "Gros groupe, grosse dépense au bar : le gérant râle, et l'exclusion était disproportionnée.",
+    "b": 14
+   },
+   {
+    "t": "Les laisser faire, c'est la fête",
+    "s": -6,
+    "txt": "Le futur marié tombe et se casse le nez sur une table.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "r": -3,
+   "txt": "Table renversée, deux clientes blessées par du verre."
+  }
+ },
+ "photo": {
+  "t": "Photos sous les jupes",
+  "zones": [
+   "piste",
+   "bar"
+  ],
+  "dl": 20,
+  "desc": "Une cliente a surpris un homme qui glissait son téléphone sous sa jupe pour la filmer. Deux amies ont vu la scène.",
+  "o": [
+   {
+    "t": "Retenir l'homme sans violence, mettre la victime à l'abri, appeler le 17 et ne pas toucher au téléphone (preuve)",
+    "s": 7,
+    "r": 7,
+    "g": "Voyeurisme en flagrant délit : on retient l'auteur pour la police, le téléphone est une preuve.",
+    "b": 18
+   },
+   {
+    "t": "Lui prendre le téléphone et effacer les vidéos",
+    "s": -3,
+    "r": -4,
+    "f": "Preuve détruite et téléphone saisi de force.",
+    "law": "Le voyeurisme est un délit (art. 226-3-1 Code pénal). Effacer les images fait disparaître la preuve : c'est à la police de saisir le téléphone.",
+    "b": 10
+   },
+   {
+    "t": "Le mettre simplement dehors",
+    "r": -6,
+    "f": "Auteur présumé d'un délit sexuel laissé repartir.",
+    "law": "Flagrant délit puni d'emprisonnement : l'auteur peut être retenu et remis à la police (art. 73 Code de procédure pénale).",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "r": -8,
+   "txt": "L'homme est parti. La victime raconte tout sur les réseaux sociaux."
+  }
+ },
+ "vomi": {
+  "t": "Client qui vomit sur la piste",
+  "zones": [
+   "piste",
+   "bar"
+  ],
+  "dl": 24,
+  "q": "sst",
+  "desc": "Un client vomit au milieu de la piste, il tient à peine debout. Ses amis s'écartent en riant.",
+  "o": [
+   {
+    "t": "L'accompagner aux toilettes, le faire asseoir, lui donner de l'eau, surveiller son état, faire nettoyer et baliser la zone",
+    "s": 6,
+    "r": 3,
+    "g": "Prise en charge et surveillance : un client dans cet état peut vite basculer vers le coma éthylique.",
+    "b": 14,
+    "q": 1
+   },
+   {
+    "t": "Le sortir tout de suite sur le trottoir",
+    "s": -8,
+    "f": "Client très alcoolisé laissé seul dehors.",
+    "law": "Risque de chute, d'hypothermie ou d'étouffement : non-assistance possible (art. 223-6 Code pénal).",
+    "b": 6
+   },
+   {
+    "t": "Laisser ses amis s'en occuper",
+    "s": -4,
+    "r": -3,
+    "txt": "Ses amis l'oublient dans un coin, il glisse dans son vomi et se coupe.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "r": -4,
+   "txt": "Personne n'a nettoyé : trois clients ont glissé sur la piste."
+  }
+ },
+ "chaleur": {
+  "t": "Coup de chaleur",
+  "zones": [
+   "piste",
+   "vip"
+  ],
+  "dl": 20,
+  "q": "sst",
+  "desc": "Il fait plus de 35 °C sur la piste. Une danseuse devient pâle, a des vertiges et des crampes.",
+  "o": [
+   {
+    "t": "L'emmener dans une zone fraîche, l'allonger, lui faire boire de l'eau par petites gorgées, appeler le 15 si elle ne va pas mieux, prévenir le gérant pour la clim",
+    "s": 7,
+    "r": 4,
+    "g": "Fraîcheur, eau, surveillance, et on agit sur la cause.",
+    "b": 14,
+    "q": 1
+   },
+   {
+    "t": "Lui offrir un verre d'alcool fort pour la « remonter »",
+    "s": -8,
+    "f": "Alcool donné à une personne en malaise.",
+    "law": "L'alcool aggrave la déshydratation : gestes de secours inadaptés.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -4,
+   "txt": "Elle s'évanouit et se cogne la tête en tombant."
+  }
+ },
+ "angoisse": {
+  "t": "Crise d'angoisse",
+  "zones": [
+   "toilettes",
+   "fumoir",
+   "vip"
+  ],
+  "dl": 22,
+  "q": "sst",
+  "desc": "Une cliente respire très vite, a des fourmis dans les mains et dit qu'elle va mourir.",
+  "o": [
+   {
+    "t": "L'isoler au calme avec une amie, lui parler doucement, l'aider à ralentir sa respiration ; appeler le 15 en cas de doute",
+    "s": 6,
+    "r": 4,
+    "g": "Calme, réassurance et respiration lente. Et le 15 au moindre doute, car ça peut cacher autre chose.",
+    "b": 14,
+    "q": 1
+   },
+   {
+    "t": "Lui dire de se calmer et de rentrer chez elle",
+    "s": -6,
+    "r": -4,
+    "f": "Personne en détresse renvoyée seule.",
+    "law": "Une crise d'angoisse peut masquer une prise de drogue ou un problème cardiaque.",
+    "b": 3
+   }
+  ],
+  "fail": {
+   "s": -5,
+   "r": -3,
+   "txt": "Elle s'est effondrée en pleurs dans l'escalier, seule."
+  }
+ },
+ "allergie": {
+  "t": "Réaction allergique",
+  "zones": [
+   "bar",
+   "vip"
+  ],
+  "dl": 16,
+  "q": "sst",
+  "desc": "Après un cocktail, un client a les lèvres et le visage qui gonflent. Il respire mal. Il dit être allergique aux fruits à coque.",
+  "o": [
+   {
+    "t": "Appeler le 15 immédiatement, le faire asseoir, l'aider à utiliser son stylo d'adrénaline s'il en a un",
+    "s": 9,
+    "r": 5,
+    "g": "Choc allergique : le 15 tout de suite, et son auto-injecteur s'il en a un. Réflexe vital.",
+    "b": 20,
+    "q": 1
+   },
+   {
+    "t": "Lui donner de l'eau et attendre que ça passe",
+    "s": -14,
+    "f": "Œdème allergique non pris en charge.",
+    "law": "Une réaction allergique grave peut tuer en quelques minutes : alerte immédiate.",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -18,
+   "r": -10,
+   "txt": "Choc anaphylactique : évacué en urgence vitale par le SAMU."
+  }
+ },
+ "fauxbillets": {
+  "t": "Faux billets au bar",
+  "zones": [
+   "bar"
+  ],
+  "dl": 22,
+  "desc": "La barmaid te montre un billet de 50 € sans filigrane. Le client veut en payer encore deux autres.",
+  "o": [
+   {
+    "t": "Ne pas rendre le billet, rester calmement près du client, appeler le 17 et l'empêcher de partir en attendant (flagrant délit)",
+    "s": 6,
+    "r": 3,
+    "g": "Usage de fausse monnaie : délit, appréhension possible et remise à la police.",
+    "b": 16
+   },
+   {
+    "t": "Lui rendre le billet et le mettre dehors",
+    "r": -4,
+    "txt": "Il va payer avec ses faux billets dans le bar d'à côté.",
+    "b": 6
+   },
+   {
+    "t": "Le fouiller pour trouver les autres billets",
+    "s": -2,
+    "r": -4,
+    "f": "Fouille forcée.",
+    "law": "Seuls les policiers peuvent fouiller. L'agent retient l'auteur et attend la police.",
+    "b": 10
+   }
+  ],
+  "fail": {
+   "r": -5,
+   "txt": "Il a payé toute la soirée avec des faux billets : 300 € de perte."
+  }
+ },
+ "bouteille": {
+  "t": "Bouteille lancée",
+  "zones": [
+   "vip",
+   "piste"
+  ],
+  "dl": 18,
+  "desc": "Depuis le carré VIP, un client jette une bouteille vide sur la piste. Elle explose à côté de clients.",
+  "o": [
+   {
+    "t": "Identifier et exclure le lanceur en escorte à deux, vérifier s'il y a des blessés, faire nettoyer la zone",
+    "s": 7,
+    "r": 3,
+    "g": "Violence avec arme par destination : exclusion, soins, nettoyage. Et le 17 s'il y a un blessé.",
+    "b": 14
+   },
+   {
+    "t": "Lui laisser une chance, c'est un gros client du carré",
+    "s": -8,
+    "r": -5,
+    "f": "Violence tolérée parce que le client dépense beaucoup.",
+    "law": "Une bouteille lancée sur des personnes, c'est une violence avec arme par destination (art. 222-13 Code pénal).",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -10,
+   "r": -6,
+   "txt": "Une deuxième bouteille blesse une cliente au visage."
+  }
+ },
+ "filles": {
+  "t": "Bagarre entre clientes",
+  "need": 2,
+  "zones": [
+   "piste",
+   "toilettes"
+  ],
+  "dl": 20,
+  "desc": "Deux clientes se tirent les cheveux et se griffent près des toilettes. Leurs amies s'en mêlent.",
+  "o": [
+   {
+    "t": "Intervenir à deux, si possible avec une agente, séparer, isoler chaque groupe, faire sortir les plus agitées en décalé",
+    "s": 7,
+    "r": 3,
+    "g": "Même méthode que pour une bagarre d'hommes, et une agente rassure tout le monde.",
+    "b": 14
+   },
+   {
+    "t": "Les laisser régler ça entre elles, c'est moins dangereux",
+    "s": -8,
+    "txt": "Un verre se brise, une cliente est coupée au visage.",
+    "b": 2
+   },
+   {
+    "t": "Les jeter dehors toutes ensemble",
+    "s": -5,
+    "r": -3,
+    "txt": "La bagarre reprend aussitôt sur le trottoir.",
+    "b": 10
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -5,
+   "txt": "La bagarre s'est étendue : quatre personnes blessées."
+  }
+ },
+ "dj": {
+  "t": "Client qui menace le DJ",
+  "zones": [
+   "piste"
+  ],
+  "dl": 20,
+  "desc": "Un client furieux monte sur l'estrade du DJ parce qu'il refuse de passer sa musique. Il le saisit par le col.",
+  "o": [
+   {
+    "t": "Faire descendre le client en lui parlant fermement, escorte à deux hors de l'estrade, exclusion s'il continue",
+    "s": 7,
+    "r": 3,
+    "g": "On protège le DJ et le matériel, verbal ferme puis escorte.",
+    "b": 12
+   },
+   {
+    "t": "Le tirer violemment de l'estrade",
+    "s": -6,
+    "r": -4,
+    "f": "Chute provoquée depuis une hauteur.",
+    "law": "Force disproportionnée : il tombe sur les clients en contrebas.",
+    "b": 10
+   },
+   {
+    "t": "Demander au DJ de passer sa musique pour avoir la paix",
+    "r": -4,
+    "txt": "Dix autres clients montent demander leur morceau.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "r": -6,
+   "txt": "Platines renversées, musique coupée 20 minutes."
+  }
+ },
+ "seringue": {
+  "t": "Seringue trouvée",
+  "zones": [
+   "toilettes"
+  ],
+  "dl": 24,
+  "desc": "Un client signale une seringue usagée posée sur le rebord du lavabo.",
+  "o": [
+   {
+    "t": "Mettre des gants, ramasser avec une pince sans reboucher l'aiguille, la mettre dans un contenant rigide fermé, prévenir le gérant",
+    "s": 6,
+    "g": "Ne jamais reboucher une aiguille : contenant rigide et gants. Risque de VIH et d'hépatites.",
+    "b": 10,
+    "gl": 1
+   },
+   {
+    "t": "La jeter à la poubelle à mains nues",
+    "s": -6,
+    "txt": "Une femme de ménage se pique le lendemain matin : dépistage et traitement préventif.",
+    "f": "Déchet piquant jeté sans précaution.",
+    "b": 4,
+    "gl": -1
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "txt": "Un client s'est piqué la main en s'appuyant sur le lavabo."
+  }
+ },
+ "police": {
+  "t": "La police entre dans la salle",
+  "zones": [
+   "porte",
+   "piste"
+  ],
+  "dl": 20,
+  "desc": "Quatre policiers entrent : ils recherchent un homme soupçonné d'un vol avec violence dans la rue. Ils te demandent ton aide.",
+  "o": [
+   {
+    "t": "Les accueillir, faire rallumer un peu la lumière, les guider dans la salle, donner les infos utiles et garder l'accès aux issues",
+    "s": 7,
+    "r": 2,
+    "g": "Coopération totale avec les forces de l'ordre : c'est ton obligation et ton intérêt.",
+    "b": 14
+   },
+   {
+    "t": "Leur demander d'attendre la fin de la soirée pour ne pas gêner les clients",
+    "s": -6,
+    "r": -4,
+    "f": "Entrave à une intervention de police.",
+    "law": "Gêner une opération de police peut être poursuivi ; l'exploitant doit faciliter l'intervention.",
+    "b": 4
+   },
+   {
+    "t": "Prévenir discrètement le suspect, c'est un habitué",
+    "s": -15,
+    "r": -10,
+    "f": "Avertir un suspect recherché.",
+    "law": "Recel de malfaiteur / entrave à la justice (art. 434-6 Code pénal) : faute pénale grave.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -5,
+   "r": -4,
+   "txt": "Les policiers ont fouillé la salle seuls, dans la confusion."
+  }
+ },
+ "conjugal": {
+  "t": "Un homme frappe sa compagne",
+  "zones": [
+   "fumoir",
+   "porte"
+  ],
+  "dl": 16,
+  "desc": "Au fumoir, un homme gifle violemment sa compagne et la tire par le bras vers la sortie.",
+  "o": [
+   {
+    "t": "S'interposer à deux, mettre la femme à l'abri, retenir l'homme et appeler le 17 (flagrant délit)",
+    "s": 9,
+    "r": 7,
+    "g": "Violences conjugales en flagrant délit : protéger la victime, retenir l'auteur, alerter.",
+    "b": 20
+   },
+   {
+    "t": "Ne pas s'en mêler, c'est leur histoire de couple",
+    "s": -12,
+    "r": -10,
+    "f": "Violences sous tes yeux sans intervention.",
+    "law": "Violences conjugales (art. 222-13 Code pénal) : tout témoin peut et doit agir. Ne pas empêcher un délit contre l'intégrité d'une personne est puni (art. 223-6 Code pénal).",
+    "b": 2
+   },
+   {
+    "t": "Les mettre dehors tous les deux",
+    "s": -10,
+    "r": -6,
+    "f": "Victime renvoyée avec son agresseur.",
+    "law": "La victime doit être protégée, pas laissée avec l'auteur.",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -14,
+   "r": -10,
+   "txt": "Il l'a emmenée de force. Des clients ont appelé la police, qui demande pourquoi personne n'a rien fait."
+  }
+ },
+ "etincelles": {
+  "t": "Bouteille à étincelles",
+  "zones": [
+   "vip"
+  ],
+  "dl": 18,
+  "q": "ssiap",
+  "desc": "Au carré VIP, des serveuses arrivent avec des bouteilles surmontées de fontaines d'étincelles. Le plafond est recouvert de mousse acoustique.",
+  "o": [
+   {
+    "t": "Faire éteindre les étincelles tout de suite et prévenir le gérant : pas d'effets pyrotechniques sous ce plafond",
+    "s": 9,
+    "r": 1,
+    "g": "Plusieurs incendies mortels en discothèque ont commencé comme ça. Le gérant râle, mais tu as raison.",
+    "b": 8,
+    "q": 1
+   },
+   {
+    "t": "Laisser faire, c'est la tradition pour les grosses bouteilles",
+    "s": -12,
+    "f": "Effets pyrotechniques sous un plafond inflammable.",
+    "law": "Règlement de sécurité des ERP : flamme nue et pyrotechnie interdites sans autorisation et mesures particulières.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -22,
+   "r": -12,
+   "txt": "Le plafond s'est enflammé : évacuation d'urgence, plusieurs intoxiqués.",
+   "f": "Départ de feu causé par des étincelles."
+  }
+ },
+ "grivelerie": {
+  "t": "Client qui ne veut pas payer",
+  "zones": [
+   "bar",
+   "vip"
+  ],
+  "dl": 22,
+  "desc": "Un client a commandé une bouteille à 180 € au carré VIP et refuse maintenant de payer : « Je n'ai pas d'argent, et alors ? »",
+  "o": [
+   {
+    "t": "Le garder calmement près du bar, appeler le 17 pour filouterie, laisser le gérant gérer la note",
+    "s": 5,
+    "r": 3,
+    "g": "Consommer sans pouvoir payer, c'est une filouterie (art. 313-5 Code pénal) : on appelle la police, sans violence.",
+    "b": 16
+   },
+   {
+    "t": "Lui prendre sa montre en garantie",
+    "r": -6,
+    "f": "Bien saisi de force.",
+    "law": "Personne ne peut se faire justice soi-même : ça devient du vol ou de l'extorsion.",
+    "b": 8
+   },
+   {
+    "t": "Le laisser partir, tant pis",
+    "r": -2,
+    "txt": "180 € de perte, et il revient la semaine suivante.",
+    "b": 2,
+    "sat": -2
+   }
+  ],
+  "fail": {
+   "r": -3,
+   "txt": "Il est parti sans payer."
+  }
+ },
+ "homophobe": {
+  "t": "Agression homophobe",
+  "zones": [
+   "piste",
+   "fumoir"
+  ],
+  "dl": 18,
+  "desc": "Deux hommes qui s'embrassaient sont insultés et bousculés par un groupe : « Pas de ça ici ! »",
+  "o": [
+   {
+    "t": "Protéger le couple, exclure les agresseurs, proposer au couple d'appeler le 17 et de porter plainte, garder les témoignages",
+    "s": 7,
+    "r": 7,
+    "g": "Insultes et violences en raison de l'orientation sexuelle : protection des victimes et exclusion des auteurs.",
+    "b": 16
+   },
+   {
+    "t": "Demander au couple d'être plus discret",
+    "r": -10,
+    "f": "Victimes traitées comme responsables.",
+    "law": "Les infractions commises en raison de l'orientation sexuelle sont aggravées (art. 132-77 Code pénal). Refuser ou restreindre un service pour ce motif est une discrimination.",
+    "b": 4
+   },
+   {
+    "t": "Mettre tout le monde dehors",
+    "r": -6,
+    "s": -3,
+    "txt": "Le couple se fait agresser à nouveau sur le trottoir.",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -10,
+   "txt": "Le couple a été frappé. Plainte, et l'établissement est cité dans la presse."
+  }
+ },
+ "podium": {
+  "t": "Chute du podium",
+  "zones": [
+   "piste",
+   "vip"
+  ],
+  "dl": 20,
+  "q": "sst",
+  "desc": "Une cliente qui dansait sur un podium d'un mètre cinquante est tombée. Elle ne peut plus bouger la cheville et a mal au dos.",
+  "o": [
+   {
+    "t": "Ne pas la relever, la protéger de la foule, appeler le 15, faire interdire le podium pour la suite",
+    "s": 7,
+    "r": 3,
+    "g": "Victime immobilisée, alerte, et on supprime le danger.",
+    "b": 16,
+    "q": 1
+   },
+   {
+    "t": "La relever et l'asseoir sur une banquette",
+    "s": -8,
+    "f": "Victime d'une chute de hauteur déplacée.",
+    "law": "Après une chute avec douleur au dos, on ne bouge pas la victime.",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -5,
+   "txt": "Des clients l'ont relevée, elle repart en ambulance avec une fracture."
+  }
+ },
+ "rooftop": {
+  "t": "Client sur le garde-corps",
+  "zones": [
+   "vip"
+  ],
+  "dl": 16,
+  "hard": 0.1,
+  "desc": "Sur la terrasse du toit, un client éméché s'est assis sur le garde-corps pour un selfie, dos au vide, à six étages.",
+  "o": [
+   {
+    "t": "S'approcher calmement sans brusquer, lui parler, l'aider à redescendre côté terrasse, puis interdire l'accès à cette zone",
+    "s": 8,
+    "r": 3,
+    "g": "Approche calme, aide à redescendre, zone neutralisée : réflexe vital.",
+    "b": 10
+   },
+   {
+    "t": "L'attraper par surprise pour le tirer en arrière",
+    "s": -10,
+    "f": "Geste brusque au bord du vide.",
+    "law": "Un sursaut peut provoquer la chute : on approche en parlant, jamais par surprise.",
+    "b": 8
+   },
+   {
+    "t": "Lui crier de descendre depuis le bar",
+    "s": -4,
+    "txt": "Il sursaute, manque de basculer, ses amis le rattrapent de justesse.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -25,
+   "r": -15,
+   "txt": "Il a perdu l'équilibre. Chute mortelle. Enquête judiciaire sur la sécurité de la terrasse.",
+   "f": "Personne en danger de chute laissée sans intervention."
+  }
+ },
+ "sacvole": {
+  "t": "Sac volé",
+  "zones": [
+   "piste",
+   "bar"
+  ],
+  "dl": 22,
+  "desc": "Une cliente a vu son sac disparaître du dossier de sa chaise. La caméra du bar montre un homme en chemise blanche.",
+  "o": [
+   {
+    "t": "Repérer l'homme, le garder à vue près de la sortie, appeler le 17 et lui proposer de rendre le sac",
+    "s": 6,
+    "r": 5,
+    "g": "Vol en flagrant délit : surveillance, appel police, appréhension possible (art. 73 Code de procédure pénale).",
+    "b": 16
+   },
+   {
+    "t": "Le plaquer au sol dès qu'il est repéré",
+    "s": -6,
+    "r": -4,
+    "f": "Usage de la force sans nécessité.",
+    "law": "Retenir oui, plaquer violemment non : la force doit être nécessaire et proportionnée.",
+    "b": 10
+   },
+   {
+    "t": "Conseiller à la cliente de porter plainte demain",
+    "r": -5,
+    "txt": "Le voleur repart tranquillement avec le sac.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "r": -6,
+   "txt": "Le voleur est reparti avec le sac."
+  }
+ },
+ "triche": {
+  "t": "Soupçon de triche",
+  "zones": [
+   "vip"
+  ],
+  "dl": 24,
+  "desc": "Le chef de table signale un joueur qui marque les cartes pendant qu'un complice fait diversion.",
+  "o": [
+   {
+    "t": "Ne pas intervenir seul à la table : prévenir le directeur des jeux, faire surveiller par les caméras, inviter le joueur au bureau, appeler la police si la triche est confirmée",
+    "s": 6,
+    "r": 4,
+    "g": "Procédure casino : la direction des jeux décide, la sécurité accompagne, la police enquête.",
+    "b": 16
+   },
+   {
+    "t": "Le sortir de force et lui reprendre ses jetons",
+    "s": -4,
+    "r": -6,
+    "f": "Jetons saisis de force par la sécurité.",
+    "law": "La tricherie est une escroquerie : c'est une affaire de police. La sécurité ne confisque rien par la force.",
+    "b": 10
+   },
+   {
+    "t": "Laisser jouer, ça fait du chiffre",
+    "s": -6,
+    "r": -4,
+    "f": "Tricherie tolérée.",
+    "law": "Le casino doit signaler les fraudes : il risque son autorisation de jeux.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "r": -6,
+   "txt": "Les tricheurs repartent avec 8 000 € de gains."
+  }
+ },
+ "perdant": {
+  "t": "Joueur ruiné en détresse",
+  "zones": [
+   "piste",
+   "bar"
+  ],
+  "dl": 22,
+  "q": "sst",
+  "desc": "Un homme vient de perdre de très grosses sommes. Il pleure, puis crie qu'il va « tout casser » et qu'il « n'a plus de raison de vivre ».",
+  "o": [
+   {
+    "t": "L'isoler au calme, rester avec lui, appeler le 15 ; plus tard, l'informer de l'inscription volontaire aux interdits de jeux et de Joueurs Info Service",
+    "s": 8,
+    "r": 5,
+    "g": "Ne jamais laisser seule une personne qui parle de ne plus vouloir vivre : présence, alerte, orientation vers l'aide.",
+    "b": 20,
+    "q": 1
+   },
+   {
+    "t": "Le mettre dehors pour qu'il arrête de crier",
+    "s": -12,
+    "r": -6,
+    "f": "Personne en détresse mise dehors seule.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal).",
+    "b": 6
+   },
+   {
+    "t": "Lui offrir des jetons pour le calmer",
+    "s": -6,
+    "r": -8,
+    "f": "Incitation à rejouer d'un joueur en détresse.",
+    "law": "Les casinos ont une obligation de prévention du jeu excessif.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -12,
+   "r": -8,
+   "txt": "Il est parti seul, très mal. Sa famille contacte le casino le lendemain."
+  }
+ },
+ "slam": {
+  "t": "Slam et pogo violent",
+  "zones": [
+   "piste"
+  ],
+  "dl": 18,
+  "desc": "Pendant le concert, un spectateur saute de la scène dans la fosse. Le pogo devient violent, une fille est tombée au sol.",
+  "o": [
+   {
+    "t": "Faire relever immédiatement la personne au sol, la sortir par la barrière avant-scène, demander au régisseur une pause si ça continue",
+    "s": 8,
+    "r": 3,
+    "g": "Personne au sol = priorité absolue en fosse. La barrière avant-scène sert à ça.",
+    "b": 14
+   },
+   {
+    "t": "Tirer les slameurs par les jambes pour les faire descendre",
+    "s": -8,
+    "f": "Chute provoquée sur la foule.",
+    "law": "Force inadaptée : risque de chute de hauteur sur les spectateurs.",
+    "b": 10
+   },
+   {
+    "t": "Laisser faire, c'est un concert de rock",
+    "s": -10,
+    "txt": "La fille au sol est piétinée : fracture du bras.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -12,
+   "r": -6,
+   "txt": "Une spectatrice piétinée, évacuée par les pompiers."
+  }
+ },
+ "alarme": {
+  "t": "Alarme incendie déclenchée",
+  "zones": [
+   "vestiaire",
+   "toilettes"
+  ],
+  "dl": 18,
+  "q": "ssiap",
+  "desc": "L'alarme incendie retentit. Le tableau indique un détecteur déclenché côté toilettes. Sûrement une cigarette… ou pas.",
+  "o": [
+   {
+    "t": "Faire la levée de doute sur place, évacuer si feu confirmé ou s'il y a un doute, prévenir le 18, ne jamais couper l'alarme sans vérifier",
+    "s": 8,
+    "r": 2,
+    "g": "Levée de doute puis consigne d'évacuation : la règle en ERP.",
+    "b": 12,
+    "q": 1
+   },
+   {
+    "t": "Couper l'alarme depuis le tableau, c'est sûrement une cigarette",
+    "s": -14,
+    "f": "Alarme neutralisée sans levée de doute.",
+    "law": "Règlement de sécurité ERP : toute alarme doit être vérifiée ; la couper à l'aveugle est une faute grave.",
+    "b": 2
+   },
+   {
+    "t": "Faire évacuer tout le monde sans savoir où ça a sonné",
+    "s": -2,
+    "r": -4,
+    "txt": "Évacuation pour une cigarette : bon réflexe sur le principe, mais désorganisée et coûteuse.",
+    "b": 12
+   }
+  ],
+  "fail": {
+   "s": -12,
+   "r": -5,
+   "txt": "Personne n'a vérifié : le feu couvait dans un faux plafond."
+  }
+ },
+ "agentboit": {
+  "t": "Un agent boit au bar",
+  "zones": [
+   "bar"
+  ],
+  "dl": 24,
+  "desc": "Le barman te prévient : un de tes agents enchaîne les verres offerts par des clients depuis une heure.",
+  "o": [
+   {
+    "t": "Le retirer de son poste, le faire remplacer, le renvoyer chez lui en taxi et faire un rapport au gérant",
+    "s": 6,
+    "r": 2,
+    "g": "Un agent alcoolisé en service est un danger pour tous : on le retire, on le remplace, on rend compte.",
+    "b": 14
+   },
+   {
+    "t": "Lui dire de ralentir et le laisser en poste",
+    "s": -8,
+    "f": "Agent alcoolisé maintenu en service.",
+    "law": "Code de déontologie de la sécurité privée : l'agent doit être apte et maître de lui pendant le service.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -10,
+   "r": -6,
+   "txt": "Ton agent ivre a frappé un client. Plainte, et il risque sa carte professionnelle."
+  }
+ },
+ "ghbhomme": {
+  "t": "Un homme drogué à son insu",
+  "zones": [
+   "bar",
+   "piste"
+  ],
+  "dl": 18,
+  "q": "sst",
+  "desc": "Un jeune homme devient soudain confus, a des trous de mémoire et ne tient plus debout. Ses amis jurent qu'il n'a bu qu'une bière.",
+  "o": [
+   {
+    "t": "Le mettre à l'abri avec ses amis, appeler le 15, garder son verre pour la police et prévenir le 17",
+    "s": 8,
+    "r": 5,
+    "g": "La soumission chimique touche aussi les hommes : même protocole.",
+    "b": 20,
+    "q": 1
+   },
+   {
+    "t": "C'est un homme, il a juste trop bu : on le sort",
+    "s": -10,
+    "r": -6,
+    "f": "Signes de soumission chimique ignorés.",
+    "law": "Administrer une substance à l'insu d'une personne est un délit (art. 222-15-1 Code pénal), quel que soit le sexe de la victime.",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -12,
+   "r": -8,
+   "txt": "Retrouvé inconscient, sans portefeuille ni téléphone, sur le parking."
+  }
+ },
+ "accusation": {
+  "t": "Deux versions qui s'opposent",
+  "zones": [
+   "piste",
+   "bar"
+  ],
+  "dl": 22,
+  "desc": "Une cliente accuse un homme de l'avoir agressée ; lui jure qu'il n'a rien fait. Personne n'a rien vu clairement.",
+  "o": [
+   {
+    "t": "Séparer les deux, mettre la cliente à l'abri, garder l'homme sur place calmement, appeler le 17 et ne pas juger : c'est à la police d'établir les faits",
+    "s": 7,
+    "r": 5,
+    "g": "On protège, on préserve les faits, on alerte. L'enquête n'est pas le travail de la sécurité.",
+    "b": 18
+   },
+   {
+    "t": "Croire l'homme, il a l'air sympa, et le laisser partir",
+    "s": -4,
+    "r": -8,
+    "f": "Plainte d'agression ignorée.",
+    "law": "Toute dénonciation d'agression doit être prise au sérieux et transmise à la police.",
+    "b": 4
+   },
+   {
+    "t": "Frapper l'homme pour le faire avouer",
+    "s": -10,
+    "r": -8,
+    "f": "Violences sur une personne mise en cause.",
+    "law": "Violences volontaires (art. 222-11 Code pénal) : personne ne se fait justice soi-même.",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "r": -8,
+   "txt": "L'homme est reparti. La cliente porte plainte et met en cause l'inaction de l'équipe."
+  }
+ },
+ "disparue": {
+  "t": "Une amie a disparu",
+  "zones": [
+   "piste",
+   "toilettes"
+  ],
+  "dl": 22,
+  "desc": "Une cliente affolée : son amie, très ivre, est partie avec un inconnu il y a 30 minutes et ne répond plus.",
+  "o": [
+   {
+    "t": "Faire le tour de toutes les zones, regarder les caméras de la sortie, demander aux agents de la porte, appeler le 17 si elle reste introuvable",
+    "s": 7,
+    "r": 5,
+    "g": "Recherche méthodique et alerte rapide : chaque minute compte.",
+    "b": 18
+   },
+   {
+    "t": "Lui dire que son amie est majeure et fait ce qu'elle veut",
+    "s": -8,
+    "r": -8,
+    "f": "Signalement d'une personne vulnérable ignoré.",
+    "law": "Une personne très alcoolisée partie avec un inconnu peut être en danger : il faut chercher et alerter.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -10,
+   "r": -8,
+   "txt": "Elle a été retrouvée au petit matin, en état de choc. La police enquête."
+  }
+ },
+ "gaz": {
+  "t": "Odeur de gaz",
+  "zones": [
+   "vestiaire",
+   "bar"
+  ],
+  "dl": 16,
+  "q": "ssiap",
+  "desc": "Forte odeur de gaz près de la cuisine du snack. Un employé dit avoir entendu un sifflement.",
+  "o": [
+   {
+    "t": "Ne toucher à aucun interrupteur, ouvrir les accès, faire évacuer dans le calme, couper le gaz à la vanne si possible, appeler le 18",
+    "s": 10,
+    "r": 3,
+    "g": "Fuite de gaz : zéro étincelle, évacuation, coupure, pompiers. Parfait.",
+    "b": 16,
+    "q": 1
+   },
+   {
+    "t": "Allumer la lumière de la cuisine pour trouver la fuite",
+    "s": -16,
+    "f": "Interrupteur actionné dans une atmosphère gazeuse.",
+    "law": "Une étincelle peut provoquer une explosion : on ne touche à rien d'électrique.",
+    "b": 10
+   }
+  ],
+  "fail": {
+   "s": -22,
+   "r": -12,
+   "txt": "Explosion dans la cuisine. Deux employés brûlés, établissement fermé."
+  }
+ },
+ "garde": {
+  "t": "Le garde du corps",
+  "zones": [
+   "vip",
+   "piste"
+  ],
+  "dl": 20,
+  "desc": "Le garde du corps d'un rappeur connu bouscule violemment les clients qui veulent faire un selfie et en jette un par terre.",
+  "o": [
+   {
+    "t": "Aller voir le garde du corps calmement, rappeler qu'il n'a pas plus de droits que quiconque, proposer de créer un périmètre avec ton équipe, s'occuper du client tombé",
+    "s": 7,
+    "r": 4,
+    "g": "Un garde du corps privé n'a aucun pouvoir sur les autres clients : on coopère, mais on fait respecter les règles.",
+    "b": 14
+   },
+   {
+    "t": "Le laisser faire, c'est la star de la soirée",
+    "s": -6,
+    "r": -6,
+    "f": "Violences d'un garde du corps tolérées.",
+    "law": "Un agent de protection rapprochée ne peut pas user de la force contre des tiers hors légitime défense.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "r": -6,
+   "txt": "Un client blessé porte plainte contre l'établissement et le garde du corps."
+  }
+ },
+ "agentmalaise": {
+  "t": "Un de tes agents fait un malaise",
+  "zones": [
+   "piste",
+   "porte"
+  ],
+  "dl": 18,
+  "q": "sst",
+  "desc": "Après des heures debout dans la chaleur sans boire, un de tes agents s'effondre près de la piste.",
+  "o": [
+   {
+    "t": "Le mettre au frais, l'allonger, lui faire boire de l'eau s'il est conscient, appeler le 15 si besoin, le remplacer et revoir les pauses de l'équipe",
+    "s": 7,
+    "r": 2,
+    "g": "Prendre soin de l'équipe fait partie du rôle de chef : pauses, eau, rotation.",
+    "b": 16,
+    "q": 1
+   },
+   {
+    "t": "Lui dire de se reprendre et de retourner à son poste",
+    "s": -8,
+    "f": "Agent en malaise renvoyé à son poste.",
+    "law": "L'employeur a une obligation de sécurité envers ses salariés (Code du travail).",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -3,
+   "txt": "Ton agent s'est cogné la tête en tombant : arrêt de travail."
+  }
+ },
+ "vestvol": {
+  "t": "Vol au vestiaire",
+  "zones": [
+   "vestiaire"
+  ],
+  "dl": 22,
+  "desc": "Une cliente rend son ticket : son manteau a déjà été récupéré par quelqu'un d'autre avec un faux ticket.",
+  "o": [
+   {
+    "t": "Regarder les caméras du vestiaire, noter la description, prévenir le 17, faire remplir une déclaration à l'établissement",
+    "s": 5,
+    "r": 4,
+    "g": "Traçabilité et alerte : la cliente sera indemnisée plus facilement.",
+    "b": 14
+   },
+   {
+    "t": "Lui dire que le vestiaire n'est pas responsable",
+    "r": -6,
+    "txt": "Le vestiaire payant engage la responsabilité de l'établissement. La cliente l'apprend et porte plainte.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "r": -6,
+   "txt": "Trois autres manteaux disparaissent de la même façon."
+  }
+ },
+ "riviere": {
+  "t": "Chute dans la rivière",
+  "zones": [
+   "fumoir",
+   "secours"
+  ],
+  "dl": 16,
+  "q": "sst",
+  "desc": "Un client ivre a glissé de la berge et se débat dans la rivière, le courant l'entraîne.",
+  "o": [
+   {
+    "t": "Lancer la bouée du ponton, appeler le 18 / 112, lui parler pour qu'il s'accroche, ne pas plonger seul, l'aider à sortir puis le réchauffer",
+    "s": 10,
+    "r": 5,
+    "g": "Bouée, alerte, guidage : le sauvetage sans se mettre en danger.",
+    "b": 20,
+    "q": 1
+   },
+   {
+    "t": "Plonger tout de suite pour le chercher",
+    "s": -10,
+    "f": "Plongeon de nuit dans le courant.",
+    "law": "Risque de noyade pour le sauveteur : on lance d'abord une aide flottante et on alerte.",
+    "b": 22
+   }
+  ],
+  "fail": {
+   "s": -22,
+   "r": -12,
+   "txt": "Repêché plus loin par les pompiers, en hypothermie sévère."
+  }
+ },
+ "barbecue": {
+  "t": "Brûlure au barbecue",
+  "zones": [
+   "vestiaire"
+  ],
+  "dl": 20,
+  "q": "sst",
+  "desc": "Un client a voulu raviver le barbecue avec de l'alcool : retour de flamme, il est brûlé au bras et au visage.",
+  "o": [
+   {
+    "t": "Refroidir la brûlure à l'eau tempérée pendant au moins 10 minutes, retirer bijoux et montre, appeler le 15, faire éteindre le barbecue",
+    "s": 9,
+    "r": 4,
+    "g": "Eau, retrait des bijoux, 15 : les bons gestes face à une brûlure grave.",
+    "b": 18,
+    "q": 1
+   },
+   {
+    "t": "Mettre du beurre ou de la glace sur la brûlure",
+    "s": -8,
+    "f": "Remède de grand-mère sur une brûlure grave.",
+    "law": "Ni corps gras ni glace : seulement de l'eau tempérée et le 15.",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "s": -12,
+   "r": -6,
+   "txt": "La brûlure s'est aggravée : évacué au centre des grands brûlés."
+  }
+ },
+ "badtrip": {
+  "t": "Bad trip",
+  "zones": [
+   "piste",
+   "fumoir"
+  ],
+  "dl": 20,
+  "q": "sst",
+  "desc": "Une cliente terrifiée crie que « les murs bougent » et veut s'enfuir. Elle a pris un produit inconnu.",
+  "o": [
+   {
+    "t": "L'emmener dans un endroit calme et peu éclairé avec une amie, lui parler doucement, appeler le 15 si elle va plus mal ou si elle devient dangereuse pour elle-même",
+    "s": 8,
+    "r": 4,
+    "g": "Environnement calme, présence rassurante, vigilance médicale : bonne réduction des risques.",
+    "b": 18,
+    "q": 1
+   },
+   {
+    "t": "La mettre dehors pour qu'elle se calme",
+    "s": -12,
+    "f": "Personne sous l'effet d'un produit laissée seule dehors.",
+    "law": "Risque d'accident (route, chute) : non-assistance à personne en danger (art. 223-6 Code pénal).",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -12,
+   "r": -6,
+   "txt": "Elle s'est enfuie dans la rue et a été percutée par une voiture."
+  }
+ },
+ "chillout": {
+  "t": "Zone de repos saturée",
+  "zones": [
+   "vip"
+  ],
+  "dl": 24,
+  "desc": "La salle de repos est pleine de gens allongés. Deux ne réagissent presque plus et personne ne surveille.",
+  "o": [
+   {
+    "t": "Vérifier chaque personne allongée (réponse, respiration), faire appeler le 15 pour les deux qui ne réagissent pas, mettre un agent en surveillance permanente",
+    "s": 9,
+    "r": 4,
+    "g": "Une zone de repos sans surveillance, c'est là que les overdoses passent inaperçues.",
+    "b": 18
+   },
+   {
+    "t": "Laisser dormir tout le monde",
+    "s": -14,
+    "f": "Personnes inconscientes non surveillées.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal).",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -18,
+   "r": -10,
+   "txt": "Une overdose découverte trop tard : réanimation."
+  }
+ },
+ "lacrymo": {
+  "t": "Gaz lacrymogène dans la foule",
+  "zones": [
+   "piste",
+   "bar"
+  ],
+  "dl": 16,
+  "desc": "Un client vide une bombe lacrymogène au milieu de la piste. Tout le monde tousse, pleure et se rue vers la sortie.",
+  "o": [
+   {
+    "t": "Faire couper la musique, ouvrir les issues et ventiler, guider l'évacuation de la zone sans bousculade, rincer les yeux à l'eau, appeler le 15 et le 17, repérer l'auteur",
+    "s": 10,
+    "r": 3,
+    "g": "Ventiler, évacuer dans le calme, soigner, alerter : la panique est évitée.",
+    "b": 20
+   },
+   {
+    "t": "Fermer les portes pour attraper l'auteur",
+    "s": -16,
+    "f": "Public enfermé dans une zone gazée.",
+    "law": "Bloquer les sorties pendant une panique peut provoquer un écrasement mortel.",
+    "b": 10
+   },
+   {
+    "t": "Poursuivre l'auteur dans la foule",
+    "s": -8,
+    "txt": "Pendant ce temps, une bousculade se produit dans l'escalier.",
+    "b": 12
+   }
+  ],
+  "fail": {
+   "s": -18,
+   "r": -10,
+   "txt": "Mouvement de panique : plusieurs blessés piétinés dans l'escalier."
+  }
+ },
+ "braquage": {
+  "t": "Braquage de la caisse",
+  "zones": [
+   "vestiaire",
+   "porte"
+  ],
+  "dl": 14,
+  "desc": "Deux hommes cagoulés, dont un armé d'un pistolet, menacent la caissière et exigent la recette.",
+  "o": [
+   {
+    "t": "Ne pas intervenir, éloigner les clients, ne faire aucun geste brusque, observer (signalements, véhicule), appeler le 17 dès qu'ils partent",
+    "s": 8,
+    "r": 3,
+    "g": "Face à une arme à feu, la seule priorité, ce sont les vies humaines. Observer et alerter.",
+    "b": 16
+   },
+   {
+    "t": "Se jeter sur celui qui a le pistolet",
+    "s": -18,
+    "f": "Agent qui s'attaque à un braqueur armé.",
+    "law": "Mise en danger mortelle de soi et des autres : on ne résiste pas à une arme à feu."
+   },
+   {
+    "t": "Les poursuivre jusqu'à leur voiture",
+    "s": -10,
+    "f": "Poursuite de braqueurs armés.",
+    "law": "Risque de tirs : on relève la plaque et on appelle le 17."
+   }
+  ],
+  "fail": {
+   "s": -12,
+   "r": -6,
+   "txt": "Les braqueurs repartent avec la recette ; la caissière est en état de choc, personne n'a pu donner de signalement."
+  }
+ },
+ "fauteuilevac": {
+  "t": "Évacuer une personne en fauteuil",
+  "zones": [
+   "vip",
+   "toilettes"
+  ],
+  "dl": 22,
+  "q": "ssiap",
+  "desc": "Une alarme impose l'évacuation de l'étage. Un client en fauteuil roulant est au carré, en haut d'un escalier.",
+  "o": [
+   {
+    "t": "L'accompagner vers l'espace d'attente sécurisé de l'étage, rester avec lui et signaler sa position aux pompiers",
+    "s": 9,
+    "r": 5,
+    "g": "C'est le principe des espaces d'attente sécurisés en ERP : on n'improvise pas un portage dangereux.",
+    "b": 16,
+    "q": 1
+   },
+   {
+    "t": "Le porter à quatre dans l'escalier avec son fauteuil",
+    "s": -6,
+    "txt": "Le fauteuil glisse, le client tombe de deux marches.",
+    "b": 14
+   },
+   {
+    "t": "Évacuer les autres d'abord, on reviendra le chercher",
+    "s": -12,
+    "r": -8,
+    "f": "Personne à mobilité réduite laissée seule pendant une évacuation.",
+    "law": "L'évacuation des personnes handicapées doit être prévue et organisée (règlement de sécurité ERP).",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -12,
+   "r": -8,
+   "txt": "Les pompiers l'ont trouvé seul en haut de l'escalier, en panique."
+  }
+ },
+ "enfant": {
+  "t": "Un enfant perdu",
+  "zones": [
+   "piste",
+   "vestiaire"
+  ],
+  "dl": 22,
+  "desc": "Un petit garçon de 6 ans pleure seul près du barbecue : il a perdu ses parents.",
+  "o": [
+   {
+    "t": "Le garder avec un agent dans un endroit visible, faire une annonce au micro, ne jamais le confier à un inconnu sans vérifier, appeler le 17 si personne ne vient",
+    "s": 7,
+    "r": 6,
+    "g": "Enfant en sécurité, parents retrouvés grâce à l'annonce. Et on vérifie bien qui vient le chercher.",
+    "b": 14
+   },
+   {
+    "t": "Le confier au premier adulte qui dit le connaître",
+    "s": -14,
+    "f": "Enfant confié sans vérification.",
+    "law": "On vérifie l'identité et le lien (l'enfant reconnaît-il l'adulte ?) avant de remettre un enfant."
+   }
+  ],
+  "fail": {
+   "s": -10,
+   "r": -8,
+   "txt": "L'enfant s'est éloigné vers la berge. Les parents affolés appellent la police."
+  }
+ },
+ "agente": {
+  "t": "Ton agente harcelée",
+  "zones": [
+   "bar",
+   "piste"
+  ],
+  "dl": 20,
+  "desc": "Un groupe d'hommes ivres tourne autour d'une de tes agentes : remarques sexistes, mains baladeuses, ils refusent de s'arrêter.",
+  "o": [
+   {
+    "t": "Envoyer du renfort, faire sortir le groupe, proposer à ton agente de porter plainte et le noter dans la main courante",
+    "s": 7,
+    "r": 4,
+    "g": "Une agente aussi a droit à la protection de son équipe et de son employeur.",
+    "b": 14
+   },
+   {
+    "t": "Lui dire que ça fait partie du métier",
+    "s": -6,
+    "r": -4,
+    "f": "Harcèlement d'une salariée minimisé.",
+    "law": "Outrage sexiste et agression sexuelle (art. 222-22 Code pénal) ; obligation de sécurité de l'employeur."
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "r": -6,
+   "txt": "Ton agente a craqué et quitté son poste en larmes."
+  }
+ },
+ "petards": {
+  "t": "Pétards dans la salle",
+  "zones": [
+   "piste",
+   "vip"
+  ],
+  "dl": 16,
+  "q": "ssiap",
+  "desc": "À minuit, des clients allument des pétards et une fusée de détresse dans la salle bondée.",
+  "o": [
+   {
+    "t": "Faire éteindre et confisquer les artifices non allumés (déposés volontairement au vestiaire), contrôler le départ de feu, exclure les auteurs",
+    "s": 9,
+    "r": 2,
+    "g": "Pyrotechnie interdite en ERP : on neutralise et on surveille le risque d'incendie.",
+    "b": 14,
+    "q": 1
+   },
+   {
+    "t": "Laisser faire, c'est le Nouvel An",
+    "s": -14,
+    "f": "Artifices tolérés dans une salle pleine.",
+    "law": "Règlement de sécurité ERP : pyrotechnie interdite sans autorisation ; risque d'incendie et de blessures."
+   }
+  ],
+  "fail": {
+   "s": -18,
+   "r": -8,
+   "txt": "Une fusée a mis le feu à une banquette. Évacuation."
+  }
+ },
+ "tete": {
+  "t": "Choc à la tête",
+  "zones": [
+   "piste",
+   "bar",
+   "porte"
+  ],
+  "dl": 18,
+  "q": "sst",
+  "desc": "Après une bousculade, un client est tombé en arrière et s'est cogné la tête. Il s'est relevé mais vomit et ne sait plus quel jour on est.",
+  "o": [
+   {
+    "t": "L'allonger au calme, ne pas le laisser repartir, surveiller sa conscience, appeler le 15 (signes de traumatisme crânien)",
+    "s": 9,
+    "r": 4,
+    "g": "Vomissements et confusion après un choc : traumatisme crânien possible, le 15 est indispensable.",
+    "b": 18,
+    "q": 1
+   },
+   {
+    "t": "Lui donner de l'eau et le laisser rentrer chez lui puisqu'il marche",
+    "s": -14,
+    "f": "Traumatisé crânien laissé repartir seul.",
+    "law": "Un hématome peut s'aggraver en quelques heures : non-assistance à personne en danger (art. 223-6 Code pénal).",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -16,
+   "r": -8,
+   "txt": "Retrouvé inconscient dans le vestiaire : hémorragie cérébrale, opéré en urgence."
+  }
+ },
+ "proto": {
+  "t": "Ballons de protoxyde d'azote",
+  "zones": [
+   "fumoir",
+   "toilettes"
+  ],
+  "dl": 22,
+  "desc": "Au fumoir, des clients inhalent des ballons de protoxyde d'azote avec des cartouches. L'un d'eux titube et ne sent plus ses jambes.",
+  "o": [
+   {
+    "t": "Faire arrêter, demander de déposer les cartouches ou de quitter l'établissement, mettre celui qui va mal au calme et appeler le 15 si les symptômes persistent",
+    "s": 7,
+    "r": 3,
+    "g": "Le proto peut causer des lésions neurologiques graves : on fait cesser et on surveille.",
+    "b": 14
+   },
+   {
+    "t": "Leur prendre les cartouches de force",
+    "s": -3,
+    "r": -4,
+    "f": "Saisie de force.",
+    "law": "On ne confisque pas de force : on demande de déposer ou de sortir (règlement intérieur)."
+   },
+   {
+    "t": "Laisser, c'est légal",
+    "s": -8,
+    "txt": "Celui qui titubait chute et se blesse ; d'autres s'y mettent toute la nuit.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -4,
+   "txt": "Deux clients évacués pour malaise avec troubles neurologiques."
+  }
+ },
+ "insulteraciste": {
+  "t": "Insultes racistes",
+  "zones": [
+   "piste",
+   "bar"
+  ],
+  "dl": 20,
+  "desc": "Un client lance des insultes racistes à un autre client et à son amie, devant tout le monde.",
+  "o": [
+   {
+    "t": "Faire cesser, exclure l'auteur, soutenir les victimes, leur proposer de porter plainte et garder les témoignages",
+    "s": 6,
+    "r": 7,
+    "g": "Injure raciste : délit. On protège les victimes et on écarte l'auteur.",
+    "b": 14
+   },
+   {
+    "t": "Demander aux deux de se calmer et de s'éloigner",
+    "r": -8,
+    "f": "Victimes traitées comme l'auteur.",
+    "law": "Injure publique à caractère raciste (loi du 29 juillet 1881) : les victimes doivent être protégées."
+   },
+   {
+    "t": "Ne rien faire, ce ne sont que des mots",
+    "r": -10,
+    "txt": "La scène est filmée et fait le tour des réseaux : « la boîte qui laisse faire ».",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -6,
+   "r": -10,
+   "txt": "La situation a dégénéré en bagarre, et l'établissement est pointé du doigt."
+  }
+ },
+ "provocation": {
+  "t": "Provocation filmée",
+  "zones": [
+   "piste",
+   "porte"
+  ],
+  "dl": 20,
+  "desc": "Un groupe filme un de tes agents en l'insultant, en lui soufflant dessus, pour le faire réagir et poster la vidéo.",
+  "o": [
+   {
+    "t": "Faire relever l'agent par un collègue, rester impassible, exclure calmement le groupe, ne jamais toucher aux téléphones",
+    "s": 6,
+    "r": 5,
+    "g": "Le calme est la meilleure réponse : la vidéo ne montrera rien.",
+    "b": 12
+   },
+   {
+    "t": "Laisser ton agent « leur donner une leçon »",
+    "s": -8,
+    "r": -12,
+    "f": "Agent qui répond à une provocation par la violence.",
+    "law": "La vidéo coupée au montage fera le tour des réseaux ; violences volontaires (art. 222-11 Code pénal) et carte professionnelle en jeu."
+   }
+  ],
+  "fail": {
+   "r": -8,
+   "txt": "Ton agent a craqué et a poussé un des provocateurs : la vidéo est partout."
+  }
+ },
+ "asthme": {
+  "t": "Crise d'asthme",
+  "zones": [
+   "piste",
+   "fumoir"
+  ],
+  "dl": 16,
+  "q": "sst",
+  "desc": "Une cliente siffle en respirant et n'arrive plus à parler. Elle montre son sac : son inhalateur est au vestiaire.",
+  "o": [
+   {
+    "t": "L'asseoir penchée en avant à l'air frais, faire récupérer son inhalateur au vestiaire, l'aider à le prendre, appeler le 15 si ça ne passe pas",
+    "s": 9,
+    "r": 4,
+    "g": "Position assise, son traitement, le 15 si ça persiste : gestes justes.",
+    "b": 16,
+    "q": 1
+   },
+   {
+    "t": "L'allonger sur le dos sur une banquette",
+    "s": -8,
+    "f": "Personne en crise d'asthme allongée.",
+    "law": "Une personne qui manque d'air reste assise, penchée en avant : allongée, elle respire encore plus mal.",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "s": -14,
+   "r": -6,
+   "txt": "Crise d'asthme sévère : évacuée par le SAMU."
+  }
+ },
+ "streaker": {
+  "t": "Un client nu sur la piste",
+  "zones": [
+   "piste"
+  ],
+  "dl": 22,
+  "desc": "Pour un pari, un client s'est déshabillé entièrement et court sur la piste sous les applaudissements.",
+  "o": [
+   {
+    "t": "Le couvrir avec une veste, le raccompagner calmement au vestiaire pour qu'il se rhabille, puis l'exclure",
+    "r": 4,
+    "g": "Calme et dignité : on couvre, on raccompagne, on exclut. Pas besoin d'en faire un spectacle.",
+    "b": 10
+   },
+   {
+    "t": "Le plaquer au sol devant tout le monde",
+    "s": -4,
+    "r": -6,
+    "f": "Usage de la force disproportionné.",
+    "law": "Il n'est pas violent : la force n'est pas nécessaire.",
+    "b": 10
+   },
+   {
+    "t": "Laisser faire, ça amuse la salle",
+    "r": -6,
+    "txt": "Plusieurs clientes se plaignent ; la vidéo fait le tour des réseaux.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "r": -5,
+   "txt": "Il a fait trois tours de piste et grimpé sur le bar."
+  }
+ },
+ "cablesdj": {
+  "t": "Bière renversée sur la régie",
+  "zones": [
+   "piste"
+  ],
+  "dl": 18,
+  "q": "ssiap",
+  "desc": "Un client a renversé une pinte sur la table de mixage et les multiprises. Des étincelles, une odeur de brûlé.",
+  "o": [
+   {
+    "t": "Faire couper l'alimentation de la régie au disjoncteur, éloigner tout le monde, surveiller le départ de feu avec un extincteur adapté (CO2)",
+    "s": 9,
+    "r": 2,
+    "g": "Électricité + liquide : on coupe à la source, on ne touche rien, extincteur CO2 prêt.",
+    "b": 12,
+    "q": 1
+   },
+   {
+    "t": "Éponger avec des serviettes, la musique ne doit pas s'arrêter",
+    "s": -12,
+    "f": "Intervention sur un appareil électrique sous tension mouillé.",
+    "law": "Risque d'électrocution et d'incendie : couper le courant d'abord.",
+    "b": 8
+   },
+   {
+    "t": "Jeter de l'eau sur les étincelles",
+    "s": -14,
+    "f": "Eau projetée sur un feu électrique.",
+    "law": "Jamais d'eau sur du matériel électrique sous tension : extincteur CO2.",
+    "b": 6
+   }
+  ],
+  "fail": {
+   "s": -14,
+   "r": -8,
+   "txt": "La régie prend feu : évacuation de la salle principale."
+  }
+ },
+ "couteautrouve": {
+  "t": "Couteau trouvé aux toilettes",
+  "zones": [
+   "toilettes"
+  ],
+  "dl": 22,
+  "desc": "En faisant sa ronde, ton agent trouve un couteau à cran d'arrêt caché derrière la chasse d'eau.",
+  "o": [
+   {
+    "t": "Le récupérer avec des gants sans effacer les traces, le mettre en sécurité au bureau, le noter dans la main courante et prévenir la police",
+    "s": 8,
+    "r": 2,
+    "g": "L'arme est neutralisée et tracée. Et on renforce la vigilance : son propriétaire est peut-être encore dans la salle.",
+    "b": 12,
+    "gl": 1
+   },
+   {
+    "t": "Le laisser là, ce n'est pas notre problème",
+    "s": -12,
+    "f": "Arme laissée à disposition dans l'établissement.",
+    "law": "Une arme accessible au public est un danger immédiat : on la sécurise et on prévient la police.",
+    "b": 2
+   },
+   {
+    "t": "Le garder dans sa poche « au cas où »",
+    "s": -10,
+    "f": "Agent qui conserve une arme sur lui.",
+    "law": "Un agent de sécurité privée n'est pas armé en discothèque : port d'arme prohibé.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -14,
+   "r": -6,
+   "txt": "Le couteau a été récupéré par son propriétaire… et sorti plus tard dans la soirée."
+  }
+ },
+ "alarmevolontaire": {
+  "t": "Alarme déclenchée par un client",
+  "zones": [
+   "vestiaire",
+   "piste"
+  ],
+  "dl": 20,
+  "q": "ssiap",
+  "desc": "Un client ivre a cassé la vitre d'un boîtier d'alarme incendie « pour rigoler ». Sirène dans toute la salle.",
+  "o": [
+   {
+    "t": "Faire quand même la levée de doute, rassurer la salle au micro, faire réarmer le système par la personne habilitée, retenir l'auteur pour la police",
+    "s": 8,
+    "r": 3,
+    "g": "On vérifie toujours, même quand on pense que c'est une blague. Et le déclenchement volontaire injustifié se signale.",
+    "b": 14,
+    "q": 1
+   },
+   {
+    "t": "Couper la sirène sans rien vérifier, tout le monde sait que c'est une blague",
+    "s": -12,
+    "f": "Alarme neutralisée sans levée de doute.",
+    "law": "Toute alarme impose une levée de doute ; la neutraliser à l'aveugle est une faute grave (règlement ERP).",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -6,
+   "txt": "Évacuation complète et désordonnée pour une fausse alerte : la soirée est gâchée."
+  }
+ },
+ "bouteillevolee": {
+  "t": "Bouteille volée au bar",
+  "zones": [
+   "bar"
+  ],
+  "dl": 22,
+  "desc": "Un client a passé le bras par-dessus le comptoir et part avec une bouteille de vodka sous sa veste. Le barman l'a vu.",
+  "o": [
+   {
+    "t": "L'interpeller calmement, lui proposer de rendre ou de payer la bouteille ; s'il refuse, le retenir et appeler le 17 (flagrant délit de vol)",
+    "s": 5,
+    "r": 3,
+    "g": "Proportionné : on laisse une chance de régler, sinon on appréhende pour la police.",
+    "b": 12
+   },
+   {
+    "t": "Lui reprendre la bouteille de force et le jeter dehors",
+    "s": -4,
+    "r": -4,
+    "f": "Reprise par la force et exclusion musclée.",
+    "law": "Retenir oui, brutaliser non : la force doit rester nécessaire et proportionnée.",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "r": -3,
+   "txt": "Il est reparti avec la bouteille… et l'a cassée sur le parking."
+  }
+ },
+ "samerreur": {
+  "t": "L'erreur de Sam",
+  "zones": [
+   "porte"
+  ],
+  "dl": 24,
+  "desc": "Sam, le débutant, s'est fait déborder à l'entrée de service : il a laissé entrer un groupe sans contrôle, dont un mineur déjà ivre. Il est livide.",
+  "o": [
+   {
+    "t": "Le prendre à part, le rassurer, lui montrer la bonne méthode, et gérer le groupe avec lui",
+    "s": 6,
+    "r": 2,
+    "g": "On corrige ensemble : Sam apprend, et le groupe est contrôlé.",
+    "b": 14,
+    "sk": 1,
+    "mo": 3
+   },
+   {
+    "t": "L'engueuler devant tout le monde",
+    "s": 2,
+    "r": -3,
+    "txt": "Le groupe est géré, mais Sam est humilié devant les clients et ses collègues.",
+    "b": 10,
+    "sk": -1,
+    "mo": -5
+   },
+   {
+    "t": "Faire comme si de rien n'était",
+    "s": -6,
+    "f": "Groupe non contrôlé laissé dans la salle, dont un mineur ivre.",
+    "law": "Mineur servi en alcool (art. L3342-1 CSP) : il fallait réagir.",
+    "b": 2,
+    "sk": -1
+   }
+  ],
+  "fail": {
+   "s": -8,
+   "r": -4,
+   "txt": "Le mineur ivre a fini aux urgences. Sam s'en veut terriblement.",
+   "f": "Erreur d'un agent débutant non corrigée."
+  }
+ },
+ "piqure": {
+  "t": "Piqûre suspecte",
+  "zones": [
+   "piste",
+   "bar"
+  ],
+  "dl": 18,
+  "q": "sst",
+  "note": "en 2022, une vague de signalements de piqûres en discothèque et en festival a entraîné de nombreuses plaintes en France. Les autorités recommandent de consulter et de faire des analyses le plus vite possible.",
+  "desc": "Une cliente ressent une douleur vive au bras sur la piste : petite marque rouge, comme une piqûre. Quelques minutes plus tard, elle a des vertiges et des nausées.",
+  "o": [
+   {
+    "t": "La mettre à l'abri avec une amie, appeler le 15, lui conseiller de faire des analyses rapidement et de porter plainte, prévenir le 17, faire surveiller la zone et conserver les images",
+    "s": 9,
+    "r": 6,
+    "g": "Prise en charge, alerte, conseils pour les analyses et la plainte, préservation des images : protocole complet.",
+    "b": 18,
+    "q": 1
+   },
+   {
+    "t": "Lui dire que c'est sûrement un moustique",
+    "s": -10,
+    "r": -8,
+    "f": "Piqûre suspecte minimisée.",
+    "law": "Administrer une substance à l'insu d'une personne est un délit (art. 222-15-1 Code pénal) : chaque signalement doit être pris au sérieux.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -12,
+   "r": -10,
+   "txt": "Elle a fait un malaise dans le taxi. L'affaire fait la une : « Piqûres : la boîte n'a rien fait »."
+  }
+ },
+ "onepunch": {
+  "t": "Un seul coup de poing",
+  "zones": [
+   "piste",
+   "porte",
+   "fumoir"
+  ],
+  "dl": 14,
+  "q": "sst",
+  "note": "en France, plusieurs jeunes sont morts ces dernières années après un seul coup de poing reçu à la sortie d'une boîte : c'est souvent la chute, tête contre le sol, qui tue.",
+  "desc": "Un client a reçu un coup de poing et s'est effondré en arrière : sa tête a heurté le sol. Il ne bouge plus et respire bruyamment. L'auteur recule vers la sortie.",
+  "o": [
+   {
+    "t": "Ne pas le bouger, lui maintenir la tête, vérifier sa respiration, appeler le 15 tout de suite ; un autre agent retient l'auteur pour la police",
+    "s": 12,
+    "r": 5,
+    "g": "Victime protégée sans aggraver une éventuelle lésion, secours immédiats, auteur retenu (art. 73 Code de procédure pénale).",
+    "b": 24,
+    "q": 1
+   },
+   {
+    "t": "Le relever et l'asseoir pour qu'il reprenne ses esprits",
+    "s": -14,
+    "f": "Victime d'un traumatisme crânien déplacée.",
+    "law": "Après un choc à la tête, on ne relève pas la victime : risque de lésion de la colonne et d'aggravation.",
+    "b": 10
+   },
+   {
+    "t": "Courir après l'auteur en laissant la victime",
+    "s": -12,
+    "f": "Victime inconsciente laissée sans secours.",
+    "law": "La priorité absolue, c'est la victime : non-assistance à personne en danger (art. 223-6 Code pénal).",
+    "b": 12
+   }
+  ],
+  "fail": {
+   "s": -28,
+   "r": -18,
+   "txt": "Les secours sont arrivés trop tard. Le jeune homme est dans un état très grave.",
+   "f": "Victime d'un coup à la tête sans prise en charge rapide."
+  }
+ },
+ "bougies": {
+  "t": "Gâteau aux bougies fontaines",
+  "zones": [
+   "vip",
+   "bar"
+  ],
+  "dl": 14,
+  "q": "ssiap",
+  "note": "en 2016, à Rouen, des bougies sur un gâteau d'anniversaire ont mis le feu au plafond isolant d'un bar en sous-sol : 14 jeunes sont morts. Depuis, les contrôles sur les matériaux et les effets de flamme ont été renforcés.",
+  "desc": "Pour un anniversaire, une serveuse descend au sous-sol avec un gâteau surmonté de bougies fontaines qui crachent des étincelles. Le plafond est bas et couvert de mousse.",
+  "o": [
+   {
+    "t": "L'arrêter avant le sous-sol, faire éteindre les bougies, prévenir le gérant : aucune flamme sous un plafond en mousse",
+    "s": 12,
+    "r": 2,
+    "g": "Tu viens peut-être d'éviter un drame. Les effets de flamme près de matériaux inflammables, c'est non.",
+    "b": 8,
+    "q": 1
+   },
+   {
+    "t": "Laisser faire, c'est un anniversaire",
+    "s": -16,
+    "f": "Effets de flamme sous un plafond inflammable.",
+    "law": "Règlement de sécurité des ERP : flammes nues et artifices interdits sans mesures particulières ; les matériaux en mousse s'enflamment en quelques secondes.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -30,
+   "r": -20,
+   "txt": "Le plafond s'est embrasé en quelques secondes. Évacuation dans la panique, plusieurs intoxiqués graves.",
+   "f": "Départ de feu causé par des bougies fontaines."
+  }
+ },
+ "co": {
+  "t": "Maux de tête au fumoir",
+  "zones": [
+   "fumoir"
+  ],
+  "dl": 16,
+  "q": "ssiap",
+  "note": "chaque hiver en France, des intoxications au monoxyde de carbone surviennent à cause de chauffages d'appoint mal utilisés dans des espaces fermés. Le CO est invisible et inodore.",
+  "desc": "Le fumoir a été fermé pour l'hiver et chauffé avec un brasero au gaz. Plusieurs clients ont mal à la tête, des nausées ; l'un d'eux s'est assis par terre, somnolent.",
+  "o": [
+   {
+    "t": "Faire sortir tout le monde à l'air libre, éteindre le brasero, aérer en grand, appeler le 18 (suspicion de monoxyde de carbone)",
+    "s": 10,
+    "r": 4,
+    "g": "Maux de tête collectifs dans un lieu chauffé et fermé = CO jusqu'à preuve du contraire. Évacuer, aérer, 18.",
+    "b": 16,
+    "q": 1
+   },
+   {
+    "t": "Leur donner de l'eau et un cachet, c'est la fatigue",
+    "s": -14,
+    "f": "Signes d'intoxication collective ignorés.",
+    "law": "Le monoxyde de carbone peut tuer en peu de temps ; le brasero est interdit dans un espace fermé recevant du public.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -22,
+   "r": -10,
+   "txt": "Quatre clients intoxiqués au monoxyde de carbone, dont un en caisson hyperbare."
+  }
+ },
+ "tirs": {
+  "t": "Coups de feu dans la rue",
+  "zones": [
+   "porte"
+  ],
+  "dl": 12,
+  "note": "les consignes officielles en cas d'attaque armée (plan Vigipirate) sont : s'échapper si possible, sinon se cacher, puis alerter (17 ou 112) dès qu'on est en sécurité.",
+  "desc": "Plusieurs détonations éclatent dans la rue, tout près de la file d'attente. Des gens crient et courent dans tous les sens.",
+  "o": [
+   {
+    "t": "Faire entrer immédiatement les gens de la file, fermer les portes, éloigner tout le monde des vitres, se mettre à l'abri, alerter le 17 dès que possible",
+    "s": 12,
+    "r": 5,
+    "g": "Mettre à l'abri, se protéger, alerter : exactement les consignes officielles.",
+    "b": 20
+   },
+   {
+    "t": "Sortir voir ce qui se passe",
+    "s": -16,
+    "f": "Agent exposé à des tirs.",
+    "law": "Consignes Vigipirate : on ne va jamais voir, on se met à l'abri et on alerte.",
+    "b": 12
+   },
+   {
+    "t": "Continuer à contrôler la file, c'est sûrement des pétards",
+    "s": -12,
+    "f": "Public laissé exposé dans la rue.",
+    "law": "Au moindre doute, on met les personnes à l'abri.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -24,
+   "r": -12,
+   "txt": "Panique : la file s'est dispersée dans la rue, deux personnes blessées dans la bousculade."
+  }
+ },
+ "voiture": {
+  "t": "Une voiture fonce sur la terrasse",
+  "zones": [
+   "fumoir"
+  ],
+  "dl": 12,
+  "q": "sst",
+  "note": "plusieurs accidents de voitures folles sur des terrasses de bars ont eu lieu en France. En situation de nombreuses victimes, on protège d'abord, on alerte vite et on secourt les blessés les plus graves.",
+  "desc": "Une voiture a perdu le contrôle et a percuté la terrasse : tables renversées, trois personnes à terre, le conducteur est sonné au volant.",
+  "o": [
+   {
+    "t": "Sécuriser (couper le moteur, écarter les curieux), appeler le 18 et le 15 en annonçant plusieurs blessés, porter secours aux plus graves sans les déplacer",
+    "s": 12,
+    "r": 6,
+    "g": "Protéger, alerter, secourir : face à plusieurs victimes, l'organisation sauve des vies.",
+    "b": 24,
+    "q": 1
+   },
+   {
+    "t": "Sortir le conducteur de force pour le frapper",
+    "s": -14,
+    "f": "Violence sur le conducteur au lieu de secourir les victimes.",
+    "law": "Priorité aux blessés ; la police s'occupe du conducteur.",
+    "b": 12
+   }
+  ],
+  "fail": {
+   "s": -24,
+   "r": -12,
+   "txt": "Les secours sont arrivés sans bilan précis : prise en charge retardée des blessés."
+  }
+ },
+ "mezzanine": {
+  "t": "Mezzanine surchargée",
+  "zones": [
+   "vip"
+  ],
+  "dl": 18,
+  "desc": "Une soixantaine de personnes se sont entassées sur la mezzanine prévue pour 30. La rambarde plie, des gens sautent dessus.",
+  "o": [
+   {
+    "t": "Bloquer l'accès à l'escalier, faire redescendre calmement la moitié des gens au micro, faire vérifier la rambarde",
+    "s": 10,
+    "r": 2,
+    "g": "Effectif de la mezzanine respecté, structure protégée : drame évité.",
+    "b": 14
+   },
+   {
+    "t": "Laisser, ça a toujours tenu",
+    "s": -14,
+    "f": "Surcharge d'une structure en hauteur tolérée.",
+    "law": "Chaque zone a un effectif maximal ; la surcharge d'une mezzanine peut provoquer un effondrement.",
+    "b": 2
+   }
+  ],
+  "fail": {
+   "s": -26,
+   "r": -14,
+   "txt": "La rambarde a cédé : quatre personnes tombées d'un étage."
+  }
+ },
+ "projecteur": {
+  "t": "Un projecteur tombe",
+  "zones": [
+   "piste"
+  ],
+  "dl": 18,
+  "q": "sst",
+  "desc": "Un projecteur mal fixé s'est décroché de la structure et a heurté une danseuse à l'épaule. D'autres projecteurs bougent.",
+  "o": [
+   {
+    "t": "Secourir la blessée, faire évacuer la zone sous la structure, faire couper les lumières concernées, faire vérifier les fixations avant de rouvrir",
+    "s": 9,
+    "r": 3,
+    "g": "Victime prise en charge, danger écarté, vérification avant de rouvrir.",
+    "b": 16,
+    "q": 1
+   },
+   {
+    "t": "Pousser le projecteur sur le côté et relancer la soirée",
+    "s": -12,
+    "f": "Zone dangereuse rouverte sans vérification.",
+    "law": "Les équipements suspendus doivent être vérifiés ; l'exploitant est responsable de la sécurité du public.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "s": -14,
+   "r": -8,
+   "txt": "Un deuxième projecteur est tombé une heure plus tard."
+  }
+ },
+ "skimming": {
+  "t": "Terminal de paiement trafiqué",
+  "zones": [
+   "bar"
+  ],
+  "dl": 24,
+  "desc": "Un barman remarque un boîtier collé sous le terminal de paiement du bar. Plusieurs clients se sont plaints de paiements bizarres la semaine dernière.",
+  "o": [
+   {
+    "t": "Ne pas toucher au boîtier, retirer le terminal du service, prévenir le gérant et la police, regarder les images pour savoir qui l'a posé",
+    "s": 6,
+    "r": 4,
+    "g": "Preuve préservée, clients protégés, enquête possible.",
+    "b": 12
+   },
+   {
+    "t": "Arracher le boîtier et le jeter",
+    "s": -2,
+    "r": -3,
+    "f": "Preuve détruite.",
+    "law": "Le dispositif est une preuve : c'est à la police de le saisir.",
+    "b": 4
+   }
+  ],
+  "fail": {
+   "r": -8,
+   "txt": "Des dizaines de clients découvrent des paiements frauduleux la semaine suivante."
+  }
+ },
+ "attouchement": {
+  "t": "Agression sur la piste",
+  "zones": [
+   "piste"
+  ],
+  "dl": 20,
+  "desc": "Une cliente désigne un homme : il l'a touchée de force dans la foule. Deux témoins confirment.",
+  "o": [
+   {
+    "t": "Retenir l'homme sans violence, mettre la victime à l'abri, appeler le 17 (flagrant délit, art. 73 CPP)",
+    "s": 7,
+    "r": 7,
+    "g": "Flagrant délit avec témoins : on retient l'auteur pour la police, et on protège la victime.",
+    "b": 18,
+    "bl": 1
+   },
+   {
+    "t": "Simplement l'exclure par l'issue de secours",
+    "s": -4,
+    "r": -6,
+    "f": "Auteur présumé d'agression sexuelle laissé repartir.",
+    "law": "Agression sexuelle (art. 222-22 Code pénal) : l'auteur doit être remis à la police, pas simplement mis dehors.",
+    "b": 8
+   },
+   {
+    "t": "Lui faire payer à coups de poing",
+    "s": -8,
+    "r": -6,
+    "f": "Violences sur l'auteur présumé.",
+    "law": "Personne ne peut se faire justice soi-même : violences volontaires (art. 222-11 Code pénal).",
+    "b": 8
+   }
+  ],
+  "fail": {
+   "r": -10,
+   "txt": "L'homme est reparti, la victime se sent abandonnée par l'établissement."
+  }
+ }
+}

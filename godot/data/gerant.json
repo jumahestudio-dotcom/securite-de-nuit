@@ -1,0 +1,148 @@
+{
+ "jauge": {
+  "t": "📞 Le gérant : « Fais entrer mes potes »",
+  "d": "« La salle est pleine, je sais, mais j'ai 30 amis d'un associé dehors. Fais-les entrer, je prends la responsabilité. »",
+  "o": [
+   {
+    "t": "Refuser poliment : la jauge est une obligation de sécurité, personne ne peut la dépasser, même le gérant",
+    "s": 6,
+    "sat": -4,
+    "g": "Tu as eu raison : l'effectif maximal d'un ERP ne se négocie pas. En cas de drame, c'est aussi ta responsabilité."
+   },
+   {
+    "t": "Les faire entrer, c'est le patron",
+    "s": -12,
+    "f": "Jauge dépassée de 30 personnes sur ordre du gérant.",
+    "law": "Règlement de sécurité incendie des ERP : l'effectif maximal ne doit jamais être dépassé ; l'ordre du gérant ne te couvre pas.",
+    "act": "cap"
+   }
+  ]
+ },
+ "images": {
+  "t": "📞 Le gérant : « Efface la vidéo »",
+  "d": "« La bagarre de tout à l'heure, efface les images des caméras. Je ne veux pas d'histoires avec la police. »",
+  "o": [
+   {
+    "t": "Refuser et conserver les images : elles pourront être demandées par la police",
+    "r": 4,
+    "sat": -3,
+    "g": "Refus justifié : effacer des preuves est un délit, et ça se retournerait contre lui."
+   },
+   {
+    "t": "Effacer les images",
+    "r": -12,
+    "f": "Images de vidéoprotection effacées après un incident.",
+    "law": "Destruction de preuves utiles à une enquête : délit (art. 434-4 Code pénal)."
+   }
+  ]
+ },
+ "economie": {
+  "t": "📞 Le gérant : « Renvoie un agent »",
+  "d": "« C'est calme, renvoie un de tes agents chez lui maintenant, je ferai des économies. »",
+  "o": [
+   {
+    "t": "Lui expliquer les risques (plus d'une heure de service, salle pleine) mais obéir si le gérant insiste",
+    "sat": 2,
+    "g": "Tu as donné ton avis de professionnel, la décision lui appartient.",
+    "act": "agentOff"
+   },
+   {
+    "t": "Refuser : l'effectif de sécurité est prévu pour la jauge",
+    "sat": -5,
+    "s": 3,
+    "txt": "Le gérant raccroche, agacé. Mais l'équipe reste complète."
+   }
+  ]
+ },
+ "copain": {
+  "t": "📞 Le gérant : « Le type au fumoir, c'est un pote »",
+  "d": "« Le gars qui fait des allers-retours au fumoir, laisse-le tranquille, c'est un ami à moi. » Tu sais qu'il vend de la drogue.",
+  "o": [
+   {
+    "t": "Refuser de fermer les yeux sur le trafic, l'exclure et le noter dans la main courante",
+    "s": 6,
+    "sat": -6,
+    "g": "Tu n'es pas complice d'un trafic, même sur ordre. C'est aussi ta carte professionnelle qui est en jeu."
+   },
+   {
+    "t": "Le laisser faire, c'est le patron",
+    "s": -10,
+    "f": "Trafic de stupéfiants toléré sur ordre du gérant.",
+    "law": "Complicité possible et fermeture administrative (art. L3332-15 CSP). L'agent risque sa carte professionnelle."
+   }
+  ]
+ },
+ "nièce": {
+  "t": "📞 Le gérant : « Laisse ma nièce »",
+  "d": "« Ma nièce de 16 ans est au bar avec ses copines, laisse-la, c'est la famille. »",
+  "o": [
+   {
+    "t": "Refuser : arrêter le service d'alcool, la faire raccompagner, prévenir sa famille",
+    "s": 4,
+    "sat": -4,
+    "g": "La loi est la même pour la famille du patron : pas de mineurs servis en alcool."
+   },
+   {
+    "t": "La laisser, c'est sa nièce",
+    "s": -6,
+    "f": "Mineure de 16 ans laissée dans l'établissement et servie en alcool.",
+    "law": "Art. L3342-1 Code de la santé publique : 7 500 € d'amende."
+   }
+  ]
+ },
+ "tard": {
+  "t": "📞 Le gérant : « On ferme à 6 h »",
+  "d": "« Ça marche fort ce soir, on ferme une heure plus tard que prévu. »",
+  "o": [
+   {
+    "t": "Lui rappeler que l'heure de fermeture est fixée par arrêté, et préparer la fermeture à l'heure",
+    "sat": -3,
+    "r": 2,
+    "g": "L'heure de fermeture autorisée s'impose. Ton rappel lui évite une sanction."
+   },
+   {
+    "t": "OK, on continue",
+    "r": -4,
+    "f": "Ouverture après l'heure autorisée.",
+    "law": "Dépassement de l'heure de fermeture : fermeture administrative possible (art. L3332-15 CSP)."
+   }
+  ]
+ },
+ "vipivre": {
+  "t": "📞 Le gérant : « Ouvre le carré au footballeur »",
+  "d": "« Un joueur pro arrive par l'arrière avec ses amis, ouvre-leur le carré VIP sans contrôle, ils sont un peu éméchés. »",
+  "o": [
+   {
+    "t": "Les accueillir avec égards, mais les contrôler comme tout le monde (état, objets) à l'entrée de service",
+    "s": 5,
+    "sat": -2,
+    "g": "Discrétion pour la célébrité, mêmes règles de sécurité pour tous."
+   },
+   {
+    "t": "Les faire entrer sans aucun contrôle",
+    "s": -8,
+    "f": "Groupe admis sans contrôle par une entrée de service.",
+    "law": "Le contrôle d'accès s'applique à toutes les entrées. Une entrée de service ouverte, c'est aussi une issue non surveillée."
+   }
+  ]
+ },
+ "promo": {
+  "t": "📞 Le gérant : « Distribue des shots gratuits »",
+  "d": "« Pour l'ambiance, fais distribuer des shots gratuits à l'entrée par tes agents. »",
+  "o": [
+   {
+    "t": "Refuser : ce n'est pas le rôle de la sécurité, et l'alcool offert à l'entrée augmente les risques",
+    "s": 4,
+    "sat": -2,
+    "g": "La sécurité ne sert pas d'alcool, et les offres d'alcool à volonté posent problème légalement."
+   },
+   {
+    "t": "Accepter",
+    "s": -6,
+    "txt": "Les clients arrivent déjà alcoolisés sur la piste, deux malaises plus tard.",
+    "f": "Agents de sécurité détournés vers la distribution d'alcool.",
+    "law": "Les offres d'alcool gratuites ou à volonté sont encadrées par le Code de la santé publique."
+   }
+  ]
+ }
+}

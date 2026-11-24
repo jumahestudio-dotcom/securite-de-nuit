@@ -1,0 +1,306 @@
+extends Node3D
+## Personnage 3D provisoire (formes simples + animations procédurales).
+## Si un modèle res://assets/characters/human.glb existe, il est utilisé à la place
+## (voir LISEZMOI.md pour les noms d'animations attendus).
+
+var sex := "H"
+var skin := Color("#e7b896")
+var skin_word := "claire"
+var hair := Color("#2e1c10")
+var hair_word := "bruns foncés"
+var hs := "short"
+var top := Color("#3d6fd8")
+var bottom := Color("#1b2433")
+var shoes := Color("#111111")
+var dress := false
+var cap_col = null
+var beard_col = null
+var glasses := false
+var agent := false
+var band_col = null
+var height := 1.75
+
+var anim := "idle"
+var ph := 0.0
+var walk_ph := 0.0
+var speed := 1.35
+var run := false
+var path: Array = []
+var on_arrive = null
+var face = null
+var sway := 0.0
+var yaw := 0.0
+var pose := {}
+var pose_until := 0.0
+var ring = null           # couleur d'aura (élan d'un coup)
+var data = null           # lien vers la fiche client
+var pname := ""
+var home := Vector3.ZERO
+var task = null
+var zone := ""
+
+var body: Node3D
+var torso: Node3D
+var head: Node3D
+var legs := []
+var arms := []
+var mats := []
+var glb = null
+var glb_anim: AnimationPlayer = null
+
+func setup(o: Dictionary) -> void:
+	sex = o.get("sex", "H" if randf() < 0.55 else "F")
+	var sk = o.get("skin", Data.SKINS.pick_random())
+	var hr = o.get("hair", Data.HAIRS.pick_random())
+	skin = sk[0]; skin_word = sk[1]; hair = hr[0]; hair_word = hr[1]
+	height = o.get("height", randf_range(1.7, 1.88) if sex == "H" else randf_range(1.58, 1.74))
+	if sex == "H":
+		hs = o.get("hs", ["short","short","buzz","curly"].pick_random())
+	else:
+		hs = o.get("hs", ["long","long","bun","bob"].pick_random())
+	top = Color(o.get("top", Data.TOPS.pick_random()))
+	bottom = Color(o.get("bottom", ["#1b2433","#23232b","#2f3b52","#3a2e25","#111111"].pick_random()))
+	shoes = Color(o.get("shoes", ["#111111","#eeeeee","#3a2a1a"].pick_random()))
+	dress = o.get("dress", sex == "F" and randf() < 0.45)
+	if o.has("cap"): cap_col = Color(o["cap"])
+	if o.has("beard"): beard_col = Color(o["beard"])
+	glasses = o.get("glasses", false)
+	agent = o.get("agent", false)
+	if o.has("band"): band_col = Color(o["band"])
+	if agent:
+		top = Color("#111318"); bottom = Color("#14161c"); dress = false; cap_col = null
+	if sex == "H" and beard_col == null and not o.get("no_beard", false) and randf() < 0.15:
+		beard_col = hair
+	ph = randf() * TAU
+	if o.has("pos"): position = o["pos"]
+	yaw = o.get("yaw", 0.0)
+	_build()
+
+func _mat(c: Color, emi := Color.BLACK, e := 0.0, rough := 0.75) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = c
+	m.roughness = rough
+	if e > 0.0:
+		m.emission_enabled = true
+		m.emission = emi
+		m.emission_energy_multiplier = e
+	return m
+
+func _box(parent: Node3D, pos: Vector3, size: Vector3, c: Color, emi := Color.BLACK, e := 0.0) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = size
+	mi.mesh = bm
+	mi.material_override = _mat(c, emi, e)
+	mi.position = pos
+	parent.add_child(mi)
+	mats.append(mi)
+	return mi
+
+func _sph(parent: Node3D, pos: Vector3, scl: Vector3, c: Color) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = 0.5
+	sm.height = 1.0
+	sm.radial_segments = 16
+	sm.rings = 10
+	mi.mesh = sm
+	mi.material_override = _mat(c)
+	mi.position = pos
+	mi.scale = scl
+	parent.add_child(mi)
+	return mi
+
+func _build() -> void:
+	if ResourceLoader.exists("res://assets/characters/human.glb"):
+		var sc = load("res://assets/characters/human.glb")
+		if sc:
+			glb = sc.instantiate()
+			add_child(glb)
+			glb.scale = Vector3.ONE * (height / 1.75)
+			glb_anim = glb.find_child("AnimationPlayer", true, false)
+			return
+	body = Node3D.new()
+	add_child(body)
+	body.scale = Vector3.ONE * (height / 1.75)
+	# jambes
+	for s in [-1, 1]:
+		var lp := Node3D.new()
+		lp.position = Vector3(s * 0.1, 0.9, 0)
+		body.add_child(lp)
+		if not dress:
+			_box(lp, Vector3(0, -0.44, 0), Vector3(0.15, 0.88, 0.17), bottom)
+		else:
+			_box(lp, Vector3(0, -0.62, 0), Vector3(0.09, 0.5, 0.1), skin)
+		_box(lp, Vector3(0, -0.88, 0.05), Vector3(0.15, 0.08, 0.27), shoes)
+		legs.append(lp)
+	if dress:
+		var mi := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = 0.17; cm.bottom_radius = 0.24; cm.height = 0.42
+		mi.mesh = cm
+		mi.material_override = _mat(top)
+		mi.position = Vector3(0, 0.8, 0)
+		body.add_child(mi)
+	# torse
+	torso = Node3D.new()
+	torso.position = Vector3(0, 0.9, 0)
+	body.add_child(torso)
+	_box(torso, Vector3(0, 0.3, 0), Vector3(0.42, 0.6, 0.24), top)
+	if agent:
+		_box(torso, Vector3(0, 0.42, 0.125), Vector3(0.3, 0.08, 0.01), Color(0.9, 0.9, 0.9), Color(1, 0.9, 0.4), 0.6)
+	# bras
+	for s in [-1, 1]:
+		var ap := Node3D.new()
+		ap.position = Vector3(s * 0.27, 0.56, 0)
+		torso.add_child(ap)
+		_box(ap, Vector3(0, -0.3, 0), Vector3(0.11, 0.6, 0.12), top)
+		if agent and s < 0:
+			_box(ap, Vector3(0, -0.12, 0), Vector3(0.125, 0.07, 0.135), Color(0.2, 0.2, 0.2), Color(1, 0.75, 0.05), 1.5)
+		if band_col != null and s > 0:
+			_box(ap, Vector3(0, -0.12, 0), Vector3(0.125, 0.07, 0.135), Color(0.2, 0.2, 0.2), band_col, 1.5)
+		_sph(ap, Vector3(0, -0.64, 0), Vector3(0.1, 0.11, 0.1), skin)
+		arms.append(ap)
+	# tête
+	_sph(torso, Vector3(0, 0.64, 0), Vector3(0.1, 0.12, 0.1), skin)
+	head = Node3D.new()
+	head.position = Vector3(0, 0.8, 0)
+	torso.add_child(head)
+	_sph(head, Vector3.ZERO, Vector3(0.23, 0.27, 0.24), skin)
+	for s in [-1, 1]:
+		_sph(head, Vector3(s * 0.05, 0.02, 0.112), Vector3(0.03, 0.03, 0.02), Color(0.05, 0.05, 0.05))
+	_box(head, Vector3(0, -0.07, 0.11), Vector3(0.07, 0.012, 0.01), Color(0.35, 0.12, 0.12))
+	if glasses:
+		_box(head, Vector3(0, 0.02, 0.12), Vector3(0.2, 0.035, 0.02), Color(0.03, 0.03, 0.03))
+	if beard_col != null:
+		_box(head, Vector3(0, -0.08, 0.06), Vector3(0.21, 0.1, 0.13), beard_col)
+	if hs != "bald" and cap_col == null:
+		if hs == "buzz":
+			_sph(head, Vector3(0, 0.04, -0.01), Vector3(0.235, 0.22, 0.245), hair)
+		else:
+			_sph(head, Vector3(0, 0.055, -0.012), Vector3(0.25, 0.21, 0.255), hair)
+		if hs == "long": _box(head, Vector3(0, -0.12, -0.09), Vector3(0.25, 0.36, 0.1), hair)
+		if hs == "bob": _box(head, Vector3(0, -0.04, -0.05), Vector3(0.27, 0.18, 0.2), hair)
+		if hs == "bun": _sph(head, Vector3(0, 0.13, -0.1), Vector3(0.12, 0.12, 0.12), hair)
+		if hs == "curly":
+			for q in [Vector3(-0.07,0.12,0), Vector3(0.07,0.12,0), Vector3(0,0.12,-0.07), Vector3(0,0.12,0.05)]:
+				_sph(head, q, Vector3(0.13, 0.1, 0.13), hair)
+	if cap_col != null:
+		var mi := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = 0.125; cm.bottom_radius = 0.13; cm.height = 0.09
+		mi.mesh = cm
+		mi.material_override = _mat(cap_col)
+		mi.position = Vector3(0, 0.1, 0)
+		head.add_child(mi)
+		_box(head, Vector3(0, 0.07, 0.16), Vector3(0.2, 0.02, 0.14), cap_col)
+	if agent:
+		_sph(head, Vector3(0.12, 0, 0), Vector3(0.03, 0.04, 0.03), Color(0.1, 0.1, 0.1))
+	# ombre au sol
+	var sh := MeshInstance3D.new()
+	var cm2 := CylinderMesh.new()
+	cm2.top_radius = 0.32; cm2.bottom_radius = 0.32; cm2.height = 0.01
+	sh.mesh = cm2
+	var smat := StandardMaterial3D.new()
+	smat.albedo_color = Color(0, 0, 0, 0.45)
+	smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sh.material_override = smat
+	sh.position = Vector3(0, 0.012, 0)
+	add_child(sh)
+
+func set_pose(p: Dictionary, dur: float) -> void:
+	pose = p
+	pose_until = Time.get_ticks_msec() / 1000.0 + dur
+
+func walk_to(pts: Array, cb = null) -> void:
+	path = pts.duplicate()
+	on_arrive = cb
+	anim = "walk"
+
+func turn_to(a: float, b: float, k: float) -> float:
+	var d := wrapf(b - a, -PI, PI)
+	return a + d * clamp(k, 0.0, 1.0)
+
+func _process(delta: float) -> void:
+	var t := Time.get_ticks_msec() / 1000.0
+	# suivi de chemin
+	if path.size() > 0:
+		var q = path[0]
+		var dx: float = q.x - position.x
+		var dz: float = q.y - position.z
+		var d := sqrt(dx * dx + dz * dz)
+		var sp := speed * (2.0 if run else 1.0) * delta
+		if d <= sp:
+			position.x = q.x; position.z = q.y
+			path.pop_front()
+			if path.is_empty():
+				if anim == "walk": anim = "idle"
+				if face != null:
+					yaw = face; face = null
+				var cb = on_arrive
+				on_arrive = null
+				if cb != null and cb is Callable and cb.is_valid():
+					cb.call(self)
+		else:
+			position.x += dx / d * sp
+			position.z += dz / d * sp
+			yaw = turn_to(yaw, atan2(dx, dz), delta * 8.0)
+			walk_ph += sp * 5.2
+	rotation.y = yaw
+	if glb != null:
+		_anim_glb()
+		return
+	_anim_prim(t)
+
+func _anim_glb() -> void:
+	if glb_anim == null: return
+	var names := {"walk":"Walk","dance":"Dance","fight":"Fight","fallen":"Fall","sit":"Sit","drink":"Idle","talk":"Talk","phone":"Idle","raise":"Surrender","idle":"Idle"}
+	var n: String = names.get(anim, "Idle")
+	if run and anim == "walk": n = "Run"
+	if glb_anim.has_animation(n) and glb_anim.current_animation != n:
+		glb_anim.play(n, 0.25)
+
+func _anim_prim(t: float) -> void:
+	var leg := 0.0; var arm := 0.0; var bob := 0.0; var lean := 0.0; var roll := 0.0
+	var arm_l = null; var arm_r = null
+	match anim:
+		"walk":
+			leg = sin(walk_ph) * 0.55; arm = -leg * 0.8; bob = abs(cos(walk_ph)) * 0.03
+		"dance":
+			var s := sin(t * 4.2 + ph)
+			bob = abs(s) * 0.09; arm_l = -2.5 + s * 0.4; arm_r = -2.5 - s * 0.4; leg = s * 0.15; roll = sin(t * 2.1 + ph) * 0.06
+		"fight":
+			var s2 := sin(t * 9.0 + ph)
+			arm_l = -1.5 + max(0.0, s2) * 0.4; arm_r = -1.5 + max(0.0, -s2) * 0.4; lean = 0.18; bob = abs(s2) * 0.03; leg = 0.15
+		"drink":
+			arm_r = -1.9 + sin(t * 0.7 + ph) * 0.25; arm_l = -0.1
+		"talk":
+			arm_r = -0.6 + sin(t * 3.0 + ph) * 0.4; arm_l = -0.1
+		"phone":
+			arm_r = -2.6; arm_l = -0.1
+		"raise":
+			arm_l = -2.9; arm_r = -2.9
+	if t < pose_until:
+		if pose.has("arm_l"): arm_l = pose["arm_l"]
+		if pose.has("arm_r"): arm_r = pose["arm_r"]
+		if pose.has("lean"): lean = pose["lean"]
+		if pose.has("leg"): leg = pose["leg"]
+	if sway > 0.0:
+		roll += sin(t * 1.6 + ph) * 0.12 * sway
+	var k := height / 1.75
+	if anim == "fallen":
+		body.position = Vector3(0, 0.14, 0.9 * k)
+		body.rotation = Vector3(-PI / 2, 0, 0)
+	elif anim == "sit":
+		body.position = Vector3(0, -0.42 * k, 0)
+		body.rotation = Vector3.ZERO
+	else:
+		body.position = Vector3(0, bob, 0)
+		body.rotation = Vector3(0, 0, roll)
+	var sit_l := -1.45 if anim == "sit" else 0.0
+	legs[0].rotation.x = sit_l if anim == "sit" else -leg
+	legs[1].rotation.x = sit_l if anim == "sit" else leg
+	torso.rotation.x = lean
+	arms[0].rotation = Vector3(arm_l if arm_l != null else -arm, 0, -0.08)
+	arms[1].rotation = Vector3(arm_r if arm_r != null else arm, 0, 0.08)

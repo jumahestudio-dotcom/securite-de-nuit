@@ -1,0 +1,959 @@
+{
+ "file": {
+  "t": "Bagarre dans la file d'attente",
+  "d": "Deux types se poussent dans la file, une bouteille tombe et se brise. Les gens reculent.",
+  "o": [
+   {
+    "t": "Envoyer deux agents de la porte séparer et éloigner les protagonistes, appeler le 17 si ça continue",
+    "s": 6,
+    "r": 3,
+    "g": "Bonne gestion : séparer, éloigner, alerter. La file est sous ta surveillance."
+   },
+   {
+    "t": "Y aller seul au milieu pour calmer tout le monde",
+    "s": -5,
+    "txt": "Tu prends un coup de coude, l'un d'eux te pousse contre la barrière.",
+    "f": "Intervenir seul au milieu d'une rixe : mise en danger inutile.",
+    "law": "Toujours intervenir à plusieurs et alerter tôt."
+   },
+   {
+    "t": "C'est sur le trottoir, ce n'est pas notre problème",
+    "s": -4,
+    "r": -4,
+    "txt": "La bagarre dure, un passant est blessé.",
+    "f": "Aucune alerte donnée alors qu'une rixe se déroule devant l'établissement.",
+    "law": "Sur la voie publique, c'est la police qui intervient (art. L613-1 CSI), mais il faut au moins l'alerter (17)."
+   }
+  ]
+ },
+ "pourboire": {
+  "t": "Un billet pour passer",
+  "d": "Un client te glisse discrètement un billet de 50 € : « Pour passer devant tout le monde, mon pote. »",
+  "o": [
+   {
+    "t": "Refuser poliment et le renvoyer dans la file",
+    "r": 3,
+    "g": "Intègre : la file est la même pour tous."
+   },
+   {
+    "t": "Prendre le billet et le faire passer",
+    "r": -5,
+    "f": "Avantage accepté pour favoriser un client.",
+    "law": "Accepter un avantage pour manquer à ses obligations professionnelles peut constituer une corruption privée (art. 445-2 Code pénal)."
+   }
+  ]
+ },
+ "diabete": {
+  "t": "Un homme titube dans la file",
+  "d": "Il vacille, transpire beaucoup, parle avec difficulté… mais ne sent pas l'alcool. Une carte « Je suis diabétique » dépasse de son portefeuille.",
+  "o": [
+   {
+    "t": "L'asseoir, lui donner du sucre (soda, sucre du bar) s'il peut avaler, appeler le 15",
+    "s": 7,
+    "r": 5,
+    "g": "Hypoglycémie reconnue : sucre et alerte. Tu lui as peut-être sauvé la vie."
+   },
+   {
+    "t": "Le refuser pour ivresse et le laisser repartir",
+    "s": -10,
+    "r": -6,
+    "f": "Malaise d'hypoglycémie pris pour de l'ivresse.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal) : vérifier les signes (odeur d'alcool, carte médicale)."
+   },
+   {
+    "t": "Le faire entrer pour qu'il se repose à l'intérieur",
+    "s": -6,
+    "txt": "Il fait un malaise grave sur la piste vingt minutes plus tard.",
+    "f": "Malaise non pris en charge."
+   }
+  ]
+ },
+ "mere": {
+  "t": "Une mère cherche sa fille",
+  "d": "Une femme arrive, paniquée : sa fille de 15 ans aurait fugué « pour venir ici ». Elle montre une photo.",
+  "o": [
+   {
+    "t": "Prendre la photo, la faire passer aux agents de salle, retrouver la jeune fille et la confier à sa mère, appeler le 17 si besoin",
+    "s": 5,
+    "r": 5,
+    "g": "Bonne coopération : une mineure n'a rien à faire là, et la mère est rassurée."
+   },
+   {
+    "t": "La laisser entrer chercher sa fille elle-même",
+    "s": -3,
+    "r": -2,
+    "txt": "Scène de cris sur la piste, la jeune fille s'enfuit par l'issue de secours."
+   },
+   {
+    "t": "Répondre qu'aucune mineure n'entre ici, point",
+    "r": -4,
+    "txt": "La jeune fille était bien à l'intérieur… la mère revient avec la police.",
+    "f": "Refus d'aider à retrouver une mineure dans l'établissement."
+   }
+  ]
+ },
+ "tiktok": {
+  "t": "On te filme en direct",
+  "d": "Un client refusé te filme en direct sur les réseaux : « Regardez ce videur, il refuse qui il veut ! »",
+  "o": [
+   {
+    "t": "Rester calme et poli, réexpliquer le motif objectif du refus, ne pas toucher au téléphone",
+    "r": 5,
+    "g": "Calme et motif objectif : la vidéo ne montre rien de reprochable."
+   },
+   {
+    "t": "Lui arracher le téléphone",
+    "r": -10,
+    "s": -4,
+    "f": "Téléphone saisi de force.",
+    "law": "Filmer dans l'espace public est en principe libre ; s'emparer du téléphone peut constituer un vol ou des violences."
+   },
+   {
+    "t": "L'insulter en retour",
+    "r": -12,
+    "f": "Insultes filmées et diffusées.",
+    "law": "Injure publique (loi du 29 juillet 1881), et réputation de l'établissement ruinée."
+   }
+  ]
+ },
+ "influenceur": {
+  "t": "L'influenceur",
+  "d": "Un influenceur local (200 000 abonnés) veut entrer gratuitement avec 6 amis, sans faire la file, « pour faire une story ». Le gérant n'a rien prévu.",
+  "o": [
+   {
+    "t": "Appeler le gérant pour qu'il décide, et faire attendre poliment en attendant",
+    "r": 3,
+    "g": "Ce n'est pas au physio de distribuer des entrées gratuites : la décision revient au gérant."
+   },
+   {
+    "t": "Les faire passer gratuitement sans demander",
+    "r": -3,
+    "txt": "Le gérant voit 7 entrées gratuites dans la caisse… il n'apprécie pas.",
+    "sat": -4
+   },
+   {
+    "t": "Refuser sèchement",
+    "r": -5,
+    "txt": "Story assassine le lendemain : « videurs désagréables »."
+   }
+  ]
+ },
+ "pluie": {
+  "t": "Averse sur la file",
+  "d": "Une grosse averse tombe sur la file d'attente. Les gens se bousculent pour s'abriter sous l'auvent, le ton monte.",
+  "o": [
+   {
+    "t": "Réorganiser la file le long du mur sous l'auvent, garder l'ordre d'arrivée, accélérer les contrôles sans les bâcler",
+    "s": 5,
+    "r": 4,
+    "g": "File organisée et contrôles maintenus : tout le monde reste calme."
+   },
+   {
+    "t": "Faire entrer tout le monde vite fait sans contrôle",
+    "s": -10,
+    "f": "Contrôles abandonnés à cause de la pluie.",
+    "law": "Mineurs, armes, liste noire : le contrôle d'accès ne s'arrête jamais."
+   },
+   {
+    "t": "Laisser les gens se débrouiller",
+    "r": -5,
+    "s": -3,
+    "txt": "Bousculade sous l'auvent, une barrière tombe sur une cliente."
+   }
+  ]
+ },
+ "motif": {
+  "t": "« Donnez-moi votre nom ! »",
+  "d": "Un client refusé plus tôt revient : il exige le motif exact du refus, le nom de l'agent et menace de « porter plainte pour discrimination ».",
+  "o": [
+   {
+    "t": "Rester poli, redonner calmement le motif objectif du refus, et lui indiquer qu'il peut contacter la direction ou porter plainte s'il le souhaite",
+    "r": 5,
+    "g": "Un refus fondé sur un motif objectif se justifie sans crainte. Transparence et calme."
+   },
+   {
+    "t": "Lui répondre que tu n'as pas à te justifier et lui fermer la porte au nez",
+    "r": -6,
+    "txt": "Il filme la scène et poste la vidéo : « refus sans explication »."
+   },
+   {
+    "t": "Lui inventer un motif sur le moment",
+    "r": -8,
+    "f": "Motif inventé après coup.",
+    "law": "Changer de motif est la meilleure preuve d'une discrimination en cas de plainte (art. 225-1 Code pénal)."
+   }
+  ]
+ },
+ "femme_fuit": {
+  "t": "Une femme demande de l'aide",
+  "d": "Une jeune femme arrive en courant à la porte, en larmes : un homme la suit depuis la gare et la menace. Il est à 20 mètres.",
+  "o": [
+   {
+    "t": "La faire entrer à l'abri derrière la porte, appeler le 17, noter le signalement de l'homme sans aller au contact dans la rue",
+    "s": 8,
+    "r": 6,
+    "g": "Mise à l'abri, alerte, signalement : exactement ce qu'il fallait."
+   },
+   {
+    "t": "Lui dire de faire la file comme tout le monde",
+    "s": -10,
+    "r": -8,
+    "f": "Personne en danger laissée dans la rue.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal)."
+   },
+   {
+    "t": "Courir après l'homme pour lui « régler son compte »",
+    "s": -6,
+    "f": "Agent parti en chasse sur la voie publique.",
+    "law": "Hors de l'établissement, l'agent n'a aucune mission de police. Et la porte reste sans surveillance."
+   }
+  ]
+ },
+ "accident": {
+  "t": "Accident devant l'entrée",
+  "d": "Un scooter percute un piéton juste devant la file. Le piéton est au sol et ne bouge pas, le conducteur titube.",
+  "o": [
+   {
+    "t": "Protéger la zone (baliser, faire reculer la foule), appeler le 18 ou le 15, ne pas bouger la victime, lui parler et surveiller sa respiration",
+    "s": 9,
+    "r": 5,
+    "g": "Protéger, alerter, secourir : la base du secourisme."
+   },
+   {
+    "t": "Relever le piéton et l'asseoir sur le trottoir",
+    "s": -8,
+    "f": "Victime d'un choc déplacée.",
+    "law": "Après un accident de la route, on ne bouge pas la victime (risque de lésion de la colonne)."
+   },
+   {
+    "t": "Continuer à faire entrer les clients, les secours vont venir",
+    "s": -10,
+    "r": -6,
+    "f": "Aucun secours porté à un blessé devant ta porte.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal)."
+   }
+  ]
+ },
+ "dealers": {
+  "t": "Deal devant l'entrée",
+  "d": "Deux types proposent de la drogue aux clients qui font la file : « T'as besoin de quelque chose pour ce soir ? »",
+  "o": [
+   {
+    "t": "Leur demander de s'éloigner de la file, prévenir le 17, noter leur signalement et ne pas faire entrer leurs clients",
+    "s": 6,
+    "r": 3,
+    "g": "Signalement et vigilance : le trafic devant la porte finit toujours à l'intérieur."
+   },
+   {
+    "t": "Les laisser, c'est sur la voie publique",
+    "s": -6,
+    "f": "Trafic toléré devant l'établissement.",
+    "law": "Un trafic aux abords peut entraîner une fermeture administrative (art. L3332-15 CSP)."
+   },
+   {
+    "t": "Les attraper et leur vider les poches",
+    "s": -6,
+    "r": -4,
+    "f": "Fouille et saisie sur la voie publique par des agents privés.",
+    "law": "Pas de fouille, pas de saisie : c'est le travail de la police."
+   }
+  ]
+ },
+ "bouteille_perso": {
+  "t": "Clients avec leur bouteille",
+  "d": "Un groupe arrive avec une bouteille de vodka entamée cachée dans un sac : « On la finit dedans, discret. »",
+  "o": [
+   {
+    "t": "Refuser l'entrée avec la bouteille : la jeter ou la laisser dehors, puis contrôle normal",
+    "s": 3,
+    "r": 2,
+    "g": "Pas d'alcool extérieur : règle de l'établissement et contrôle de l'alcoolisation."
+   },
+   {
+    "t": "Les laisser entrer avec, pas de souci",
+    "s": -4,
+    "r": -2,
+    "txt": "Ils finissent ivres morts, et le gérant voit la bouteille vide sur une table.",
+    "sat": -3
+   }
+  ]
+ },
+ "journaliste": {
+  "t": "Un journaliste filme",
+  "d": "Une équipe de télé locale fait un reportage sur « la nuit en ville ». Le journaliste veut filmer la file et te poser des questions.",
+  "o": [
+   {
+    "t": "Renvoyer vers le gérant pour l'autorisation, demander de ne pas filmer les clients sans leur accord",
+    "r": 5,
+    "g": "Droit à l'image des clients et communication réservée au gérant : réponse pro."
+   },
+   {
+    "t": "Raconter en direct les bagarres de la semaine dernière",
+    "r": -10,
+    "sat": -6,
+    "f": "Informations internes données à la presse sans autorisation.",
+    "law": "Obligation de discrétion professionnelle des agents de sécurité (code de déontologie des activités privées de sécurité)."
+   },
+   {
+    "t": "Arracher la caméra",
+    "r": -12,
+    "s": -4,
+    "f": "Violences sur un journaliste.",
+    "law": "On ne touche ni aux personnes ni à leur matériel : l'espace public peut être filmé."
+   }
+  ]
+ },
+ "supporters": {
+  "t": "Les supporters arrivent",
+  "d": "Après le match, une vingtaine de supporters de l'équipe qui a perdu arrivent en chantant, certains très éméchés.",
+  "o": [
+   {
+    "t": "Les faire attendre groupés, contrôler individuellement, refuser les plus ivres et les agressifs, laisser entrer les autres par petits groupes",
+    "s": 6,
+    "r": 4,
+    "g": "Contrôle au cas par cas : aucun groupe n'est refusé « en bloc », mais aucun ivre n'entre."
+   },
+   {
+    "t": "Refuser tout le groupe d'office",
+    "r": -4,
+    "txt": "Ils restent devant à chanter et à bloquer la file pendant une heure."
+   },
+   {
+    "t": "Les faire tous entrer d'un coup",
+    "s": -10,
+    "f": "Groupe ivre admis sans contrôle.",
+    "law": "Interdit de faire entrer et de servir des personnes manifestement ivres (Code de la santé publique)."
+   }
+  ]
+ },
+ "lacrymoperso": {
+  "t": "La bombe dans le sac",
+  "d": "À la fouille visuelle, une cliente montre une petite bombe lacrymogène : « C'est pour me défendre en rentrant seule la nuit. »",
+  "note": "de nombreuses femmes disent avoir peur en rentrant seules la nuit. Les bombes lacrymogènes sont des armes (catégorie D) : leur port sans motif légitime est interdit.",
+  "o": [
+   {
+    "t": "Lui expliquer calmement qu'elle ne peut pas entrer avec, proposer de la laisser au vestiaire jusqu'à la sortie, et lui indiquer qu'on peut l'aider à rentrer en sécurité (taxi)",
+    "s": 4,
+    "r": 5,
+    "g": "Règle respectée, avec compréhension : elle entre rassurée."
+   },
+   {
+    "t": "La laisser entrer avec",
+    "s": -6,
+    "f": "Arme de catégorie D admise dans la salle.",
+    "law": "Une bombe lacrymogène vidée en salle provoque une panique (déjà vu) : aucune arme dans l'établissement."
+   },
+   {
+    "t": "La confisquer et la jeter",
+    "r": -5,
+    "txt": "Elle repart furieuse : on ne détruit pas le bien d'un client."
+   }
+  ]
+ },
+ "identitenum": {
+  "t": "La carte d'identité sur téléphone",
+  "d": "Un client présente sa carte d'identité dans l'application officielle France Identité, sur son téléphone, au lieu de la carte physique.",
+  "note": "l'application France Identité permet de présenter un justificatif d'identité numérique. Une simple photo de carte, elle, ne prouve rien.",
+  "o": [
+   {
+    "t": "Vérifier dans l'application (pas une capture d'écran), comparer la photo et la date de naissance, puis accepter si tout correspond",
+    "r": 4,
+    "g": "Vérification sérieuse d'un justificatif numérique officiel : contrôle valable."
+   },
+   {
+    "t": "Refuser : seule la carte physique compte",
+    "r": -3,
+    "txt": "Le client montre le justificatif officiel à un autre agent, qui l'accepte. Incohérence dans l'équipe."
+   },
+   {
+    "t": "Accepter aussi une simple photo de carte envoyée par un ami",
+    "s": -6,
+    "f": "Photo de pièce d'identité acceptée.",
+    "law": "Une photo ne prouve ni l'identité ni l'âge : c'est la porte ouverte aux mineurs."
+   }
+  ]
+ },
+ "motaide": {
+  "t": "Un mot glissé discrètement",
+  "d": "En te tendant sa pièce, une jeune femme glisse un papier plié : « Aidez-moi. » L'homme qui l'accompagne tient son passeport et répond à sa place.",
+  "note": "les associations de lutte contre la traite des êtres humains forment les professionnels de la nuit à repérer ces signaux : une personne qui ne parle pas pour elle, sans ses papiers, sous contrôle.",
+  "o": [
+   {
+    "t": "Rester naturel, séparer discrètement la jeune femme sous un prétexte (contrôle, vestiaire), la mettre à l'abri et appeler le 17",
+    "s": 10,
+    "r": 6,
+    "g": "Tu as peut-être sauvé quelqu'un : discrétion, mise à l'abri, alerte."
+   },
+   {
+    "t": "Lire le mot à voix haute et demander à l'homme de s'expliquer",
+    "s": -12,
+    "f": "Victime exposée devant celui qui la contrôle.",
+    "law": "Il ne faut jamais mettre la victime en danger : on agit discrètement et on alerte la police."
+   },
+   {
+    "t": "Les faire entrer, ce n'est pas tes affaires",
+    "s": -14,
+    "f": "Appel à l'aide ignoré.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal)."
+   }
+  ]
+ },
+ "voisinferme": {
+  "t": "Le club voisin est fermé",
+  "d": "La préfecture vient de fermer le club d'à côté pour un mois après des bagarres. Ses clients arrivent en masse chez vous, certains déjà énervés.",
+  "note": "les fermetures administratives de discothèques sont régulières en France après des violences ou des trafics, souvent pour plusieurs semaines.",
+  "o": [
+   {
+    "t": "Garder la même rigueur : jauge, contrôle individuel, refus des plus agités. Prévenir l'équipe de salle",
+    "s": 7,
+    "r": 3,
+    "g": "La rigueur évite de récupérer les problèmes du voisin… et sa fermeture."
+   },
+   {
+    "t": "Ouvrir grand, c'est une aubaine",
+    "s": -10,
+    "f": "Contrôles relâchés face à un afflux de clients à risque.",
+    "law": "Un établissement qui laisse entrer n'importe qui s'expose lui aussi à une fermeture administrative (art. L3332-15 CSP)."
+   }
+  ]
+ },
+ "bebe": {
+  "t": "La poussette",
+  "d": "Une jeune mère arrive avec un bébé en poussette, furieuse : « Mon mari est là-dedans, il devait garder le petit ! Je veux entrer le chercher ! »",
+  "o": [
+   {
+    "t": "Ne pas faire entrer le bébé, prendre le nom du mari, envoyer un agent le chercher et le faire sortir",
+    "r": 5,
+    "g": "Un bébé n'a rien à faire dans le bruit et l'alcool : on règle la situation à l'entrée."
+   },
+   {
+    "t": "La laisser entrer avec la poussette",
+    "s": -6,
+    "r": -3,
+    "f": "Nourrisson admis dans une discothèque.",
+    "law": "Bruit, fumée, alcool, foule : danger pour un nourrisson et pour la sécurité de l'évacuation."
+   }
+  ]
+ },
+ "foyer": {
+  "t": "La sortie du foyer",
+  "d": "Un éducateur arrive avec cinq adultes en situation de handicap mental, d'un foyer voisin. Ils sont ravis de venir danser.",
+  "o": [
+   {
+    "t": "Les accueillir normalement, contrôle habituel, éventuellement leur indiquer un coin plus calme",
+    "r": 6,
+    "g": "Accueil comme tout le monde : refuser serait une discrimination liée au handicap."
+   },
+   {
+    "t": "Refuser : « ça risque de mettre mal à l'aise les autres clients »",
+    "r": -18,
+    "f": "Refus d'un groupe en raison du handicap.",
+    "law": "Discrimination liée au handicap (art. 225-1 et 225-2 Code pénal)."
+   }
+  ]
+ },
+ "montre": {
+  "t": "Une montre « pas chère »",
+  "d": "Un client dans la file te propose discrètement une montre de luxe à 100 € : « Elle est neuve, je te fais un prix. »",
+  "o": [
+   {
+    "t": "Refuser, noter sa description et le signaler à la police (la montre est probablement volée)",
+    "s": 3,
+    "r": 3,
+    "g": "Acheter un objet volé, c'est du recel. Bon réflexe de signaler."
+   },
+   {
+    "t": "L'acheter, c'est une affaire",
+    "r": -8,
+    "f": "Achat d'un objet probablement volé.",
+    "law": "Recel (art. 321-1 Code pénal) : jusqu'à 5 ans d'emprisonnement."
+   }
+  ]
+ },
+ "touriste": {
+  "t": "Le touriste perdu",
+  "d": "Un touriste japonais, un peu perdu, te montre l'adresse de son hôtel sur son téléphone. Il ne parle ni français ni anglais.",
+  "o": [
+   {
+    "t": "Lui montrer le chemin sur une carte, lui appeler un taxi si c'est loin, avec le sourire",
+    "r": 4,
+    "g": "L'accueil, c'est aussi ça : l'image de l'établissement et de la ville."
+   },
+   {
+    "t": "Lui faire signe de partir, tu as du travail",
+    "r": -2,
+    "txt": "Il erre dans le quartier pendant une heure."
+   }
+  ]
+ },
+ "ordonnance": {
+  "t": "L'ex de Nadia est là",
+  "d": "L'ex-compagnon de Nadia arrive, très tendu : « Je sais qu'elle est là, je veux la voir. » Nadia t'a dit qu'une ordonnance de protection lui interdit de l'approcher.",
+  "o": [
+   {
+    "t": "Refuser l'entrée calmement, le garder à distance, prévenir l'équipe de salle pour protéger Nadia, appeler le 17 : il viole peut-être une ordonnance",
+    "s": 9,
+    "r": 6,
+    "g": "Ne pas respecter une ordonnance de protection est un délit : la police intervient vite. Nadia est en sécurité."
+   },
+   {
+    "t": "Le laisser entrer, l'ordonnance c'est leur affaire",
+    "s": -14,
+    "r": -8,
+    "f": "Auteur présumé de violences conjugales admis malgré une ordonnance de protection.",
+    "law": "Violation d'une ordonnance de protection : délit (art. 227-4-2 Code pénal). La victime était en danger."
+   },
+   {
+    "t": "Lui dire qu'elle est au bar, pour éviter un scandale à la porte",
+    "s": -16,
+    "r": -10,
+    "f": "Information donnée à l'auteur sur la présence de la victime.",
+    "law": "La victime a fait confiance à l'équipe : on ne révèle jamais où elle se trouve."
+   }
+  ]
+ },
+ "mission": {
+  "t": "Policiers en mission",
+  "d": "Deux personnes en civil te montrent discrètement leur carte de police : « On est en mission, on doit entrer sans se faire remarquer. »",
+  "o": [
+   {
+    "t": "Vérifier rapidement la carte, les laisser entrer discrètement, prévenir le gérant sans alerter la salle",
+    "s": 4,
+    "r": 3,
+    "g": "En mission, les policiers peuvent entrer dans un lieu ouvert au public. Discrétion et coopération."
+   },
+   {
+    "t": "Leur faire payer l'entrée et les faire passer par la palpation",
+    "r": -4,
+    "txt": "Tu as failli faire échouer leur surveillance devant tout le monde.",
+    "sat": -2
+   },
+   {
+    "t": "Annoncer au micro que la police est là",
+    "s": -10,
+    "r": -6,
+    "f": "Opération de police compromise.",
+    "law": "Révéler une opération de police en cours peut constituer une entrave à la justice."
+   }
+  ]
+ },
+ "mariage": {
+  "t": "Le mariage arrive",
+  "d": "Une noce de 30 personnes arrive après le repas, en costumes et robes de soirée. Certains sont très ivres, d'autres sobres, dont les mariés.",
+  "o": [
+   {
+    "t": "Contrôler chaque invité individuellement : faire entrer les sobres et les mariés, refuser poliment les quelques invités trop ivres",
+    "s": 6,
+    "r": 5,
+    "g": "Contrôle au cas par cas, même dans un groupe festif : la noce continue sans les plus alcoolisés."
+   },
+   {
+    "t": "Tout le monde entre, c'est un mariage !",
+    "s": -8,
+    "f": "Invités manifestement ivres admis en groupe.",
+    "law": "Interdit de servir une personne manifestement ivre (Code de la santé publique)."
+   },
+   {
+    "t": "Refuser toute la noce, trop de monde ivre",
+    "r": -6,
+    "txt": "La mariée pleure devant la porte, les sobres partent furieux.",
+    "sat": -3
+   }
+  ]
+ },
+ "beaufrere": {
+  "t": "« Je suis le beau-frère du patron »",
+  "d": "Un homme passe devant toute la file : « Je suis le beau-frère du patron, appelle-le si tu veux. » Il sent fort l'alcool.",
+  "o": [
+   {
+    "t": "L'inviter à patienter, appeler le gérant pour vérifier, et le contrôler comme tout le monde (dont son état d'ivresse)",
+    "r": 3,
+    "g": "Vérifier et contrôler : la parenté ne dispense pas du contrôle d'ivresse."
+   },
+   {
+    "t": "Le faire entrer tout de suite",
+    "s": -4,
+    "r": -2,
+    "txt": "Le gérant n'a pas de beau-frère. Il finit ivre mort au bar."
+   }
+  ]
+ },
+ "rampe": {
+  "t": "L'accès en fauteuil",
+  "d": "Une cliente en fauteuil roulant arrive : l'entrée a trois marches. « Il y a un accès ? »",
+  "o": [
+   {
+    "t": "Installer la rampe amovible prévue, l'aider si elle le souhaite, puis contrôle normal",
+    "r": 6,
+    "g": "Accessibilité des ERP : on met en place l'accès prévu, avec respect."
+   },
+   {
+    "t": "S'excuser : « Ce n'est pas accessible, désolé »",
+    "r": -12,
+    "f": "Accès refusé à une personne en fauteuil.",
+    "law": "Les ERP doivent être accessibles aux personnes handicapées (loi du 11 février 2005) ; refuser l'accès peut constituer une discrimination."
+   }
+  ]
+ },
+ "arriveivre": {
+  "t": "Il arrive au volant",
+  "d": "Une voiture se gare en travers devant l'entrée. Le conducteur sort en titubant, les yeux rouges, et veut entrer.",
+  "o": [
+   {
+    "t": "Refuser l'entrée (ivresse manifeste), lui proposer d'appeler un taxi, et prévenir le 17 s'il reprend le volant",
+    "s": 7,
+    "r": 3,
+    "g": "Refus fondé et prévention : il ne reprendra pas la route ivre sans que la police soit prévenue."
+   },
+   {
+    "t": "Le faire entrer, il ne conduit plus pour l'instant",
+    "s": -6,
+    "f": "Personne manifestement ivre admise.",
+    "law": "Interdit de servir une personne manifestement ivre (Code de la santé publique), et il repartira en voiture."
+   }
+  ]
+ },
+ "mineursdehors": {
+  "t": "Des ados boivent devant l'entrée",
+  "d": "Une bande d'adolescents de 15 ans boit de la vodka sur le trottoir, juste à côté de la file. L'une d'elles a l'air très mal.",
+  "o": [
+   {
+    "t": "S'assurer que la jeune fille va bien (15 si besoin), leur demander de s'éloigner et prévenir le 17 pour des mineurs alcoolisés",
+    "s": 6,
+    "r": 4,
+    "g": "Des mineurs en danger devant ta porte : on vérifie, on alerte."
+   },
+   {
+    "t": "Ce n'est pas devant chez nous, on ignore",
+    "s": -6,
+    "r": -4,
+    "txt": "La jeune fille fait un coma éthylique sur le trottoir 20 minutes plus tard."
+   }
+  ]
+ },
+ "voisin": {
+  "t": "Le voisin en pyjama",
+  "d": "Un voisin furieux, en pyjama, arrive à la porte : la musique l'empêche de dormir et il menace d'appeler la mairie.",
+  "o": [
+   {
+    "t": "L'écouter, s'excuser, faire baisser les basses par le DJ et fermer les fenêtres, lui laisser le numéro du gérant",
+    "r": 5,
+    "g": "Les bonnes relations avec le voisinage évitent les fermetures administratives pour bruit."
+   },
+   {
+    "t": "Lui dire d'acheter des bouchons d'oreilles",
+    "r": -6,
+    "sat": -4,
+    "txt": "Il porte plainte : contrôle du bruit la semaine suivante."
+   }
+  ]
+ },
+ "exconjoint": {
+  "t": "L'ex qui cherche quelqu'un",
+  "d": "Un homme très tendu veut entrer : « Mon ex est à l'intérieur avec un autre, je veux juste lui parler. » Il serre les poings.",
+  "o": [
+   {
+    "t": "Refuser l'entrée calmement, prévenir discrètement l'équipe de salle pour qu'elle protège la femme et lui propose de partir en sécurité, appeler le 17 s'il reste",
+    "s": 8,
+    "r": 5,
+    "g": "Risque de violence conjugale : on ne le laisse pas entrer, on protège la personne visée."
+   },
+   {
+    "t": "Le laisser entrer, il veut juste parler",
+    "s": -12,
+    "r": -6,
+    "f": "Homme menaçant admis pour retrouver son ex-compagne.",
+    "law": "Les violences conjugales commencent souvent par ce genre de « discussion ». Le refus pour comportement menaçant est légitime."
+   }
+  ]
+ },
+ "fauxvip": {
+  "t": "« Je suis sur la liste »",
+  "d": "Une femme très sûre d'elle affirme être sur la liste VIP, invitée « par Max, l'associé du patron ». Son nom n'y est pas.",
+  "o": [
+   {
+    "t": "Rester poli, vérifier auprès du gérant par téléphone, et la faire passer par l'entrée normale en attendant",
+    "r": 4,
+    "g": "On vérifie au lieu de céder au bluff : la liste, c'est la liste."
+   },
+   {
+    "t": "La faire passer en VIP, elle a l'air de connaître du monde",
+    "r": -3,
+    "sat": -3,
+    "txt": "Personne ne la connaît. Elle commande une bouteille à 300 € qu'elle ne paie pas."
+   }
+  ]
+ },
+ "erasmus": {
+  "t": "Le groupe Erasmus",
+  "d": "Vingt étudiants de toutes nationalités arrivent ensemble, joyeux, avec des pièces d'identité de six pays différents.",
+  "o": [
+   {
+    "t": "Les contrôler un par un comme tout le monde : âge, état, tenue, et faire entrer ceux qui sont en règle",
+    "s": 3,
+    "r": 5,
+    "g": "Contrôle individuel, mêmes règles pour tous, quelle que soit la nationalité."
+   },
+   {
+    "t": "Refuser le groupe : « trop d'étrangers d'un coup »",
+    "r": -18,
+    "f": "Refus d'un groupe en raison de la nationalité.",
+    "law": "Discrimination fondée sur l'origine ou la nationalité (art. 225-1 et 225-2 Code pénal)."
+   },
+   {
+    "t": "Les faire tous entrer sans contrôle, ils sont sympas",
+    "s": -8,
+    "f": "Vingt personnes admises sans aucun contrôle.",
+    "law": "Le contrôle d'accès est individuel : âge, état, objets dangereux."
+   }
+  ]
+ },
+ "secoursrue": {
+  "t": "Malaise sur le trottoir",
+  "d": "Une passante s'effondre sur le trottoir d'en face. Personne ne s'arrête.",
+  "o": [
+   {
+    "t": "Envoyer un agent formé : vérifier la conscience et la respiration, appeler le 15, PLS ou massage selon l'état, pendant qu'un autre garde la porte",
+    "s": 8,
+    "r": 6,
+    "g": "Porter secours tout en gardant la porte : bonne organisation."
+   },
+   {
+    "t": "Ne pas quitter la porte, quelqu'un va s'en occuper",
+    "s": -10,
+    "r": -6,
+    "f": "Aucun secours porté à une personne effondrée en face.",
+    "law": "Non-assistance à personne en danger (art. 223-6 Code pénal) : il suffit au moins d'alerter le 15."
+   }
+  ]
+ },
+ "amie": {
+  "t": "« Mon amie ne répond plus »",
+  "d": "Une cliente sortie fumer ne peut plus rentrer (tampon effacé) et s'inquiète : son amie, très ivre, est restée seule à l'intérieur et ne répond plus au téléphone.",
+  "o": [
+   {
+    "t": "Prendre la description de l'amie, envoyer un agent la chercher, la faire raccompagner ou prendre en charge si elle va mal",
+    "s": 6,
+    "r": 5,
+    "g": "Une cliente vulnérable seule à l'intérieur, c'est une priorité."
+   },
+   {
+    "t": "Lui dire que sans tampon, elle repaye ou elle reste dehors",
+    "r": -5,
+    "s": -4,
+    "txt": "Son amie a été retrouvée inconsciente aux toilettes une heure après.",
+    "f": "Signalement d'une personne vulnérable ignoré."
+   }
+  ]
+ },
+ "mere17": {
+  "t": "La mère et sa fille de 17 ans",
+  "d": "Une mère veut entrer avec sa fille qui fête ses 17 ans : « Elle est avec moi, je suis responsable, c'est son anniversaire ! »",
+  "o": [
+   {
+    "t": "Expliquer gentiment que l'établissement est réservé aux majeurs, même accompagnés, et refuser",
+    "r": 2,
+    "g": "La consigne (18 ans) vaut aussi pour les mineurs accompagnés, et l'alcool leur reste interdit."
+   },
+   {
+    "t": "Les laisser entrer, la mère surveille",
+    "s": -4,
+    "r": -3,
+    "f": "Mineure admise malgré la consigne.",
+    "law": "Même accompagnée, une mineure ne peut pas être servie en alcool (art. L3342-1 CSP), et la consigne de l'établissement est 18 ans."
+   }
+  ]
+ },
+ "livreur": {
+  "t": "Le livreur",
+  "d": "Un livreur à vélo arrive avec des burgers commandés par un client du carré VIP. Il veut entrer pour livrer en main propre.",
+  "o": [
+   {
+    "t": "Faire appeler le client pour qu'il vienne récupérer sa commande à l'entrée",
+    "r": 2,
+    "g": "Personne n'entre sans contrôle, même pour cinq minutes."
+   },
+   {
+    "t": "Le laisser entrer avec son gros sac sans contrôle",
+    "s": -4,
+    "f": "Entrée d'une personne et d'un sac non contrôlés.",
+    "law": "Le contrôle d'accès s'applique à toute personne qui entre."
+   }
+  ]
+ },
+ "radiation": {
+  "t": "Demande de retrait de la liste noire",
+  "d": "Un homme exclu il y a six mois revient poliment : il s'excuse pour la bagarre et demande à être retiré de la liste noire.",
+  "o": [
+   {
+    "t": "L'écouter poliment et lui dire que seul le gérant peut lever une exclusion ; prendre ses coordonnées pour transmettre",
+    "r": 4,
+    "g": "Le physio applique la liste, le gérant la décide : réponse correcte et respectueuse."
+   },
+   {
+    "t": "Le faire entrer, il a l'air d'avoir changé",
+    "s": -4,
+    "txt": "Le gérant le voit au bar et te convoque.",
+    "sat": -4,
+    "f": "Exclusion levée sans l'accord de l'exploitant."
+   },
+   {
+    "t": "Le chasser en l'insultant",
+    "r": -5,
+    "txt": "Il porte plainte pour injures, et il avait l'air sincère."
+   }
+  ]
+ },
+ "scooter": {
+  "t": "Vol de scooter devant l'entrée",
+  "d": "Sous tes yeux, deux jeunes forcent l'antivol d'un scooter garé devant la boîte.",
+  "o": [
+   {
+    "t": "Appeler le 17 en donnant la description, faire signe aux clients du scooter, ne pas quitter ton poste pour une poursuite",
+    "s": 5,
+    "r": 3,
+    "g": "Alerter et décrire : c'est le plus utile. Ta mission est la porte."
+   },
+   {
+    "t": "Les poursuivre dans la rue",
+    "s": -6,
+    "txt": "Pendant ce temps, trois personnes entrent sans contrôle.",
+    "f": "Poste abandonné."
+   },
+   {
+    "t": "Ne rien faire, ce n'est pas ton scooter",
+    "r": -3,
+    "txt": "Un client se fait voler son scooter sous le nez de l'équipe."
+   }
+  ]
+ },
+ "inspection": {
+  "t": "Contrôle de l'inspection du travail",
+  "d": "Deux inspecteurs du travail se présentent : ils veulent voir les contrats, les déclarations d'embauche et les horaires des agents.",
+  "o": [
+   {
+    "t": "Les accueillir, appeler le gérant, présenter les contrats, les déclarations d'embauche et le planning",
+    "r": 4,
+    "g": "Coopération totale : un contrôle bien préparé se passe sans problème."
+   },
+   {
+    "t": "Leur dire de revenir lundi, ce n'est pas le moment",
+    "r": -10,
+    "sat": -6,
+    "f": "Refus de laisser entrer l'inspection du travail.",
+    "law": "Faire obstacle à un inspecteur du travail est un délit (art. L8114-1 Code du travail)."
+   }
+  ]
+ },
+ "urine": {
+  "t": "Client qui urine sur la façade",
+  "d": "Un client ivre refoulé urine contre la façade, devant la file et les voisins.",
+  "o": [
+   {
+    "t": "Lui demander d'arrêter et de partir, sans le brusquer ; appeler le 17 s'il devient agressif",
+    "r": 3,
+    "g": "Fermeté verbale : on règle la nuisance sans violence."
+   },
+   {
+    "t": "Le pousser violemment",
+    "s": -5,
+    "r": -4,
+    "f": "Violence sur un client ivre sur la voie publique.",
+    "law": "Pas de pouvoir de maintien de l'ordre sur la voie publique (art. L613-1 CSI)."
+   }
+  ]
+ },
+ "doublon": {
+  "t": "Billets en double",
+  "d": "Deux personnes présentent le même billet électronique : le code a déjà été scanné il y a 10 minutes.",
+  "o": [
+   {
+    "t": "Mettre les deux de côté, vérifier l'achat avec la billetterie, faire payer ou refuser celui qui n'a pas acheté le billet",
+    "r": 3,
+    "g": "Vérification auprès de la billetterie : on ne punit pas l'acheteur de bonne foi."
+   },
+   {
+    "t": "Refuser les deux, point",
+    "r": -5,
+    "txt": "L'acheteur de bonne foi, client régulier, est furieux et se fait rembourser."
+   },
+   {
+    "t": "Les faire entrer tous les deux",
+    "r": -2,
+    "sat": -2,
+    "txt": "Le gérant découvre 40 entrées frauduleuses à la fin de la soirée."
+   }
+  ]
+ },
+ "flic": {
+  "t": "« Police, on entre »",
+  "d": "Un homme montre une carte de police et veut entrer gratuitement avec cinq amis : « On est collègues, laisse passer. »",
+  "o": [
+   {
+    "t": "Rester courtois : sans mission, la carte de police ne donne pas d'entrée gratuite. Contrôle normal, entrée payante, ou décision du gérant",
+    "r": 3,
+    "g": "Courtoisie et même règle pour tous : impeccable."
+   },
+   {
+    "t": "Les laisser passer gratuitement sans contrôle",
+    "s": -5,
+    "f": "Groupe admis sans contrôle ni paiement.",
+    "law": "Hors mission, une carte de police ne dispense ni du contrôle d'accès ni du paiement."
+   },
+   {
+    "t": "Lui dire en riant que sa carte est sûrement fausse",
+    "r": -6,
+    "txt": "Il était vraiment policier… et il le prend très mal."
+   }
+  ]
+ },
+ "ambulance": {
+  "t": "L'ambulance est bloquée",
+  "d": "Une ambulance appelée pour un voisin ne peut pas passer : des voitures de clients sont garées en double file devant l'entrée.",
+  "o": [
+   {
+    "t": "Envoyer un agent guider l'ambulance, faire annoncer au micro les plaques des voitures, faire dégager la file d'attente de la chaussée",
+    "s": 6,
+    "r": 5,
+    "g": "Faciliter l'accès des secours, c'est prioritaire sur tout le reste."
+   },
+   {
+    "t": "Ce n'est pas pour un client, ce n'est pas notre problème",
+    "s": -6,
+    "r": -6,
+    "f": "Aucune aide aux secours bloqués devant l'établissement.",
+    "law": "Gêner ou ne pas faciliter l'accès des secours peut engager la responsabilité de l'établissement."
+   }
+  ]
+ },
+ "controle": {
+  "t": "Contrôle à la porte",
+  "d": "Une patrouille de police accompagne un contrôleur du CNAPS. Ils demandent la carte professionnelle de chaque agent en service.",
+  "special": "controle"
+ },
+ "revanche": {
+  "t": "Un client refusé revient",
+  "d": "Un homme refusé plus tôt revient avec trois amis. Ils se postent face à la porte : « Alors, on fait moins le malin ? »",
+  "o": [
+   {
+    "t": "Rester derrière la porte, garder la distance, ne pas répondre aux provocations, appeler le 17",
+    "s": 6,
+    "g": "Parfait : on ne sort pas pour se battre, on protège l'entrée et on alerte."
+   },
+   {
+    "t": "Sortir à trois pour leur faire comprendre",
+    "s": -10,
+    "r": -6,
+    "f": "Agents sortis pour en découdre sur la voie publique.",
+    "law": "Hors de l'établissement, les agents n'ont aucun pouvoir de maintien de l'ordre (art. L613-1 CSI). Une bagarre « préventive » n'est pas de la légitime défense."
+   },
+   {
+    "t": "Le laisser finalement entrer pour éviter les ennuis",
+    "s": -6,
+    "r": -3,
+    "txt": "Il entre avec ses amis… et l'ambiance se tend dans la salle.",
+    "f": "Céder à l'intimidation."
+   }
+  ]
+ }
+}
