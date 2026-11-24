@@ -284,6 +284,9 @@ func _build_model() -> bool:
 		for t in a.get_track_count():
 			var np: NodePath = a.track_get_path(t)
 			var bone := str(np.get_concatenated_subnames())
+			# certains imports FBX donnent des os sous forme de nœuds : « .../mixamorig_Hips »
+			if bone == "" and np.get_name_count() > 0:
+				bone = str(np.get_name(np.get_name_count() - 1))
 			if bone == "": continue
 			if skel.find_bone(bone) == -1:
 				if skel.find_bone(bone.replace(":", "_")) != -1: bone = bone.replace(":", "_")
