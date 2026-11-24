@@ -133,6 +133,6 @@ Copie-moi cette ligne et les éventuelles erreurs en rouge.
 2. 🔄 Vrais personnages animés (Mixamo) — code prêt, à toi de télécharger les fichiers
 3. ✅ Mode baston (coups, garde, esquive, saisie, renfort, légitime défense)
 4. Décor réaliste (Kenney / Quaternius)
-5. Carrière : vestiaire, habitués (Kévin, Lucas, Nadia…), événements de porte, gérant, équipement
+5. ✅ Carrière : vestiaire, habitués (Kévin, Lucas, Nadia…), événements de porte, gérant, équipe, équipement, trophées, journal
 6. Les autres établissements (Le Comptoir, Le Palace, L'Usine)
-7. Son et musique, minicarte, export en .exe
+7. ✅ Son et musique, minicarte, pause — reste : export en .exe

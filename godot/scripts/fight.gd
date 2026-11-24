@@ -424,6 +424,8 @@ func step(dt: float, mv: Vector3) -> void:
 						_log("Tu esquives le coup de %s." % o["name"])
 					else:
 						var dmg: float = 26.0 if o["weapon"] else randf_range(6, 10)
+						if o["weapon"] and game.career.eq("gilet"): dmg *= 0.4
+						if o["weapon"] and game.career.eq("gants"): dmg *= 0.85
 						if blocking and not o["weapon"]:
 							dmg *= 0.18
 							stats["blocked"] += 1
@@ -623,6 +625,14 @@ func finish(ko: bool) -> void:
 		game._good("%s : adversaire désarmé." % Data.clean(title))
 	if S["cut"] > 0:
 		res.append(["b", "Tu as été blessé en tentant de saisir une personne armée. Face à une arme, la priorité est la distance, l'alerte (17) et la protection du public.", ""])
+	if game.career.eq("camera"):
+		if S["hit_nosd"] > 0 or S["hit_down"] > 0 or S["long_pin"] > 0:
+			res.append(["b", "Ta caméra-piéton a tout filmé : les images seront versées au dossier.", ""])
+		else:
+			dr += 3
+			res.append(["", "Ta caméra-piéton a tout filmé : la plainte du client est classée sans suite.", ""])
+	if (S["hit_sd"] + S["hit_nosd"] + S["hit_down"]) == 0 and not ko: game.career.trophy("zen")
+	if S["hit_sd"] > 0 and S["hit_nosd"] == 0 and S["hit_down"] == 0 and not ko: game.career.trophy("selfdef")
 	# vidéos des témoins
 	var bad_gesture: bool = S["hit_nosd"] > 0 or S["hit_down"] > 0 or S["long_pin"] > 0
 	if witnesses.size() > 0:
@@ -678,7 +688,7 @@ func finish(ko: bool) -> void:
 	var cont := func():
 		game._close_panel()
 		if game.phase == "door" and game.cur == null:
-			game._next_client()
+			game._next_client(src.get("from_ev", false))
 	game.ui.open_panel("K.-O." if ko else "Fin de l'intervention", Data.clean(title) + " · " + Data.fmt_clock(game.minute), body,
 		[{"t": "Continuer", "k": "main", "cb": cont}])
 

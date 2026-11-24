@@ -6,6 +6,7 @@ const WorldScript = preload("res://scripts/world.gd")
 const UIScript = preload("res://scripts/ui.gd")
 const FightScript = preload("res://scripts/fight.gd")
 const AudioScript = preload("res://scripts/audio.gd")
+const CareerScript = preload("res://scripts/career.gd")
 
 var world
 var ui
@@ -16,6 +17,13 @@ var moon: DirectionalLight3D
 var minimap: Control
 var compass: Control
 var sens := 1.0
+var career
+var nq := 14
+var mod_minor := 1.0
+var mod_iv := 0.0
+var mod_agr := 0
+var minors_q := 0
+var minor_in := false
 var hq := true
 var player: CharacterBody3D
 var pvis
@@ -66,6 +74,9 @@ func _ready() -> void:
 	add_child(fight)
 	audio = AudioScript.new()
 	add_child(audio)
+	career = CareerScript.new()
+	career.game = self
+	add_child(career)
 	# minicarte (en bas à droite) et flèche vers l'incident (en haut au centre)
 	minimap = Control.new()
 	minimap.anchor_left = 1; minimap.anchor_right = 1; minimap.anchor_top = 1; minimap.anchor_bottom = 1
@@ -85,7 +96,11 @@ func _ready() -> void:
 	cam.far = 200
 	add_child(cam)
 	cam.current = true
-	_menu()
+	if Data.goto_vestiaire and Data.CAR != null:
+		Data.goto_vestiaire = false
+		career.vestiaire()
+	else:
+		_menu()
 
 func _setup_env() -> void:
 	env = Environment.new()
@@ -124,7 +139,18 @@ func _menu() -> void:
 	phase = "menu"
 	ui.show_screen("Sécurité de nuit 3D",
 		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité au [b]Néon[/b], de 23 h à 5 h.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nMaj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  A : frapper  ·  Tab : verrouiller un adversaire  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
-		[{"t": "Prendre son service", "k": "main", "cb": _start}])
+		_menu_buttons())
+
+func _menu_buttons() -> Array:
+	var bts := []
+	var sv = CareerScript.load_save()
+	if sv != null and int(sv.get("night", 0)) > 0:
+		bts.append({"t": "Continuer la carrière — nuit %d, saison %d" % [int(sv["night"]) + 1, int(sv["season"])], "k": "main", "cb": func(): Data.CAR = CareerScript.load_save(); career.vestiaire()})
+		bts.append({"t": "Nouvelle carrière (efface la progression)", "cb": func(): career.new_career(); career.vestiaire()})
+	else:
+		bts.append({"t": "Commencer la carrière (saisons de 5 nuits)", "k": "main", "cb": func(): career.new_career(); career.vestiaire()})
+	bts.append({"t": "Nuit libre (sans carrière)", "cb": func(): Data.CAR = null; _start()})
+	return bts
 
 # =====================================================================
 #  NOUVELLE NUIT
@@ -155,6 +181,9 @@ func _start() -> void:
 	var sa = _mk_person({"agent": true, "sex": "F", "pos": Vector3(1.6, 0, 0.6), "skin": Data.SKINS[1], "hair": Data.HAIRS[5], "hs": "bun", "height": 1.7, "band": "#ff3d9a", "yaw": PI})
 	sa.pname = "Sarah"; sa.home = Vector3(3, 0, -11.5)
 	colleagues = [mo, sa]
+	if Data.CAR != null:
+		career.setup_night()
+		career.setup_team()
 	# liste noire
 	var sg: Array = Data.SIGNS.duplicate()
 	sg.shuffle()
@@ -174,7 +203,6 @@ func _start() -> void:
 	for i in 30:
 		_spawn_inside(null, true)
 	# file
-	var nq := 14
 	var test_i := randi_range(2, nq - 1)
 	for i in nq:
 		queue.append(_gen_client(i, {"testing": i == test_i}))
@@ -204,8 +232,14 @@ func _start() -> void:
 			queue[k2] = _gen_client(k2, {"minor": true})
 	for i in queue.size():
 		_mk_client_npc(queue[i], i)
-	_set_radio("Moussa : « Les portes ouvrent. Le premier client avance. Va le voir (touche E). »")
-	_next_client()
+	if Data.CAR != null:
+		career.queue_specials()
+		career.plan_door_events()
+	minors_q = 0
+	for c in queue:
+		if c["minor"]: minors_q += 1
+	_set_radio("%s : « Les portes ouvrent. Le premier client avance. Va le voir (touche E). »" % colleagues[0].pname)
+	_next_client(true)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 # =====================================================================
@@ -213,17 +247,17 @@ func _start() -> void:
 # =====================================================================
 func _gen_client(i: int, opt := {}) -> Dictionary:
 	var sex = opt.get("sex", "H" if randf() < 0.55 else "F")
-	var minor = opt.get("minor", randf() < 0.1)
+	var minor = opt.get("minor", randf() < 0.1 * mod_minor)
 	var age: int = randi_range(16, 17) if minor else (randi_range(18, 21) if randf() < 0.35 else randi_range(22, 48))
 	var r := randf()
-	var q := randf()
+	var q := randf() + mod_agr * 0.08
 	var att := "calme"
 	if q > 0.6: att = "impatient"
 	if q > 0.8: att = "arrogant"
 	if q > 0.92: att = "menacant"
 	var c := {"i": i, "sex": sex, "first": (Data.PREN_H if sex == "H" else Data.PREN_F).pick_random(), "last": Data.NOMS.pick_random(),
 		"age": age, "minor": minor, "size": 1 if randf() < 0.4 else randi_range(2, 3),
-		"iv": opt.get("iv", 0 if r < 0.56 else (1 if r < 0.84 else 2)),
+		"iv": opt.get("iv", 0 if r < 0.56 - mod_iv else (1 if r < 0.84 - mod_iv / 2.0 else 2)),
 		"tenue": "surv" if randf() < 0.12 else ["soignee", "jean", "chemise", "robe"].pick_random(),
 		"att": att, "weapon": opt.get("weapon", sex == "H" and randf() < 0.08), "drug": randf() < 0.09,
 		"testing": opt.get("testing", false), "black": null, "alias": false,
@@ -268,8 +302,12 @@ func _client_look(c: Dictionary) -> Dictionary:
 			o["top"] = ["#e3e9f2", "#c9d6ea", "#f2e6e6"].pick_random(); o["bottom"] = "#1b2433"
 		"robe":
 			o["top"] = ["#b0164e", "#6a1b9a", "#111111", "#0e5e6f", "#c0392b"].pick_random()
-	if c["minor"]:
+	if c["minor"] or c.get("young", false):
 		o["height"] = randf_range(1.64, 1.76) if c["sex"] == "H" else randf_range(1.55, 1.66)
+	if c.get("model", "") != "": o["model"] = c["model"]
+	if c.get("prim", false):
+		o["prim"] = true
+		for k in c.get("look", {}).keys(): o[k] = c["look"][k]
 	if c["black"] != null:
 		if c["black"]["model"] != "":
 			o["model"] = c["black"]["model"]
@@ -295,7 +333,7 @@ func _mk_client_npc(c: Dictionary, i: int) -> void:
 		c["tenue"] = n.meta["tenue"]
 	if n.meta.has("tenue_txt"):
 		c["tenue_txt"] = n.meta["tenue_txt"]
-	if n.model_path != "" and n.meta.has("sexe"):
+	if n.model_path != "" and n.meta.has("sexe") and not c.has("hab"):
 		var sx := "F" if str(n.meta["sexe"]).to_upper().begins_with("F") else "H"
 		if sx != c["sex"]:
 			c["sex"] = sx
@@ -332,6 +370,7 @@ func _cues(c: Dictionary) -> Array:
 	if c["drug"] and randf() < 0.3: o.append("Pupilles dilatées, très nerveux")
 	if c["size"] > 1: o.append("Accompagné(e) de %d personne(s)" % (c["size"] - 1))
 	if c["black"] != null: o.append(c["black"]["t"].substr(0, 1).to_upper() + c["black"]["t"].substr(1))
+	for x in c.get("extra_cues", []): o.append(x)
 	c["cues"] = o
 	return o
 
@@ -350,7 +389,12 @@ func _quote(c: Dictionary) -> String:
 # =====================================================================
 #  LA PORTE
 # =====================================================================
-func _next_client() -> void:
+func _next_client(from_ev := false) -> void:
+	if not from_ev and Data.CAR != null and career.door_ev.has(served) and queue.size() > 0 and minute < 150:
+		var k: String = career.door_ev[served]
+		career.door_ev.erase(served)
+		career.door_event(k)
+		return
 	if queue.is_empty() or minute >= 150:
 		_start_salle()
 		return
@@ -382,7 +426,9 @@ func _door_panel() -> void:
 	body += "\n[i]" + _quote(c) + "[/i]\n"
 	if c["id_checked"]:
 		body += "\n[color=#9fd3ff][b]Pièce d'identité[/b][/color]\n"
-		if not c["has_id"]:
+		if not c["has_id"] and c.get("student_card", false):
+			body += "[b]Carte étudiante[/b] au nom de %s %s — photo, établissement, année en cours. Aucune date de naissance.\n" % [c["first"], c["last"]]
+		elif not c["has_id"]:
 			body += "[b]Aucune pièce d'identité présentée.[/b]\n"
 		else:
 			var words: Array = c["npc"].id_words()
@@ -402,7 +448,13 @@ func _door_panel() -> void:
 				hair_w = c["owner_look"][0]; hs_w = c["owner_look"][1]; skin_w = c["owner_look"][2]
 			var nm: String = c["id_name"] if c["id_name"] != "" else c["first"] + " " + c["last"]
 			if photo == "": photo = "Photo : cheveux %s, %s · peau %s" % [hair_w, hs_w, skin_w]
-			body += "Nom : %s\nNé(e) le : %s → [b]%d ans[/b]\n%s\n" % [nm, _fmt_dob(c["dob"]), c["id_age"], photo]
+			if c.get("trans_id", false): photo = "Photo ancienne : même visage, cheveux plus courts"
+			body += "[color=#b9b3cc]%s[/color]\n" % c.get("id_type", "Carte nationale d'identité")
+			body += "Nom : %s%s\nNé(e) le : %s → [b]%d ans[/b]\n%s\n" % [nm, (" · Sexe : " + c["id_sex"]) if c.has("id_sex") else "", _fmt_dob(c["dob"]), c["id_age"], photo]
+			if c.get("altered", false):
+				if not c.has("alt_seen"): c["alt_seen"] = 2 if career.eq("scanner") else (1 if randf() < 0.55 else 0)
+				if c["alt_seen"] == 2: body += "[color=#ff6a6a]Lecteur de pièces : zone de la date de naissance modifiée[/color]\n"
+				elif c["alt_seen"] == 1: body += "[color=#b9b3cc]L'encre de la date de naissance paraît un peu plus épaisse que le reste.[/color]\n"
 	if c["palp"] != "":
 		body += "\n" + c["palp"] + "\n"
 	for a in c["asked"]:
@@ -427,34 +479,48 @@ func _check_id() -> void:
 func _palp() -> void:
 	var c = cur
 	var consent: bool = randf() < 0.45 if (c["weapon"] or c["drug"]) else randf() < 0.93
-	var who := "Tu" if c["sex"] == "H" else "Sarah"
+	var fem = null
+	for a in colleagues:
+		if is_instance_valid(a) and a.sex == "F": fem = a
+	var who := "Tu"
+	if c["sex"] == "F":
+		if fem == null:
+			c["palp"] = "Aucune agente ce soir : la palpation de sécurité d'une femme ne peut être faite que par une femme."
+			_door_panel()
+			return
+		who = fem.pname
 	minute += 1
 	if not consent:
 		c["palp_refused"] = true
-		c["palp"] = "%s l'accord pour une palpation : [b]refus[/b]." % ("Tu demandes" if who == "Tu" else "Sarah demande")
+		c["palp"] = "%s l'accord pour une palpation : [b]refus[/b]." % ("Tu demandes" if who == "Tu" else who + " demande")
 	elif c["weapon"]:
 		c["found"] = "arme"
-		c["palp"] = "%s avec son accord : [b][color=#ff6a6a]couteau pliant[/color][/b] dans la poche de veste." % ("Tu palpes" if who == "Tu" else "Sarah palpe")
+		c["palp"] = "%s avec son accord : [b][color=#ff6a6a]couteau pliant[/color][/b] dans la poche de veste." % ("Tu palpes" if who == "Tu" else who + " palpe")
+	elif c.get("bottle", false):
+		c["found"] = "bouteille"
+		c["palp"] = "Contrôle du sac avec accord : [b]une bouteille de vodka[/b] entamée."
 	elif c["drug"]:
 		c["found"] = "drogue"
 		c["palp"] = "Palpation avec accord : une petite boîte qu'il ouvre lui-même, [b]sachets de résine de cannabis[/b]."
 	else:
-		c["palp"] = "%s avec son accord : rien à signaler." % ("Tu palpes" if who == "Tu" else "Sarah palpe")
-	if c["sex"] == "F":
-		colleagues[1].path = []
-		colleagues[1].position = Vector3(0.2, 0, 2.0)
-		colleagues[1].yaw = 0.0
+		c["palp"] = "%s avec son accord : rien à signaler." % ("Tu palpes" if who == "Tu" else who + " palpe")
+	if c["sex"] == "F" and fem != null:
+		fem.path = []
+		fem.position = Vector3(0.2, 0, 2.0)
+		fem.yaw = 0.0
 	_door_panel()
 
 func _ask_dob() -> void:
 	var c = cur
-	var d: Array = c["dob"]
+	var d: Array = c.get("true_dob", c["dob"])
 	var ds := "%d %s %d" % [d[2], Data.MOIS[d[1] - 1], d[0]]
 	var a := "« Le %s. »" % ds
 	if c["iv"] == 2: a = "« Le… euh… %s… je crois ? »" % ds
 	elif c["borrowed"]: a = "« Euh… le… attends » (il hésite et regarde ailleurs)" if randf() < 0.6 else "« Le %s. » (récité très vite)" % ds
 	elif c["minor"] and not c["has_id"]: a = "« %d… euh, oui, 19 ans. » (il compte sur ses doigts)" % (Data.GAME_Y - 19)
 	elif c["alias"]: a = "« Pourquoi tu me demandes ça ? »"
+	elif c.get("altered", false): a = "« Le %s. » (sans hésiter)" % ds
+	if c.get("deaf", false): a = "Il tape sur son téléphone et te le montre : « %s »" % ds
 	c["asked"].append(["Quelle est ta date de naissance ?", a])
 	minute += 0.5
 	_door_panel()
@@ -491,6 +557,7 @@ func _admit() -> void:
 		_fault("Jauge dépassée (%d/%d)." % [inside, cap], "Règlement de sécurité incendie des ERP : l'effectif maximal ne doit jamais être dépassé.")
 		res.append(["b", "Jauge dépassée.", ""])
 	if c["minor"]:
+		minor_in = true
 		rep -= 6
 		_fault("Mineur(e) de %d ans admis(e) (%s)." % [c["age"], c["first"]], "Art. L3342-1 Code de la santé publique : alcool interdit aux mineurs.")
 		res.append(["b", "%s a en réalité [b]%d ans[/b].%s" % [c["first"], c["age"], " Pièce empruntée : la photo ne correspondait pas." if c["borrowed"] else ""], ""])
@@ -521,6 +588,7 @@ func _admit() -> void:
 	if not c["has_id"] and not c["minor"]:
 		rep -= 2
 		res.append(["n", "Entré sans pièce d'identité.", ""])
+	if Data.CAR != null: career.eval_admit(c, res)
 	if res.is_empty():
 		rep += 1.5
 		res.append(["", "Entrée sans problème.", ""])
@@ -550,7 +618,15 @@ func _refuse(k: String) -> void:
 		"objet": valid = c["found"] != ""
 		"liste": valid = c["black"] != null
 	if c["black"] != null and k != "profil" and k != "sans": valid = true
+	if k == "mineur" and (c.get("student_card", false) or (c.get("altered", false) and c["minor"])): valid = true
 	var res := []
+	if Data.CAR != null and career.eval_refuse(c, valid, res):
+		_mc("Porte — refus : %s %s (%s)" % [c["first"], c["last"], lb])
+		c["npc"].walk_to([Vector2(4, 4.5), Vector2(12, 5.2), Vector2(28, 5.2)], func(p): p.queue_free())
+		for m in c["mates"]: m.walk_to([Vector2(4.5, 4.8), Vector2(12, 5.4), Vector2(28, 5.4)], func(p): p.queue_free())
+		_clampg()
+		_done_client("Refus problématique", res)
+		return
 	if valid:
 		secu += 4 if (c["weapon"] or c["black"] != null or c["iv"] == 2) else 1
 		_good("Refus fondé : %s %s (%s)." % [c["first"], c["last"], lb])
@@ -684,7 +760,7 @@ func _spawn_incident(ty: String) -> void:
 	if zs.is_empty(): zs = ["piste"]
 	var z: String = zs.pick_random()
 	var p: Vector3 = world.zpt(z)
-	var inc := {"ty": ty, "z": z, "p": p, "t0": salle_t, "dl": max(28.0, float(d.get("dl", 20)) * 2.6), "st": "open", "actors": [], "agent": null, "need": int(d.get("need", 1))}
+	var inc := {"ty": ty, "z": z, "p": p, "t0": salle_t, "dl": max(28.0, float(d.get("dl", 20)) * 2.6) * (1.3 if career.eq("radio") else 1.0), "st": "open", "actors": [], "agent": null, "need": int(d.get("need", 1))}
 	var viol := _is_viol(ty)
 	var med := _is_med(ty)
 	var n := 8 if ty == "rixe" else (2 if viol or med else 1)
@@ -787,6 +863,21 @@ func _decide(oi: int) -> void:
 			var C = [["Le client se débat et te bouscule violemment : tu as mal à l'épaule.", -4, 0], ["Ses amis s'en mêlent, ça dure plus longtemps que prévu.", -3, -2], ["Une vidéo coupée de la scène circule déjà sur les réseaux.", 0, -5], ["Les secours mettent longtemps à arriver.", -4, 0]].pick_random()
 			ds += C[1]; dr += C[2]
 			extra = "\n[color=#ffd27a]Complication : %s[/color]\n" % C[0]
+	# équipement acheté en carrière
+	if o.get("dae", false):
+		if career.eq("dae"):
+			ds += 5
+			extra += "\n[color=#9fe0b4]Le défibrillateur délivre un choc : le pouls revient avant l'arrivée des pompiers.[/color]\n"
+		elif Data.CAR != null:
+			ds -= 8
+			_fault("Arrêt cardiaque : aucun défibrillateur sur place.", "DAE obligatoire dans les ERP de catégories 1 à 4 (décret n° 2018-1186).")
+			extra += "\n[color=#ff8a8a]Pas de défibrillateur dans l'établissement : massage seul jusqu'aux pompiers.[/color]\n"
+	if o.get("gl", false) and career.eq("gants"):
+		ds += 2
+		extra += "\n[color=#9fe0b4]Les gants anti-coupure te protègent.[/color]\n"
+	if o.has("g") and career.eq("video") and inc["ty"] in ["vol", "attouchement", "deal", "ghb", "agentagresse"]:
+		dr += 3
+		extra += "\n[color=#9fe0b4]Les images de vidéoprotection sont conservées et remises à la police sur réquisition.[/color]\n"
 	secu += ds; rep += dr
 	_clampg()
 	if o.has("f"): _fault("%s (%s) : %s" % [Data.clean(d["t"]), Data.fmt_clock(minute), o["f"]], o.get("law", ""))
@@ -896,6 +987,7 @@ func _agent_resolve(a, inc: Dictionary) -> void:
 
 func _step_salle(delta: float) -> void:
 	salle_t += delta
+	if Data.CAR != null and career.step_salle(): return
 	minute = 150 + salle_t * (210.0 / salle_d)
 	if salle_t > next_inc and salle_t < salle_d - 15:
 		var ty := ""
@@ -945,7 +1037,14 @@ func _end_night() -> void:
 	for m in mcourante:
 		body += m + "\n"
 	body += "[/color]"
-	ui.show_screen("05h00 — Fermeture", body, [{"t": "Nouvelle nuit", "k": "main", "cb": func(): get_tree().reload_current_scene()}])
+	var bts := []
+	if Data.CAR != null:
+		body = body.replace("[font_size=22]Fautes et risques", career.end_night(note) + "\n\n[font_size=22]Fautes et risques")
+		bts.append({"t": "Vestiaire — nuit suivante", "k": "main", "cb": func(): Data.goto_vestiaire = true; get_tree().reload_current_scene()})
+		bts.append({"t": "Menu principal", "cb": func(): get_tree().reload_current_scene()})
+	else:
+		bts.append({"t": "Nouvelle nuit", "k": "main", "cb": func(): get_tree().reload_current_scene()})
+	ui.show_screen("05h00 — Fermeture", body, bts)
 
 # =====================================================================
 #  ENTRÉES & BOUCLE

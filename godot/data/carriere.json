@@ -1,0 +1,770 @@
+{
+ "NIGHTS3": [
+  {
+   "name": "Vendredi tranquille",
+   "sub": "Une soirée classique pour prendre la main.",
+   "cap": 110,
+   "nQ": 14,
+   "minor": 1,
+   "iv": 0,
+   "special": [
+    "etranger",
+    "senior"
+   ],
+   "ger": [
+    "economie"
+   ]
+  },
+  {
+   "name": "Soirée étudiante",
+   "sub": "Pinte à 3 €, beaucoup de très jeunes dans la file.",
+   "cap": 110,
+   "nQ": 16,
+   "minor": 2.2,
+   "iv": 0.1,
+   "special": [
+    "altered",
+    "sourd",
+    "chienperso"
+   ],
+   "ger": [
+    "promo",
+    "nièce"
+   ]
+  },
+  {
+   "name": "Soirée VIP",
+   "sub": "Les joueurs du club de rugby local fêtent leur victoire.",
+   "cap": 120,
+   "nQ": 16,
+   "minor": 1,
+   "iv": 0.08,
+   "special": [
+    "vip",
+    "garcons",
+    "fauteuil"
+   ],
+   "ger": [
+    "vipivre",
+    "copain"
+   ]
+  },
+  {
+   "name": "Soirée DJ invité",
+   "sub": "Un DJ connu mixe ce soir. Salle chaude, tensions possibles.",
+   "cap": 125,
+   "nQ": 17,
+   "minor": 1.2,
+   "iv": 0.08,
+   "special": [
+    "trans",
+    "foulard",
+    "mystere"
+   ],
+   "ger": [
+    "images",
+    "jauge"
+   ]
+  },
+  {
+   "name": "Réveillon du Nouvel An",
+   "sub": "La plus grosse nuit de l'année. File énorme, alcool partout.",
+   "cap": 140,
+   "nQ": 18,
+   "minor": 1.5,
+   "iv": 0.16,
+   "special": [
+    "evjf",
+    "chienguide",
+    "vip",
+    "garcons"
+   ],
+   "ger": [
+    "tard",
+    "jauge"
+   ]
+  }
+ ],
+ "ALEAS3": [
+  {
+   "i": "🌙",
+   "t": "Nuit calme",
+   "d": "Rien de particulier annoncé ce soir.",
+   "inc": []
+  },
+  {
+   "i": "🔥",
+   "t": "Canicule",
+   "d": "32 °C à minuit. La salle va chauffer : malaises et coups de chaleur à prévoir.",
+   "inc": [
+    "chaleur",
+    "malaise"
+   ],
+   "iv": 0.04
+  },
+  {
+   "i": "⚽",
+   "t": "Soir de match",
+   "d": "L'équipe locale a perdu. Supporters énervés, ambiance électrique.",
+   "inc": [
+    "bagarre",
+    "refus"
+   ],
+   "ev": [
+    "supporters"
+   ],
+   "agr": 1
+  },
+  {
+   "i": "🌧️",
+   "t": "Orage",
+   "d": "Pluie battante et coupures d'électricité signalées dans le quartier.",
+   "inc": [
+    "coupure"
+   ],
+   "ev": [
+    "pluie"
+   ]
+  },
+  {
+   "i": "🎧",
+   "t": "DJ star surprise",
+   "d": "Un DJ connu a annoncé sa venue sur les réseaux : tout le monde veut entrer.",
+   "inc": [
+    "foule",
+    "dj"
+   ],
+   "nQ": 2
+  },
+  {
+   "i": "🎓",
+   "t": "Résultats du bac",
+   "d": "Beaucoup de jeunes veulent fêter ça, dont des mineurs.",
+   "inc": [
+    "mineur"
+   ],
+   "minor": 2
+  },
+  {
+   "i": "🎃",
+   "t": "Soirée Halloween",
+   "d": "Tout le monde est déguisé : masques, faux sang, accessoires.",
+   "inc": [
+    "faux",
+    "bagarre"
+   ]
+  },
+  {
+   "i": "💘",
+   "t": "Saint-Valentin",
+   "d": "Soirée couples et célibataires. Les tensions de couple sont de sortie.",
+   "inc": [
+    "conjugal",
+    "angela"
+   ]
+  },
+  {
+   "i": "🏆",
+   "t": "Finale de Coupe du monde",
+   "d": "Écran géant, ambiance explosive, quel que soit le résultat.",
+   "inc": [
+    "rixe",
+    "bagarre",
+    "exterieur"
+   ],
+   "iv": 0.06,
+   "agr": 1
+  },
+  {
+   "i": "🚨",
+   "t": "Opération de police dans le quartier",
+   "d": "Contrôles renforcés. La police peut passer à tout moment.",
+   "inc": [
+    "police"
+   ],
+   "ev": [
+    "controle"
+   ]
+  }
+ ],
+ "EQUIP3": {
+  "radio": {
+   "n": "📻 Radios numériques",
+   "p": 120,
+   "d": "Les alertes arrivent plus tôt : plus de temps pour rejoindre chaque incident."
+  },
+  "dae": {
+   "n": "❤️ Défibrillateur (DAE)",
+   "p": 300,
+   "d": "Obligatoire dans les ERP de catégories 1 à 4 (décret n° 2018-1186)."
+  },
+  "gants": {
+   "n": "🧤 Gants anti-coupure",
+   "p": 70,
+   "d": "Protège contre les verres brisés, les seringues… et réduit les blessures au couteau."
+  },
+  "gilet": {
+   "n": "🦺 Gilet pare-lames",
+   "p": 220,
+   "d": "Réduit fortement les blessures en cas d'attaque au couteau."
+  },
+  "video": {
+   "n": "📹 Vidéoprotection",
+   "p": 380,
+   "d": "Images utiles pour les vols et agressions (autorisation préfectorale, affichage obligatoire)."
+  },
+  "scanner": {
+   "n": "🪪 Lecteur de pièces d'identité",
+   "p": 240,
+   "d": "Signale les documents falsifiés ou modifiés. Ne garde aucune donnée (RGPD)."
+  },
+  "camera": {
+   "n": "🎥 Caméra-piéton",
+   "p": 160,
+   "d": "Filme tes interventions : protège en cas de contestation, si tu as agi dans les règles."
+  }
+ },
+ "RANKS3": [
+  [
+   0,
+   "Agent de sécurité"
+  ],
+  [
+   300,
+   "Agent confirmé"
+  ],
+  [
+   700,
+   "Chef d'équipe"
+  ],
+  [
+   1300,
+   "Chef de sécurité"
+  ],
+  [
+   2200,
+   "Responsable sûreté"
+  ]
+ ],
+ "TROPH3": [
+  {
+   "id": "first",
+   "i": "🌙",
+   "n": "Première nuit",
+   "d": "Terminer une soirée"
+  },
+  {
+   "id": "perfect",
+   "i": "✨",
+   "n": "Nuit parfaite",
+   "d": "Une soirée sans aucune faute"
+  },
+  {
+   "id": "physio",
+   "i": "🪪",
+   "n": "Physio de fer",
+   "d": "Aucun mineur admis alors qu'il y en avait dans la file"
+  },
+  {
+   "id": "incorr",
+   "i": "🧊",
+   "n": "Incorruptible",
+   "d": "Refuser le billet glissé pour passer"
+  },
+  {
+   "id": "twenty",
+   "i": "🥇",
+   "n": "18 sur 20",
+   "d": "Obtenir 18/20 ou plus"
+  },
+  {
+   "id": "zen",
+   "i": "🧘",
+   "n": "Zen",
+   "d": "Gagner une baston sans porter un seul coup"
+  },
+  {
+   "id": "selfdef",
+   "i": "🥊",
+   "n": "Légitime défense",
+   "d": "Finir une baston avec uniquement des ripostes légales"
+  },
+  {
+   "id": "lucas",
+   "i": "🎂",
+   "n": "Enfin majeur",
+   "d": "Faire entrer Lucas le jour de ses 18 ans"
+  },
+  {
+   "id": "nadia",
+   "i": "💐",
+   "n": "Lieu sûr",
+   "d": "Recevoir les fleurs de Nadia"
+  },
+  {
+   "id": "lopez",
+   "i": "🍵",
+   "n": "Le thé de Mme Lopez",
+   "d": "Devenir l'agent préféré de la voisine"
+  },
+  {
+   "id": "sam",
+   "i": "🎓",
+   "n": "Mentor",
+   "d": "Faire de Sam un agent fiable"
+  },
+  {
+   "id": "season",
+   "i": "🏁",
+   "n": "Saison bouclée",
+   "d": "Terminer les 5 soirées sans être remplacé"
+  },
+  {
+   "id": "clean",
+   "i": "⚖️",
+   "n": "Zéro discrimination",
+   "d": "Une saison sans refus discriminatoire"
+  },
+  {
+   "id": "equip",
+   "i": "🧰",
+   "n": "Tout équipé",
+   "d": "Posséder tout l'équipement"
+  }
+ ],
+ "LOPEZ": {
+  "0_0": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "L'écouter, s'excuser, faire baisser les basses et lui laisser le numéro du gérant",
+     "r": 3,
+     "lp": 1,
+     "g": "Mme Lopez repart rassurée : « Vous au moins, vous êtes poli. »"
+    },
+    {
+     "t": "« Madame, c'est une boîte de nuit, fallait pas habiter là. »",
+     "r": -5,
+     "lp": -2,
+     "txt": "Mme Lopez repart vexée en notant ton nom."
+    }
+   ],
+   "d": "Mme Lopez, la voisine du dessus, en robe de chambre : « Vos basses font trembler mes verres ! J'ai 78 ans, je voudrais dormir. »"
+  },
+  "0_1": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "L'écouter, s'excuser, faire baisser les basses et lui laisser le numéro du gérant",
+     "r": 3,
+     "lp": 1,
+     "g": "Mme Lopez repart rassurée : « Vous au moins, vous êtes poli. »"
+    },
+    {
+     "t": "« Madame, c'est une boîte de nuit, fallait pas habiter là. »",
+     "r": -5,
+     "lp": -2,
+     "txt": "Mme Lopez repart vexée en notant ton nom."
+    }
+   ],
+   "d": "Mme Lopez, la voisine du dessus, en robe de chambre : « Vos basses font trembler mes verres ! J'ai 78 ans, je voudrais dormir. »"
+  },
+  "0_2": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "L'écouter, s'excuser, faire baisser les basses et lui laisser le numéro du gérant",
+     "r": 3,
+     "lp": 1,
+     "g": "Mme Lopez repart rassurée : « Vous au moins, vous êtes poli. »"
+    },
+    {
+     "t": "« Madame, c'est une boîte de nuit, fallait pas habiter là. »",
+     "r": -5,
+     "lp": -2,
+     "txt": "Mme Lopez repart vexée en notant ton nom."
+    }
+   ],
+   "d": "Mme Lopez, la voisine du dessus, en robe de chambre : « Vos basses font trembler mes verres ! J'ai 78 ans, je voudrais dormir. »"
+  },
+  "1_0": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "Promettre une ronde extérieure à la fermeture et faire ramasser les bouteilles devant chez elle",
+     "r": 3,
+     "lp": 1,
+     "g": "Promesse tenue : la haie est propre le lendemain matin."
+    },
+    {
+     "t": "« Ce ne sont pas nos clients, madame. »",
+     "r": -3,
+     "lp": -1,
+     "txt": "Elle ne te croit pas une seconde."
+    }
+   ],
+   "d": "Mme Lopez revient : « Hier matin, il y avait des bouteilles cassées et de l'urine dans ma haie ! »"
+  },
+  "1_1": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "Promettre une ronde extérieure à la fermeture et faire ramasser les bouteilles devant chez elle",
+     "r": 3,
+     "lp": 1,
+     "g": "Promesse tenue : la haie est propre le lendemain matin."
+    },
+    {
+     "t": "« Ce ne sont pas nos clients, madame. »",
+     "r": -3,
+     "lp": -1,
+     "txt": "Elle ne te croit pas une seconde."
+    }
+   ],
+   "d": "Mme Lopez revient : « Hier matin, il y avait des bouteilles cassées et de l'urine dans ma haie ! »"
+  },
+  "1_2": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "Promettre une ronde extérieure à la fermeture et faire ramasser les bouteilles devant chez elle",
+     "r": 3,
+     "lp": 1,
+     "g": "Promesse tenue : la haie est propre le lendemain matin."
+    },
+    {
+     "t": "« Ce ne sont pas nos clients, madame. »",
+     "r": -3,
+     "lp": -1,
+     "txt": "Elle ne te croit pas une seconde."
+    }
+   ],
+   "d": "Mme Lopez revient : « Hier matin, il y avait des bouteilles cassées et de l'urine dans ma haie ! »"
+  },
+  "2_0": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "Prendre la pétition, promettre d'en parler au gérant et proposer une rencontre avec les voisins",
+     "r": 2,
+     "lp": 1,
+     "g": "Le dialogue s'ouvre : la pétition ne partira peut-être pas à la mairie."
+    },
+    {
+     "t": "Refuser de la prendre",
+     "r": -5,
+     "sat": -4,
+     "lp": -1,
+     "txt": "La pétition part à la mairie le lendemain."
+    }
+   ],
+   "d": "Mme Lopez arrive avec une pétition signée par 15 voisins contre le bruit et les nuisances."
+  },
+  "2_1": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "La remercier chaleureusement et partager les madeleines avec l'équipe",
+     "r": 3,
+     "lp": 1,
+     "mo": 3,
+     "g": "Les madeleines font le tour de l'équipe. Les bonnes relations avec le voisinage, ça se cultive."
+    }
+   ],
+   "d": "Mme Lopez arrive avec une boîte : « Des madeleines pour l'équipe. C'est bien plus calme depuis que vous êtes là. »"
+  },
+  "2_2": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "La remercier chaleureusement et partager les madeleines avec l'équipe",
+     "r": 3,
+     "lp": 1,
+     "mo": 3,
+     "g": "Les madeleines font le tour de l'équipe. Les bonnes relations avec le voisinage, ça se cultive."
+    }
+   ],
+   "d": "Mme Lopez arrive avec une boîte : « Des madeleines pour l'équipe. C'est bien plus calme depuis que vous êtes là. »"
+  },
+  "3_0": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "Accueillir l'adjoint, présenter les mesures prises (rondes, sas, basses réduites) et appeler le gérant",
+     "r": 3,
+     "lp": 1,
+     "g": "L'adjoint repart avec une bonne impression : pas de sanction pour l'instant."
+    },
+    {
+     "t": "Leur dire de revenir quand le gérant sera là",
+     "r": -6,
+     "sat": -5,
+     "lp": -1,
+     "txt": "Avertissement de la mairie : risque de fermeture administrative pour nuisances."
+    }
+   ],
+   "d": "Mme Lopez revient avec l'adjoint au maire chargé de la tranquillité publique, pour constater les nuisances."
+  },
+  "3_1": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "Accueillir l'adjoint, présenter les mesures prises (rondes, sas, basses réduites) et appeler le gérant",
+     "r": 3,
+     "lp": 1,
+     "g": "L'adjoint repart avec une bonne impression : pas de sanction pour l'instant."
+    },
+    {
+     "t": "Leur dire de revenir quand le gérant sera là",
+     "r": -6,
+     "sat": -5,
+     "lp": -1,
+     "txt": "Avertissement de la mairie : risque de fermeture administrative pour nuisances."
+    }
+   ],
+   "d": "Mme Lopez revient avec l'adjoint au maire chargé de la tranquillité publique, pour constater les nuisances."
+  },
+  "3_2": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "Accepter le thé et discuter deux minutes",
+     "lp": 1,
+     "r": 2,
+     "g": "Mme Lopez est devenue la meilleure alliée de l'établissement dans le quartier.",
+     "tr": "lopez"
+    }
+   ],
+   "d": "Mme Lopez passe juste dire bonsoir : « Je viens voir mon agent de sécurité préféré ! » Elle t'apporte un thé chaud."
+  },
+  "4_0": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "Répondre calmement au policier et expliquer les mesures prises",
+     "r": -2,
+     "sat": -4,
+     "txt": "La plainte suit son cours. Les nuisances, ça se prévient dès le premier jour."
+    }
+   ],
+   "d": "Mme Lopez a porté plainte pour tapage nocturne. Un policier vient prendre la déposition du responsable."
+  },
+  "4_1": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "Répondre calmement au policier et expliquer les mesures prises",
+     "r": -2,
+     "sat": -4,
+     "txt": "La plainte suit son cours. Les nuisances, ça se prévient dès le premier jour."
+    }
+   ],
+   "d": "Mme Lopez a porté plainte pour tapage nocturne. Un policier vient prendre la déposition du responsable."
+  },
+  "4_2": {
+   "t": "👵 Mme Lopez, la voisine",
+   "o": [
+    {
+     "t": "Y passer avec l'équipe et le gérant",
+     "r": 5,
+     "sat": 5,
+     "mo": 5,
+     "lp": 1,
+     "g": "Le gérant découvre que sa sécurité a aussi réglé ses problèmes de voisinage. Il est ravi.",
+     "tr": "lopez"
+    }
+   ],
+   "d": "Mme Lopez organise un pot pour remercier l'équipe : « Grâce à vous, le quartier est tranquille. » Le gérant est invité."
+  }
+ },
+ "MARTIN": {
+  "0_0": {
+   "t": "👮 Le brigadier Martin revient",
+   "d": "Martin montre la photo d'un homme recherché pour plusieurs agressions au couteau dans le quartier. Il demande si vous l'avez vu.",
+   "o": [
+    {
+     "t": "Regarder attentivement, vérifier la main courante et la liste noire, lui donner les informations utiles et briefer l'équipe",
+     "s": 5,
+     "r": 3,
+     "mt": 1,
+     "g": "Tu transmets ce que tu sais. L'équipe est prévenue."
+    },
+    {
+     "t": "Dire que tu ne peux rien dire sans l'accord du gérant",
+     "r": -3,
+     "mt": -1,
+     "txt": "Martin repart bredouille. Rien ne t'interdit pourtant d'aider la police."
+    }
+   ]
+  },
+  "0_1": {
+   "t": "👮 Le brigadier Martin revient",
+   "d": "Martin montre la photo d'un homme recherché pour plusieurs agressions au couteau dans le quartier. « Je compte sur toi, on se connaît maintenant. » Il demande si vous l'avez vu.",
+   "o": [
+    {
+     "t": "Regarder attentivement, vérifier la main courante et la liste noire, lui donner les informations utiles et briefer l'équipe",
+     "s": 5,
+     "r": 6,
+     "mt": 1,
+     "g": "Grâce à tes infos (il était venu deux soirs plus tôt), l'homme est interpellé dans la nuit. Martin te remercie personnellement."
+    },
+    {
+     "t": "Dire que tu ne peux rien dire sans l'accord du gérant",
+     "r": -3,
+     "mt": -1,
+     "txt": "Martin repart bredouille. Rien ne t'interdit pourtant d'aider la police."
+    }
+   ]
+  },
+  "1_0": {
+   "t": "👮 Le brigadier Martin",
+   "d": "Un policier en uniforme se présente : le brigadier Martin, nouveau référent du commissariat pour le quartier. Il voudrait un contact direct avec la sécurité de l'établissement.",
+   "o": [
+    {
+     "t": "Échanger les numéros, lui présenter l'équipe et proposer de lui signaler rapidement les incidents",
+     "r": 3,
+     "mt": 1,
+     "g": "Un contact de confiance avec la police du quartier : ça servira."
+    },
+    {
+     "t": "Rester distant : « On gère nos affaires nous-mêmes. »",
+     "r": -3,
+     "mt": -1,
+     "txt": "Martin repart en notant que l'établissement n'est pas très coopératif."
+    }
+   ]
+  },
+  "1_1": {
+   "t": "👮 Le brigadier Martin",
+   "d": "Un policier en uniforme se présente : le brigadier Martin, nouveau référent du commissariat pour le quartier. Il voudrait un contact direct avec la sécurité de l'établissement.",
+   "o": [
+    {
+     "t": "Échanger les numéros, lui présenter l'équipe et proposer de lui signaler rapidement les incidents",
+     "r": 3,
+     "mt": 1,
+     "g": "Un contact de confiance avec la police du quartier : ça servira."
+    },
+    {
+     "t": "Rester distant : « On gère nos affaires nous-mêmes. »",
+     "r": -3,
+     "mt": -1,
+     "txt": "Martin repart en notant que l'établissement n'est pas très coopératif."
+    }
+   ]
+  },
+  "2_0": {
+   "t": "👮 Le brigadier Martin revient",
+   "d": "Martin montre la photo d'un homme recherché pour plusieurs agressions au couteau dans le quartier. Il demande si vous l'avez vu.",
+   "o": [
+    {
+     "t": "Regarder attentivement, vérifier la main courante et la liste noire, lui donner les informations utiles et briefer l'équipe",
+     "s": 5,
+     "r": 3,
+     "mt": 1,
+     "g": "Tu transmets ce que tu sais. L'équipe est prévenue."
+    },
+    {
+     "t": "Dire que tu ne peux rien dire sans l'accord du gérant",
+     "r": -3,
+     "mt": -1,
+     "txt": "Martin repart bredouille. Rien ne t'interdit pourtant d'aider la police."
+    }
+   ]
+  },
+  "2_1": {
+   "t": "👮 Le brigadier Martin revient",
+   "d": "Martin montre la photo d'un homme recherché pour plusieurs agressions au couteau dans le quartier. « Je compte sur toi, on se connaît maintenant. » Il demande si vous l'avez vu.",
+   "o": [
+    {
+     "t": "Regarder attentivement, vérifier la main courante et la liste noire, lui donner les informations utiles et briefer l'équipe",
+     "s": 5,
+     "r": 6,
+     "mt": 1,
+     "g": "Grâce à tes infos (il était venu deux soirs plus tôt), l'homme est interpellé dans la nuit. Martin te remercie personnellement."
+    },
+    {
+     "t": "Dire que tu ne peux rien dire sans l'accord du gérant",
+     "r": -3,
+     "mt": -1,
+     "txt": "Martin repart bredouille. Rien ne t'interdit pourtant d'aider la police."
+    }
+   ]
+  },
+  "3_0": {
+   "t": "👮 Le brigadier Martin revient",
+   "d": "Martin montre la photo d'un homme recherché pour plusieurs agressions au couteau dans le quartier. Il demande si vous l'avez vu.",
+   "o": [
+    {
+     "t": "Regarder attentivement, vérifier la main courante et la liste noire, lui donner les informations utiles et briefer l'équipe",
+     "s": 5,
+     "r": 3,
+     "mt": 1,
+     "g": "Tu transmets ce que tu sais. L'équipe est prévenue."
+    },
+    {
+     "t": "Dire que tu ne peux rien dire sans l'accord du gérant",
+     "r": -3,
+     "mt": -1,
+     "txt": "Martin repart bredouille. Rien ne t'interdit pourtant d'aider la police."
+    }
+   ]
+  },
+  "3_1": {
+   "t": "👮 Le brigadier Martin revient",
+   "d": "Martin montre la photo d'un homme recherché pour plusieurs agressions au couteau dans le quartier. « Je compte sur toi, on se connaît maintenant. » Il demande si vous l'avez vu.",
+   "o": [
+    {
+     "t": "Regarder attentivement, vérifier la main courante et la liste noire, lui donner les informations utiles et briefer l'équipe",
+     "s": 5,
+     "r": 6,
+     "mt": 1,
+     "g": "Grâce à tes infos (il était venu deux soirs plus tôt), l'homme est interpellé dans la nuit. Martin te remercie personnellement."
+    },
+    {
+     "t": "Dire que tu ne peux rien dire sans l'accord du gérant",
+     "r": -3,
+     "mt": -1,
+     "txt": "Martin repart bredouille. Rien ne t'interdit pourtant d'aider la police."
+    }
+   ]
+  },
+  "4_0": {
+   "t": "👮 Le brigadier Martin revient",
+   "d": "Martin montre la photo d'un homme recherché pour plusieurs agressions au couteau dans le quartier. Il demande si vous l'avez vu.",
+   "o": [
+    {
+     "t": "Regarder attentivement, vérifier la main courante et la liste noire, lui donner les informations utiles et briefer l'équipe",
+     "s": 5,
+     "r": 3,
+     "mt": 1,
+     "g": "Tu transmets ce que tu sais. L'équipe est prévenue."
+    },
+    {
+     "t": "Dire que tu ne peux rien dire sans l'accord du gérant",
+     "r": -3,
+     "mt": -1,
+     "txt": "Martin repart bredouille. Rien ne t'interdit pourtant d'aider la police."
+    }
+   ]
+  },
+  "4_1": {
+   "t": "👮 Le brigadier Martin revient",
+   "d": "Martin montre la photo d'un homme recherché pour plusieurs agressions au couteau dans le quartier. « Je compte sur toi, on se connaît maintenant. » Il demande si vous l'avez vu.",
+   "o": [
+    {
+     "t": "Regarder attentivement, vérifier la main courante et la liste noire, lui donner les informations utiles et briefer l'équipe",
+     "s": 5,
+     "r": 6,
+     "mt": 1,
+     "g": "Grâce à tes infos (il était venu deux soirs plus tôt), l'homme est interpellé dans la nuit. Martin te remercie personnellement."
+    },
+    {
+     "t": "Dire que tu ne peux rien dire sans l'accord du gérant",
+     "r": -3,
+     "mt": -1,
+     "txt": "Martin repart bredouille. Rien ne t'interdit pourtant d'aider la police."
+    }
+   ]
+  }
+ }
+}
