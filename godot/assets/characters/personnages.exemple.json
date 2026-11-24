@@ -1,0 +1,7 @@
+{
+  "_aide": "Copie ce fichier en personnages.json et décris chaque personnage (nom exact du fichier). Tout est facultatif. 'signe' = signe distinctif : ce personnage pourra être sur la liste noire.",
+  "homme1.fbx": {"sexe": "H", "peau": "claire", "cheveux": "bruns foncés", "coiffure": "courts", "signe": ""},
+  "homme2.fbx": {"sexe": "H", "peau": "foncée", "cheveux": "noirs", "coiffure": "très courts", "signe": "barbe épaisse, veste en cuir rouge"},
+  "femme1.fbx": {"sexe": "F", "peau": "mate", "cheveux": "noirs", "coiffure": "longs", "signe": ""},
+  "agent1.fbx": {"role": "agent"}
+}

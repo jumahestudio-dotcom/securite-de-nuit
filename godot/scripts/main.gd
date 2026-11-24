@@ -126,10 +126,18 @@ func _start() -> void:
 	# liste noire
 	var sg: Array = Data.SIGNS.duplicate()
 	sg.shuffle()
+	var sm: Array = Data.signed_models()
+	sm.shuffle()
 	black = []
+	Data.reserved = []
 	for k in 2:
-		black.append({"name": Data.PREN_H.pick_random() + " " + Data.NOMS.pick_random(), "t": sg[k]["t"], "f": sg[k]["f"],
-			"motif": ["bagarre sur la piste", "a frappé un barman", "vol au vestiaire", "harcèlement de clientes"].pick_random()})
+		var e := {"name": Data.PREN_H.pick_random() + " " + Data.NOMS.pick_random(), "t": sg[k]["t"], "f": sg[k]["f"], "model": "", "sex": "H",
+			"motif": ["bagarre sur la piste", "a frappé un barman", "vol au vestiaire", "harcèlement de clientes"].pick_random()}
+		if sm.size() > k:
+			e["model"] = sm[k][0]; e["t"] = sm[k][1]; e["f"] = {}; e["sex"] = sm[k][2]
+			if e["sex"] == "F": e["name"] = Data.PREN_F.pick_random() + " " + Data.NOMS.pick_random()
+			Data.reserved.append(sm[k][0])
+		black.append(e)
 	# public déjà à l'intérieur
 	for i in 30:
 		_spawn_inside(null, true)
@@ -140,7 +148,7 @@ func _start() -> void:
 		queue.append(_gen_client(i, {"testing": i == test_i}))
 	var bi := randi_range(3, 9)
 	if bi == test_i: bi = 10
-	var b := _gen_client(bi, {"minor": false, "sex": "H"})
+	var b := _gen_client(bi, {"minor": false, "sex": black[0]["sex"]})
 	b["black"] = black[0]
 	if randf() < 0.5:
 		b["alias"] = true
@@ -231,11 +239,16 @@ func _client_look(c: Dictionary) -> Dictionary:
 	if c["minor"]:
 		o["height"] = randf_range(1.64, 1.76) if c["sex"] == "H" else randf_range(1.55, 1.66)
 	if c["black"] != null:
-		var f: Dictionary = c["black"]["f"]
-		for k in f.keys():
-			o[k] = f[k]
-		o["sex"] = "H"
-		o["no_beard"] = true
+		if c["black"]["model"] != "":
+			o["model"] = c["black"]["model"]
+			o["sex"] = c["black"]["sex"]
+		else:
+			var f: Dictionary = c["black"]["f"]
+			for k in f.keys():
+				o[k] = f[k]
+			o["sex"] = "H"
+			o["no_beard"] = true
+			o["prim"] = true
 	return o
 
 func _mk_client_npc(c: Dictionary, i: int) -> void:
@@ -329,17 +342,24 @@ func _door_panel() -> void:
 		if not c["has_id"]:
 			body += "[b]Aucune pièce d'identité présentée.[/b]\n"
 		else:
-			var hair_w: String = c["npc"].hair_word
-			var skin_w: String = c["npc"].skin_word
-			var hs_w: String = {"short": "courts", "buzz": "très courts", "curly": "bouclés", "long": "longs", "bun": "attachés", "bob": "mi-longs", "bald": "rasés"}.get(c["npc"].hs, "courts")
-			if c["borrowed"]:
+			var words: Array = c["npc"].id_words()
+			var photo := ""
+			var hair_w := ""
+			var hs_w := ""
+			var skin_w := ""
+			if words.is_empty():
+				photo = "Photo : visage différent (forme du nez, mâchoire, yeux)" if c["borrowed"] else "Photo : correspond au visage"
+			else:
+				hair_w = words[0]; hs_w = words[1]; skin_w = words[2]
+			if c["borrowed"] and not words.is_empty():
 				if c["owner_look"] == null:
 					var hh = Data.HAIRS.pick_random()
 					while hh[1] == hair_w: hh = Data.HAIRS.pick_random()
 					c["owner_look"] = [hh[1], ["courts", "longs", "attachés", "rasés"].pick_random(), Data.SKINS.pick_random()[1]]
 				hair_w = c["owner_look"][0]; hs_w = c["owner_look"][1]; skin_w = c["owner_look"][2]
 			var nm: String = c["id_name"] if c["id_name"] != "" else c["first"] + " " + c["last"]
-			body += "Nom : %s\nNé(e) le : %s → [b]%d ans[/b]\nPhoto : cheveux %s, %s · peau %s\n" % [nm, _fmt_dob(c["dob"]), c["id_age"], hair_w, hs_w, skin_w]
+			if photo == "": photo = "Photo : cheveux %s, %s · peau %s" % [hair_w, hs_w, skin_w]
+			body += "Nom : %s\nNé(e) le : %s → [b]%d ans[/b]\n%s\n" % [nm, _fmt_dob(c["dob"]), c["id_age"], photo]
 	if c["palp"] != "":
 		body += "\n" + c["palp"] + "\n"
 	for a in c["asked"]:

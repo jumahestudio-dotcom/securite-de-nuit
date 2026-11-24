@@ -47,6 +47,10 @@ var arms := []
 var mats := []
 var glb = null
 var glb_anim: AnimationPlayer = null
+var model_path := ""
+var meta := {}
+var hs_word := ""
+var cur_clip := ""
 
 func setup(o: Dictionary) -> void:
 	sex = o.get("sex", "H" if randf() < 0.55 else "F")
@@ -72,6 +76,15 @@ func setup(o: Dictionary) -> void:
 	if sex == "H" and beard_col == null and not o.get("no_beard", false) and randf() < 0.15:
 		beard_col = hair
 	ph = randf() * TAU
+	# vrai personnage 3D si disponible
+	model_path = o.get("model", "")
+	if model_path == "" and not o.get("prim", false):
+		model_path = Data.pick_model("A" if agent else sex)
+	if model_path != "":
+		meta = Data.CHAR_META.get(model_path.get_file(), {})
+		skin_word = str(meta.get("peau", ""))
+		hair_word = str(meta.get("cheveux", ""))
+		hs_word = str(meta.get("coiffure", ""))
 	if o.has("pos"): position = o["pos"]
 	yaw = o.get("yaw", 0.0)
 	_build()
@@ -111,15 +124,18 @@ func _sph(parent: Node3D, pos: Vector3, scl: Vector3, c: Color) -> MeshInstance3
 	parent.add_child(mi)
 	return mi
 
+## Mots pour la photo de la pièce d'identité ([] si le modèle n'est pas décrit)
+func id_words() -> Array:
+	if model_path != "" and (hair_word == "" or skin_word == ""):
+		return []
+	var h := hs_word
+	if h == "":
+		h = {"short": "courts", "buzz": "très courts", "curly": "bouclés", "long": "longs", "bun": "attachés", "bob": "mi-longs", "bald": "rasés"}.get(hs, "courts")
+	return [hair_word, h, skin_word]
+
 func _build() -> void:
-	if ResourceLoader.exists("res://assets/characters/human.glb"):
-		var sc = load("res://assets/characters/human.glb")
-		if sc:
-			glb = sc.instantiate()
-			add_child(glb)
-			glb.scale = Vector3.ONE * (height / 1.75)
-			glb_anim = glb.find_child("AnimationPlayer", true, false)
-			return
+	if model_path != "" and _build_model():
+		return
 	body = Node3D.new()
 	add_child(body)
 	body.scale = Vector3.ONE * (height / 1.75)
@@ -209,6 +225,71 @@ func _build() -> void:
 	sh.position = Vector3(0, 0.012, 0)
 	add_child(sh)
 
+func _build_model() -> bool:
+	var sc = load(model_path)
+	if sc == null or not (sc is PackedScene):
+		push_warning("Modèle illisible : " + model_path)
+		return false
+	glb = sc.instantiate()
+	add_child(glb)
+	# mise à l'échelle : on mesure le modèle et on l'amène à la taille voulue
+	var top_y := 0.0
+	var found := false
+	for mi in glb.find_children("*", "MeshInstance3D", true, false):
+		var xf := Transform3D()
+		var n: Node = mi
+		while n != null and n != glb:
+			if n is Node3D: xf = n.transform * xf
+			n = n.get_parent()
+		var bb: AABB = xf * mi.get_aabb()
+		top_y = max(top_y, bb.end.y)
+		found = true
+	if found and top_y > 0.01:
+		glb.scale = Vector3.ONE * (height / top_y)
+	# animations partagées (squelette Mixamo commun)
+	glb_anim = glb.find_child("AnimationPlayer", true, false)
+	if glb_anim == null:
+		glb_anim = AnimationPlayer.new()
+		glb.add_child(glb_anim)
+	var skel: Skeleton3D = null
+	var skels := glb.find_children("*", "Skeleton3D", true, false)
+	if skels.size() > 0: skel = skels[0]
+	if skel == null or Data.ANIMS.is_empty():
+		return true
+	var root: Node = glb_anim.get_node(glb_anim.root_node)
+	var skel_path := str(root.get_path_to(skel))
+	var ckey := skel_path + "|" + skel.get_bone_name(0)
+	if Data.LIB_CACHE.has(ckey):
+		if glb_anim.has_animation_library("sdn"):
+			glb_anim.remove_animation_library("sdn")
+		glb_anim.add_animation_library("sdn", Data.LIB_CACHE[ckey])
+		return true
+	var lib := AnimationLibrary.new()
+	for key in Data.ANIMS.keys():
+		var a: Animation = Data.ANIMS[key].duplicate(true)
+		var loop: bool = key in ["Idle", "Walk", "Run", "Dance", "Fight", "Talk", "Drink", "Phone", "Sit", "Surrender"]
+		a.loop_mode = Animation.LOOP_LINEAR if loop else Animation.LOOP_NONE
+		for t in a.get_track_count():
+			var np: NodePath = a.track_get_path(t)
+			var bone := str(np.get_concatenated_subnames())
+			if bone == "": continue
+			if skel.find_bone(bone) == -1:
+				if skel.find_bone(bone.replace(":", "_")) != -1: bone = bone.replace(":", "_")
+				elif skel.find_bone(bone.replace("_", ":")) != -1: bone = bone.replace("_", ":")
+			a.track_set_path(t, NodePath(skel_path + ":" + bone))
+			# marche « sur place » : on bloque le déplacement horizontal des hanches
+			if loop and a.track_get_type(t) == Animation.TYPE_POSITION_3D and bone.to_lower().ends_with("hips") and a.track_get_key_count(t) > 0:
+				var v0: Vector3 = a.track_get_key_value(t, 0)
+				for k in a.track_get_key_count(t):
+					var v: Vector3 = a.track_get_key_value(t, k)
+					a.track_set_key_value(t, k, Vector3(v0.x, v.y, v0.z))
+		lib.add_animation(key, a)
+	if glb_anim.has_animation_library("sdn"):
+		glb_anim.remove_animation_library("sdn")
+	glb_anim.add_animation_library("sdn", lib)
+	Data.LIB_CACHE[ckey] = lib
+	return true
+
 func set_pose(p: Dictionary, dur: float) -> void:
 	pose = p
 	pose_until = Time.get_ticks_msec() / 1000.0 + dur
@@ -255,11 +336,21 @@ func _process(delta: float) -> void:
 
 func _anim_glb() -> void:
 	if glb_anim == null: return
-	var names := {"walk":"Walk","dance":"Dance","fight":"Fight","fallen":"Fall","sit":"Sit","drink":"Idle","talk":"Talk","phone":"Idle","raise":"Surrender","idle":"Idle"}
-	var n: String = names.get(anim, "Idle")
-	if run and anim == "walk": n = "Run"
-	if glb_anim.has_animation(n) and glb_anim.current_animation != n:
-		glb_anim.play(n, 0.25)
+	var wanted := {"walk": ["Walk"], "dance": ["Dance", "Idle"], "fight": ["Fight", "Idle"], "fallen": ["Fall"], "sit": ["Sit", "Idle"],
+		"drink": ["Drink", "Talk", "Idle"], "talk": ["Talk", "Idle"], "phone": ["Phone", "Talk", "Idle"], "raise": ["Surrender", "Idle"], "idle": ["Idle"]}
+	var list: Array = wanted.get(anim, ["Idle"])
+	if run and anim == "walk": list = ["Run", "Walk"]
+	for n in list:
+		var full: String = "sdn/" + n
+		if glb_anim.has_animation(full):
+			if cur_clip != full:
+				cur_clip = full
+				glb_anim.play(full, 0.25)
+				glb_anim.seek(randf() * 0.5 if n != "Fall" else 0.0)
+			break
+	# légère titubation des personnes ivres
+	if sway > 0.0:
+		glb.rotation.z = sin(Time.get_ticks_msec() / 1000.0 * 1.6 + ph) * 0.1 * sway
 
 func _anim_prim(t: float) -> void:
 	var leg := 0.0; var arm := 0.0; var bob := 0.0; var lean := 0.0; var roll := 0.0

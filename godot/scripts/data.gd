@@ -35,7 +35,15 @@ var EXCL := ["triche","perdant","jackpot","riviere","barbecue","feucamp","baigna
 
 var _emoji := RegEx.new()
 
+# ---------- vrais personnages (Mixamo) ----------
+var CHARS := {"H": [], "F": [], "A": []}   # chemins des modèles par catégorie
+var CHAR_META := {}                        # description de chaque modèle (personnages.json)
+var ANIMS := {}                            # nom -> Animation (Idle, Walk, Run…)
+var reserved: Array = []                   # modèles réservés (liste noire de la nuit)
+var LIB_CACHE := {}                        # bibliothèques d'animations déjà adaptées
+
 func _ready() -> void:
+	_scan_assets()
 	INC = _load("res://data/incidents.json")
 	DOOR_EV = _load("res://data/door_events.json")
 	GER = _load("res://data/gerant.json")
@@ -91,3 +99,76 @@ func age_from(y: int, m: int, d: int) -> int:
 func fmt_clock(minutes: float) -> String:
 	var t := (23 * 60 + int(minutes)) % 1440
 	return "%02dh%02d" % [t / 60, t % 60]
+
+# ---------- chargement des modèles et animations ----------
+func _list(dirp: String, out: Array) -> void:
+	var d := DirAccess.open(dirp)
+	if d == null: return
+	d.list_dir_begin()
+	var f := d.get_next()
+	while f != "":
+		if d.current_is_dir():
+			if not f.begins_with("."): _list(dirp + "/" + f, out)
+		else:
+			var nm := f.trim_suffix(".import").trim_suffix(".remap")
+			var ext := nm.get_extension().to_lower()
+			if ext in ["fbx", "glb", "gltf", "blend"]:
+				var full := dirp + "/" + nm
+				if not out.has(full): out.append(full)
+		f = d.get_next()
+	d.list_dir_end()
+
+func _scan_assets() -> void:
+	if FileAccess.file_exists("res://assets/characters/personnages.json"):
+		var m = JSON.parse_string(FileAccess.get_file_as_string("res://assets/characters/personnages.json"))
+		if m is Dictionary: CHAR_META = m
+	var files := []
+	_list("res://assets/characters", files)
+	for p in files:
+		var fn: String = p.get_file()
+		var meta: Dictionary = CHAR_META.get(fn, {})
+		var cat := ""
+		var low: String = p.to_lower()
+		if "/agents/" in low or fn.to_lower().begins_with("a_"): cat = "A"
+		elif "/femmes/" in low or fn.to_lower().begins_with("f_"): cat = "F"
+		elif "/hommes/" in low or fn.to_lower().begins_with("h_"): cat = "H"
+		if meta.get("role", "") == "agent": cat = "A"
+		elif meta.has("sexe"): cat = "F" if str(meta["sexe"]).to_upper().begins_with("F") else "H"
+		if cat == "": cat = "H"
+		CHARS[cat].append(p)
+	var afiles := []
+	_list("res://assets/animations", afiles)
+	for p in afiles:
+		var sc = load(p)
+		if sc == null or not (sc is PackedScene): continue
+		var inst: Node = sc.instantiate()
+		var ap: AnimationPlayer = inst.find_child("AnimationPlayer", true, false)
+		if ap != null:
+			for an in ap.get_animation_list():
+				if an == "RESET": continue
+				var anim: Animation = ap.get_animation(an).duplicate(true)
+				var key: String = p.get_file().get_basename()
+				key = key.substr(0, 1).to_upper() + key.substr(1)
+				ANIMS[key] = anim
+				break
+		inst.free()
+	print("Personnages : %d hommes, %d femmes, %d agents · animations : %s" % [CHARS["H"].size(), CHARS["F"].size(), CHARS["A"].size(), ", ".join(PackedStringArray(ANIMS.keys()))])
+
+func has_models() -> bool:
+	return CHARS["H"].size() + CHARS["F"].size() > 0
+
+func pick_model(cat: String) -> String:
+	var l: Array = []
+	for p in CHARS.get(cat, []):
+		if not p in reserved: l.append(p)
+	if l.is_empty(): return ""
+	return l.pick_random()
+
+## Modèles décrits avec un « signe » distinctif (utilisables pour la liste noire)
+func signed_models() -> Array:
+	var out := []
+	for cat in ["H", "F"]:
+		for p in CHARS[cat]:
+			var m: Dictionary = CHAR_META.get(p.get_file(), {})
+			if str(m.get("signe", "")) != "": out.append([p, str(m["signe"]), cat])
+	return out

@@ -43,24 +43,79 @@ scripts/ui.gd          l'interface (HUD, panneaux, écrans)
 data/incidents.json    les 103 incidents de la version web (textes, choix, lois, faits réels)
 data/door_events.json  les 46 événements de porte (pour la prochaine étape)
 data/gerant.json       les appels du gérant (pour la prochaine étape)
-assets/characters/     ici iront les vrais personnages 3D
+assets/characters/     les vrais personnages 3D (hommes/, femmes/, agents/)
+assets/animations/     leurs animations (Idle.fbx, Walk.fbx…)
 ```
 
-## Étape suivante : de vrais personnages
+## Vrais personnages réalistes (Mixamo, gratuit)
 
-Le code est déjà prêt : s'il trouve `assets/characters/human.glb`, il l'utilise à la place des
-personnages provisoires. Il cherche ces animations dans le fichier :
-`Idle`, `Walk`, `Run`, `Dance`, `Fight`, `Fall`, `Sit`, `Talk`, `Surrender`.
+Le jeu remplace automatiquement les personnages provisoires par les vrais dès que tu mets des fichiers
+dans les bons dossiers. Tu peux en mettre peu au début (2 hommes, 2 femmes, 1 agent) et en ajouter ensuite.
 
-Sources gratuites : **Mixamo** (personnages + animations, compte Adobe gratuit),
-**Quaternius** et **Kenney** (décors, mobilier, voitures, licence libre).
-On fera ce branchement ensemble à l'étape suivante.
+### 1. Créer un compte
+Va sur **https://www.mixamo.com** et connecte-toi avec un compte Adobe (gratuit).
+
+### 2. Télécharger les personnages
+Onglet **Characters** : choisis un personnage, puis **Download** avec ces réglages :
+- Format : **FBX Binary (.fbx)**
+- Pose : **T-pose**
+
+Range chaque fichier selon le personnage :
+
+| Dossier | Quoi | Conseil |
+|---|---|---|
+| `godot/assets/characters/hommes/` | clients hommes | 4 à 8 personnages variés (âges, tenues, origines) |
+| `godot/assets/characters/femmes/` | clientes femmes | 4 à 8 personnages variés |
+| `godot/assets/characters/agents/` | toi et tes collègues | 1 ou 2 personnages en tenue sombre |
+
+Donne-leur des noms simples : `homme1.fbx`, `femme1.fbx`, `agent1.fbx`…
+
+### 3. Télécharger les animations
+Garde **un seul personnage** sélectionné, onglet **Animations**. Pour chaque ligne : tape le mot dans la
+recherche, choisis une animation qui ressemble, coche **In Place** quand la case existe, puis **Download** :
+- Format : **FBX Binary (.fbx)**
+- Skin : **Without Skin**
+- Frames per second : **30**
+
+Renomme le fichier **exactement** comme dans la 1re colonne et range-le dans `godot/assets/animations/` :
+
+| Nom du fichier | À chercher sur Mixamo | Obligatoire ? |
+|---|---|---|
+| `Idle.fbx` | Idle | oui |
+| `Walk.fbx` | Walking (In Place) | oui |
+| `Run.fbx` | Running (In Place) | oui |
+| `Dance.fbx` | Dancing / Hip Hop Dancing | oui |
+| `Fight.fbx` | Fighting Idle / Boxing | oui |
+| `Fall.fbx` | Falling Back Death / Dying | oui |
+| `Talk.fbx` | Talking | conseillé |
+| `Drink.fbx` | Drinking | facultatif |
+| `Phone.fbx` | Talking On Phone | facultatif |
+| `Sit.fbx` | Sitting Idle | facultatif |
+| `Surrender.fbx` | Surrender | facultatif |
+
+Toutes les animations Mixamo marchent sur tous les personnages Mixamo : un seul jeu d'animations suffit.
+
+### 4. (Facultatif) Décrire les personnages
+Pour que la **photo de la pièce d'identité** et la **liste noire** collent aux vrais visages, copie
+`assets/characters/personnages.exemple.json` en `personnages.json` et décris chaque fichier
+(peau, cheveux, coiffure). Si tu remplis **« signe »** pour au moins 2 personnages
+(ex. « barbe épaisse, veste en cuir rouge »), ce sont eux qui seront sur la liste noire.
+
+### 5. Lancer
+Ouvre le projet dans Godot : il importe les nouveaux fichiers (ça peut prendre une minute), puis **F5**.
+En bas, dans **Sortie**, une ligne indique ce qui a été trouvé, par exemple :
+`Personnages : 4 hommes, 4 femmes, 1 agent · animations : Idle, Walk, Run…`
+Copie-moi cette ligne et les éventuelles erreurs en rouge.
+
+> Les fichiers Mixamo ne sont **pas envoyés sur GitHub** (ils sont exclus par `.gitignore`) :
+> la licence Adobe autorise leur usage dans ton jeu, mais pas leur redistribution telle quelle.
 
 ## Feuille de route
 
 1. ✅ Le Néon, porte + salle, incidents, radio, bilan
-2. Vrais personnages animés (Mixamo) et décor réaliste
-3. Mode baston (coups, garde, esquive, saisie, légitime défense)
-4. Carrière : vestiaire, habitués (Kévin, Lucas, Nadia…), événements de porte, gérant, équipement
-5. Les autres établissements (Le Comptoir, Le Palace, L'Usine)
-6. Son et musique, minicarte, export en .exe
+2. 🔄 Vrais personnages animés (Mixamo) — code prêt, à toi de télécharger les fichiers
+3. Décor réaliste (Kenney / Quaternius)
+4. Mode baston (coups, garde, esquive, saisie, légitime défense)
+5. Carrière : vestiaire, habitués (Kévin, Lucas, Nadia…), événements de porte, gérant, équipement
+6. Les autres établissements (Le Comptoir, Le Palace, L'Usine)
+7. Son et musique, minicarte, export en .exe
