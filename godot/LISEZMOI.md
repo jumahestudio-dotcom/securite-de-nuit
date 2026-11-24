@@ -24,6 +24,10 @@ Au premier lancement, Godot peut mettre quelques secondes à importer les fichie
 | E | Contrôler un client / intervenir / observer |
 | R | Radio : envoyer Moussa ou Sarah sur un incident (en salle) |
 | Échap | Fermer le panneau / libérer la souris |
+| **Baston** : Clic G / Clic D | Repousser / saisir |
+| A (AZERTY) | Frapper |
+| F maintenu · Espace | Garde · esquive |
+| T · E · R | Injonction · escorter dehors · renfort |
 
 ## Si ça ne marche pas
 

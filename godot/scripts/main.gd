@@ -99,7 +99,7 @@ func _mk_person(o: Dictionary):
 func _menu() -> void:
 	phase = "menu"
 	ui.show_screen("Sécurité de nuit 3D",
-		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité au [b]Néon[/b], de 23 h à 5 h.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nMaj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  G : frapper  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
+		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité au [b]Néon[/b], de 23 h à 5 h.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nMaj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  A : frapper  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
 		[{"t": "Prendre son service", "k": "main", "cb": _start}])
 
 # =====================================================================
@@ -1005,7 +1005,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		if e is InputEventKey and e.pressed and not e.echo:
 			match e.physical_keycode:
 				KEY_SPACE: fight.do_dodge(_move_dir())
-				KEY_G: fight.punch()
+				KEY_Q, KEY_G: fight.punch()   # touche A sur clavier AZERTY
 				KEY_T: fight.verbal()
 				KEY_E: fight.escort()
 				KEY_R: fight.backup()

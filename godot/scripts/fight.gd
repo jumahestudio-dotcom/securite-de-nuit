@@ -482,7 +482,7 @@ func _hud() -> void:
 	s += "\n[color=#ffd6de]"
 	for i in log_lines.size():
 		s += log_lines[i] + "\n"
-	s += "[/color]\n[color=#b9a0a8][font_size=12]Clic G repousser · Clic D saisir · F garde · Espace esquive · G frapper · T injonction · E escorter · R renfort[/font_size][/color]"
+	s += "[/color]\n[color=#b9a0a8][font_size=12]Clic G repousser · Clic D saisir · F garde · Espace esquive · A frapper · T injonction · E escorter · R renfort[/font_size][/color]"
 	game.ui.set_fight(s)
 
 # =====================================================================
