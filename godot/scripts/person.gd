@@ -252,7 +252,7 @@ func _build_model() -> bool:
 		glb_anim = AnimationPlayer.new()
 		glb.add_child(glb_anim)
 	var skel: Skeleton3D = null
-	var skels := glb.find_children("*", "Skeleton3D", true, false)
+	var skels: Array = glb.find_children("*", "Skeleton3D", true, false)
 	if skels.size() > 0: skel = skels[0]
 	if skel == null or Data.ANIMS.is_empty():
 		return true
