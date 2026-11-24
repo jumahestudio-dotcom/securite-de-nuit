@@ -40,6 +40,8 @@ var CHARS := {"H": [], "F": [], "A": []}   # chemins des modèles par catégorie
 var CHAR_META := {}                        # description de chaque modèle (personnages.json)
 var ANIMS := {}                            # nom -> Animation (Idle, Walk, Run…)
 var reserved: Array = []                   # modèles réservés (liste noire de la nuit)
+var diag_done := false
+var diag_play := false
 var LIB_CACHE := {}                        # bibliothèques d'animations déjà adaptées
 
 func _ready() -> void:
