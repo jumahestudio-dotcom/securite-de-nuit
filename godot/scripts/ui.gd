@@ -12,6 +12,9 @@ var pbox: VBoxContainer
 var screen: ColorRect
 var sbox: VBoxContainer
 var panel_open := false
+var fight_box: PanelContainer
+var fight_txt: RichTextLabel
+var flash_rect: ColorRect
 var screen_open := false
 
 const C_BG := Color(0.09, 0.075, 0.14, 0.94)
@@ -95,6 +98,27 @@ func _ready() -> void:
 	prompt.add_theme_color_override("font_outline_color", Color.BLACK)
 	prompt.add_theme_constant_override("outline_size", 6)
 	add_child(prompt)
+	# encart baston (gauche)
+	fight_box = PanelContainer.new()
+	fight_box.add_theme_stylebox_override("panel", _sb(Color(0.1, 0.02, 0.05, 0.85), Color("#ff3d5a"), 12, 12))
+	fight_box.position = Vector2(14, 110)
+	fight_box.custom_minimum_size = Vector2(430, 0)
+	fight_txt = RichTextLabel.new()
+	fight_txt.bbcode_enabled = true
+	fight_txt.fit_content = true
+	fight_txt.scroll_active = false
+	fight_txt.custom_minimum_size = Vector2(410, 0)
+	fight_txt.add_theme_font_size_override("normal_font_size", 15)
+	fight_txt.add_theme_font_size_override("bold_font_size", 17)
+	fight_box.add_child(fight_txt)
+	fight_box.visible = false
+	add_child(fight_box)
+	# flash rouge quand on prend un coup
+	flash_rect = ColorRect.new()
+	flash_rect.anchor_right = 1; flash_rect.anchor_bottom = 1
+	flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash_rect.color = Color(1, 0, 0, 0)
+	add_child(flash_rect)
 	# panneau de décision (droite)
 	panel = PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", _sb(C_BG, C_LINE, 16, 16))
@@ -223,3 +247,12 @@ func set_hud(clock: String, inside: int, cap: int, secu: float, rep: float) -> v
 	chips["Sécurité"][1].value = secu
 	chips["Réputation"][0].text = str(int(round(rep)))
 	chips["Réputation"][1].value = rep
+
+func set_fight(bb: String) -> void:
+	fight_box.visible = bb != ""
+	fight_txt.text = bb
+
+func flash(c: Color) -> void:
+	flash_rect.color = c
+	var tw := create_tween()
+	tw.tween_property(flash_rect, "color:a", 0.0, 0.35)

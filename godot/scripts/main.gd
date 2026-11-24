@@ -4,9 +4,11 @@ extends Node3D
 const PersonScript = preload("res://scripts/person.gd")
 const WorldScript = preload("res://scripts/world.gd")
 const UIScript = preload("res://scripts/ui.gd")
+const FightScript = preload("res://scripts/fight.gd")
 
 var world
 var ui
+var fight
 var player: CharacterBody3D
 var pvis
 var cam: Camera3D
@@ -51,6 +53,9 @@ func _ready() -> void:
 	Data.ground = Callable(world, "floor_y")
 	ui = UIScript.new()
 	add_child(ui)
+	fight = FightScript.new()
+	fight.game = self
+	add_child(fight)
 	cam = Camera3D.new()
 	cam.fov = 62
 	cam.far = 200
@@ -94,7 +99,7 @@ func _mk_person(o: Dictionary):
 func _menu() -> void:
 	phase = "menu"
 	ui.show_screen("Sécurité de nuit 3D",
-		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité au [b]Néon[/b], de 23 h à 5 h.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nMaj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer",
+		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité au [b]Néon[/b], de 23 h à 5 h.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nMaj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  G : frapper  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
 		[{"t": "Prendre son service", "k": "main", "cb": _start}])
 
 # =====================================================================
@@ -540,6 +545,21 @@ func _refuse(k: String) -> void:
 	n.walk_to([Vector2(4, 4.5), Vector2(12, 5.2), Vector2(28, 5.2)], func(p): p.queue_free())
 	for m in c["mates"]:
 		m.walk_to([Vector2(4.5, 4.8), Vector2(12, 5.4), Vector2(28, 5.4)], func(p): p.queue_free())
+	var attack: bool = (c["att"] == "menacant" and randf() < 0.5) or (c["iv"] == 2 and randf() < 0.18) or (c["black"] != null and randf() < 0.3)
+	if attack:
+		n.path = []
+		n.on_arrive = null
+		n.anim = "fight"
+		for m in c["mates"]:
+			m.path = []; m.on_arrive = null; m.anim = "fight"
+		res.append(["b", "Il ne l'accepte pas : il revient vers toi, le poing serré…", ""])
+		var fsrc := {"npc": n, "mates": c["mates"], "name": c["first"], "weapon": c["weapon"] and c["found"] == "", "title": "Agression à la porte", "door": true}
+		_clampg()
+		cur = null
+		served += 1
+		minute += 7
+		_result_panel("Ça dégénère", res, func(): fight.start(fsrc))
+		return
 	if c["att"] == "menacant" and randf() < 0.4: pend.append("exterieur")
 	_clampg()
 	var bad := false
@@ -621,7 +641,7 @@ func _start_salle() -> void:
 
 func _is_viol(ty: String) -> bool:
 	var re := RegEx.new()
-	re.compile("bagarre|rixe|filles|refus|exterieur|dj|conjugal|homophobe|racket|onepunch|attouch|photo|agentagresse|provoc|insulte|bouteille|garde|lacrymo")
+	re.compile("arme|harcel|bagarre|rixe|filles|refus|exterieur|dj|conjugal|homophobe|racket|onepunch|attouch|photo|agentagresse|provoc|insulte|bouteille|garde|lacrymo")
 	return re.search(ty) != null
 
 func _is_med(ty: String) -> bool:
@@ -718,6 +738,9 @@ func _inc_panel(inc: Dictionary) -> void:
 	for oi in order:
 		var idx: int = oi
 		bts.append({"t": Data.lbl(d["o"][idx]["t"]), "cb": func(): _decide(idx)})
+	if _is_viol(inc["ty"]):
+		var the_inc: Dictionary = inc
+		bts.append({"t": "Intervention physique", "k": "bad", "cb": func(): fight.start({"inc": the_inc, "title": Data.clean(Data.INC[the_inc["ty"]]["t"])})})
 	bts.append({"t": "Reculer", "cb": _close_panel})
 	ui.open_panel(d["t"], "%s · %s · agents sur place : %d" % [WorldScript.ZLBL[inc["z"]], Data.fmt_clock(minute), _agents_near(inc["p"])], d["desc"], bts)
 
@@ -871,6 +894,9 @@ func _step_salle(delta: float) -> void:
 func _end_night() -> void:
 	phase = "end"
 	ui.close_panel()
+	if fight.active:
+		fight.active = false
+		ui.set_fight("")
 	var nf := faults.size()
 	var note := int(clamp(round(secu / 100.0 * 9 + rep / 100.0 * 7 + 3 - nf * 1.4 + min(8, goods.size()) * 0.2), 0, 20))
 	var ok := 0
@@ -901,7 +927,18 @@ func _set_radio(t: String) -> void:
 	radio_txt = Data.clean(t)
 	ui.radio.text = radio_txt
 
+func _move_dir() -> Vector3:
+	var f := Vector3(sin(cam_yaw), 0, cos(cam_yaw))
+	var r := Vector3(-f.z, 0, f.x)
+	var mv := Vector3.ZERO
+	if Input.is_physical_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP): mv += f
+	if Input.is_physical_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN): mv -= f
+	if Input.is_physical_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT): mv -= r
+	if Input.is_physical_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): mv += r
+	return mv.normalized() if mv.length() > 0.01 else Vector3.ZERO
+
 func _interact() -> void:
+	if fight.active: return
 	var P := player.position
 	if phase == "door" and _cur_ready() and P.distance_to(cur["npc"].position) < 2.4:
 		_door_panel()
@@ -956,6 +993,24 @@ func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		cam_yaw -= e.relative.x * 0.0026
 		cam_pitch = clamp(cam_pitch + e.relative.y * 0.0022, -0.25, 1.0)
+	if fight.active and not ui.panel_open and not ui.screen_open:
+		if e is InputEventMouseButton and e.pressed:
+			if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			elif e.button_index == MOUSE_BUTTON_LEFT:
+				fight.push()
+			elif e.button_index == MOUSE_BUTTON_RIGHT:
+				fight.grab()
+			return
+		if e is InputEventKey and e.pressed and not e.echo:
+			match e.physical_keycode:
+				KEY_SPACE: fight.do_dodge(_move_dir())
+				KEY_G: fight.punch()
+				KEY_T: fight.verbal()
+				KEY_E: fight.escort()
+				KEY_R: fight.backup()
+				KEY_ESCAPE: Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+			return
 	if e is InputEventMouseButton and e.pressed and not ui.panel_open and not ui.screen_open and (phase == "door" or phase == "salle"):
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if e is InputEventKey and e.pressed and not e.echo:
@@ -975,25 +1030,26 @@ func _physics_process(delta: float) -> void:
 		return
 	var playing: bool = (phase == "door" or phase == "salle") and not ui.panel_open and not ui.screen_open
 	if playing:
-		var f := Vector3(sin(cam_yaw), 0, cos(cam_yaw))
-		var r := Vector3(-f.z, 0, f.x)
-		var mv := Vector3.ZERO
-		if Input.is_physical_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP): mv += f
-		if Input.is_physical_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN): mv -= f
-		if Input.is_physical_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT): mv -= r
-		if Input.is_physical_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): mv += r
+		var mv := _move_dir()
 		var run := Input.is_physical_key_pressed(KEY_SHIFT)
-		if mv.length() > 0.01:
-			mv = mv.normalized()
-			var sp := 5.4 if run else 2.9
+		var down: bool = pvis.anim == "fallen"
+		if mv.length() > 0.01 and not down:
+			var sp: float = (3.6 if run else 2.2) if fight.active else (5.4 if run else 2.9)
 			player.velocity = mv * sp
-			pvis.yaw = pvis.turn_to(pvis.yaw, atan2(mv.x, mv.z), delta * 10.0)
+			if not fight.active: pvis.yaw = pvis.turn_to(pvis.yaw, atan2(mv.x, mv.z), delta * 10.0)
 			pvis.anim = "walk"
 			pvis.walk_ph += sp * delta * (4.0 if run else 5.2)
 		else:
 			player.velocity = Vector3.ZERO
-			if pvis.anim == "walk": pvis.anim = "idle"
+			if pvis.anim == "walk": pvis.anim = "fight" if fight.active else "idle"
+		if fight.active and pvis.anim == "idle": pvis.anim = "fight"
+		if not fight.active and pvis.anim == "fight": pvis.anim = "idle"
 		player.move_and_slide()
+		if fight.active:
+			fight.step(delta, mv)
+			if phase == "salle": next_inc += delta
+		else:
+			fight.hp = min(100.0, fight.hp + 1.5 * delta)
 		player.position.y = world.floor_y(player.position.x, player.position.z)
 		if phase == "salle":
 			_step_salle(delta)
@@ -1010,6 +1066,9 @@ func _physics_process(delta: float) -> void:
 	if not hit.is_empty():
 		eye = tg + (hit["position"] - tg) * 0.85
 	if player.position.z < -0.2: eye.y = min(eye.y, 3.75)
+	if fight.shake > 0:
+		fight.shake = max(0.0, fight.shake - delta * 0.8)
+		eye += Vector3(randf() - 0.5, randf() - 0.5, randf() - 0.5) * fight.shake
 	cam.position = eye
 	cam.look_at(tg + Vector3(sin(cam_yaw) * 1.2, -0.15, cos(cam_yaw) * 1.2))
 
@@ -1026,7 +1085,7 @@ func _process(delta: float) -> void:
 	if player == null or phase == "end": return
 	# invite d'action
 	var pr := ""
-	if not ui.panel_open:
+	if not ui.panel_open and not fight.active:
 		var P := player.position
 		if phase == "door" and _cur_ready() and P.distance_to(cur["npc"].position) < 2.4:
 			pr = "[E]  Contrôler le client"

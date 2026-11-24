@@ -186,7 +186,11 @@ func anim_key(fname: String) -> String:
 	var alias := {"idle": "Idle", "breathing_idle": "Idle", "walking": "Walk", "walk": "Walk", "running": "Run", "run": "Run",
 		"hip_hop_dancing": "Dance", "dancing": "Dance", "dance": "Dance", "salsa_dancing": "Dance", "dying": "Fall", "falling_back_death": "Fall", "fall": "Fall",
 		"talking": "Talk", "talk": "Talk", "punching_bag": "Fight", "fighting_idle": "Fight", "boxing": "Fight", "fight": "Fight",
-		"drinking": "Drink", "drink": "Drink", "talking_on_phone": "Phone", "phone": "Phone", "sitting_idle": "Sit", "sit": "Sit", "surrender": "Surrender"}
+		"drinking": "Drink", "drink": "Drink", "talking_on_phone": "Phone", "phone": "Phone", "sitting_idle": "Sit", "sit": "Sit", "surrender": "Surrender",
+		"punching": "Punch", "punch": "Punch", "cross_punch": "Punch", "jab": "Punch", "hook_punch": "Punch",
+		"hit_reaction": "Hit", "head_hit": "Hit", "stomach_hit": "Hit", "big_hit_to_head": "Hit", "hit": "Hit",
+		"block": "Block", "blocking": "Block", "center_block": "Block", "body_block": "Block",
+		"shove": "Shove", "pushing": "Shove", "push": "Shove", "kneeling_idle": "Kneel", "kneeling": "Kneel", "kneel": "Kneel"}
 	if alias.has(k): return alias[k]
 	for a in alias.keys():
 		if k.begins_with(a): return alias[a]

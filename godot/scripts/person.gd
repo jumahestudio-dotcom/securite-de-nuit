@@ -51,6 +51,9 @@ var model_path := ""
 var meta := {}
 var hs_word := ""
 var cur_clip := ""
+var act_name := ""
+var act_until := 0.0
+var tag: Label3D = null
 var skel_ref: Skeleton3D = null
 var foot_ids: Array = []
 var foot_h := 0.05
@@ -291,9 +294,9 @@ func _build_model() -> bool:
 		bmap[suf] = bnm
 		if suf == "Hips": hips = bi
 	for key in Data.ANIMS.keys():
-		if not key in ["Idle", "Walk", "Run", "Dance", "Fight", "Fall", "Talk", "Drink", "Phone", "Sit", "Surrender"]: continue
+		if not key in ["Idle", "Walk", "Run", "Dance", "Fight", "Fall", "Talk", "Drink", "Phone", "Sit", "Surrender", "Punch", "Hit", "Block", "Shove", "Kneel"]: continue
 		var a: Animation = Data.ANIMS[key].duplicate(true)
-		var loop: bool = key != "Fall"
+		var loop: bool = not key in ["Fall", "Punch", "Hit", "Shove"]
 		a.loop_mode = Animation.LOOP_LINEAR if loop else Animation.LOOP_NONE
 		# échelle des déplacements : hauteur des hanches du personnage / hauteur des hanches dans l'animation
 		var ratio := 1.0
@@ -331,6 +334,40 @@ func _build_model() -> bool:
 	glb_anim.add_animation_library("sdn", lib)
 	Data.LIB_CACHE[ckey] = lib
 	return true
+
+## Action ponctuelle (coup, poussée, réaction…) : animation Mixamo si elle existe, sinon pose simple
+func act(n: String, dur: float) -> void:
+	act_name = n
+	act_until = Time.get_ticks_msec() / 1000.0 + dur
+	cur_clip = ""
+	if glb == null:
+		match n:
+			"Punch": set_pose({"arm_r": -1.6, "lean": 0.3}, dur)
+			"Shove": set_pose({"arm_l": -1.5, "arm_r": -1.5, "lean": 0.25}, dur)
+			"Grab": set_pose({"arm_l": -1.25, "arm_r": -1.25, "lean": 0.2}, dur)
+			"Hit": set_pose({"lean": -0.45, "arm_l": -0.3, "arm_r": -0.3}, dur)
+			"Windup": set_pose({"arm_r": 0.9, "arm_l": -1.4, "lean": -0.25}, dur)
+			"Block": set_pose({"arm_l": -2.7, "arm_r": -2.5, "lean": 0.1}, dur)
+			"Verbal": set_pose({"arm_r": -1.2, "arm_l": -0.4}, dur)
+
+## Petite étiquette au-dessus de la tête (nom, agitation…)
+func set_tag(txt: String, col := Color.WHITE) -> void:
+	if txt == "":
+		if tag != null: tag.visible = false
+		return
+	if tag == null:
+		tag = Label3D.new()
+		tag.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		tag.no_depth_test = true
+		tag.fixed_size = true
+		tag.pixel_size = 0.0012
+		tag.font_size = 28
+		tag.outline_size = 8
+		tag.position = Vector3(0, height + 0.35, 0)
+		add_child(tag)
+	tag.visible = true
+	tag.text = txt
+	tag.modulate = col
 
 func set_pose(p: Dictionary, dur: float) -> void:
 	pose = p
@@ -379,7 +416,18 @@ func _process(delta: float) -> void:
 
 func _anim_glb() -> void:
 	if glb_anim == null: return
-	var wanted := {"walk": ["Walk"], "dance": ["Dance", "Idle"], "fight": ["Fight", "Idle"], "fallen": ["Fall"], "sit": ["Sit", "Idle"],
+	var now := Time.get_ticks_msec() / 1000.0
+	if now < act_until:
+		var alt := {"Windup": ["Punch", "Fight"], "Grab": ["Shove", "Punch", "Fight"], "Shove": ["Shove", "Punch"], "Verbal": ["Talk"], "Block": ["Block", "Fight"], "Hit": ["Hit"], "Punch": ["Punch"]}
+		for n2 in alt.get(act_name, [act_name]):
+			var f2: String = "sdn/" + n2
+			if glb_anim.has_animation(f2):
+				if cur_clip != f2:
+					cur_clip = f2
+					glb_anim.play(f2, 0.08)
+				_ground()
+				return
+	var wanted := {"kneel": ["Kneel", "Sit", "Idle"], "walk": ["Walk"], "dance": ["Dance", "Idle"], "fight": ["Fight", "Idle"], "fallen": ["Fall"], "sit": ["Sit", "Idle"],
 		"drink": ["Drink", "Talk", "Idle"], "talk": ["Talk", "Idle"], "phone": ["Phone", "Talk", "Idle"], "raise": ["Surrender", "Idle"], "idle": ["Idle"]}
 	var list: Array = wanted.get(anim, ["Idle"])
 	if run and anim == "walk": list = ["Run", "Walk"]
@@ -441,15 +489,16 @@ func _anim_prim(t: float) -> void:
 	if anim == "fallen":
 		body.position = Vector3(0, 0.14, 0.9 * k)
 		body.rotation = Vector3(-PI / 2, 0, 0)
-	elif anim == "sit":
+	elif anim == "sit" or anim == "kneel":
 		body.position = Vector3(0, -0.42 * k, 0)
 		body.rotation = Vector3.ZERO
 	else:
 		body.position = Vector3(0, bob, 0)
 		body.rotation = Vector3(0, 0, roll)
-	var sit_l := -1.45 if anim == "sit" else 0.0
-	legs[0].rotation.x = sit_l if anim == "sit" else -leg
-	legs[1].rotation.x = sit_l if anim == "sit" else leg
+	var seated := anim == "sit" or anim == "kneel"
+	var sit_l := -1.45 if seated else 0.0
+	legs[0].rotation.x = sit_l if seated else -leg
+	legs[1].rotation.x = sit_l if seated else leg
 	torso.rotation.x = lean
 	arms[0].rotation = Vector3(arm_l if arm_l != null else -arm, 0, -0.08)
 	arms[1].rotation = Vector3(arm_r if arm_r != null else arm, 0, 0.08)

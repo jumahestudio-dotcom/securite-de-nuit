@@ -98,6 +98,11 @@ Renomme le fichier **exactement** comme dans la 1re colonne et range-le dans `go
 | `Phone.fbx` | Talking On Phone | facultatif |
 | `Sit.fbx` | Sitting Idle | facultatif |
 | `Surrender.fbx` | Surrender | facultatif |
+| `Punching.fbx` | Punching | **baston** |
+| `Hit_Reaction.fbx` | Hit Reaction / Head Hit | **baston** |
+| `Center_Block.fbx` | Center Block / Body Block | **baston** |
+| `Kneeling_Idle.fbx` | Kneeling Idle | **baston** (personne maîtrisée) |
+| `Pushing.fbx` | Push / Pushing | baston, facultatif |
 
 Toutes les animations Mixamo marchent sur tous les personnages Mixamo : un seul jeu d'animations suffit.
 
@@ -120,8 +125,8 @@ Copie-moi cette ligne et les éventuelles erreurs en rouge.
 
 1. ✅ Le Néon, porte + salle, incidents, radio, bilan
 2. 🔄 Vrais personnages animés (Mixamo) — code prêt, à toi de télécharger les fichiers
-3. Décor réaliste (Kenney / Quaternius)
-4. Mode baston (coups, garde, esquive, saisie, légitime défense)
+3. ✅ Mode baston (coups, garde, esquive, saisie, renfort, légitime défense)
+4. Décor réaliste (Kenney / Quaternius)
 5. Carrière : vestiaire, habitués (Kévin, Lucas, Nadia…), événements de porte, gérant, équipement
 6. Les autres établissements (Le Comptoir, Le Palace, L'Usine)
 7. Son et musique, minicarte, export en .exe
