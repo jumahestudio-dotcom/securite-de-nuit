@@ -48,7 +48,7 @@ func _ready() -> void:
 	world = WorldScript.new()
 	add_child(world)
 	world.build()
-	Data.ground = world.floor_y
+	Data.ground = Callable(world, "floor_y")
 	ui = UIScript.new()
 	add_child(ui)
 	cam = Camera3D.new()
