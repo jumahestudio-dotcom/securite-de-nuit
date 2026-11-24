@@ -42,7 +42,8 @@ var ANIMS := {}                            # nom -> Animation (Idle, Walk, Run�
 var reserved: Array = []                   # modèles réservés (liste noire de la nuit)
 var diag_done := false
 var diag_play := false
-var LIB_CACHE := {}                        # bibliothèques d'animations déjà adaptées
+var LIB_CACHE := {}
+var ground: Callable = func(_x, _z): return 0.0   # hauteur du sol (fournie par le décor)                        # bibliothèques d'animations déjà adaptées
 
 func _ready() -> void:
 	_scan_assets()
@@ -100,7 +101,7 @@ func age_from(y: int, m: int, d: int) -> int:
 
 func fmt_clock(minutes: float) -> String:
 	var t := (23 * 60 + int(minutes)) % 1440
-	return "%02dh%02d" % [t / 60, t % 60]
+	return "%02dh%02d" % [int(t / 60.0), t % 60]
 
 # ---------- chargement des modèles et animations ----------
 func _list(dirp: String, out: Array) -> void:

@@ -48,6 +48,7 @@ func _ready() -> void:
 	world = WorldScript.new()
 	add_child(world)
 	world.build()
+	Data.ground = world.floor_y
 	ui = UIScript.new()
 	add_child(ui)
 	cam = Camera3D.new()
@@ -993,7 +994,7 @@ func _physics_process(delta: float) -> void:
 			player.velocity = Vector3.ZERO
 			if pvis.anim == "walk": pvis.anim = "idle"
 		player.move_and_slide()
-		player.position.y = 0
+		player.position.y = world.floor_y(player.position.x, player.position.z)
 		if phase == "salle":
 			_step_salle(delta)
 	else:

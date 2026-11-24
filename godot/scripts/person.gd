@@ -279,7 +279,6 @@ func _build_model() -> bool:
 		glb_anim.add_animation_library("sdn", Data.LIB_CACHE[ckey])
 		return true
 	var lib := AnimationLibrary.new()
-	var matched := 0
 	# les préfixes Mixamo changent d'un fichier à l'autre (mixamorig_, mixamorig4_, mixamorig:) :
 	# on relie les pistes aux os par la fin du nom (Hips, Spine, LeftArm…)
 	var pre := RegEx.new()
@@ -309,7 +308,6 @@ func _build_model() -> bool:
 			if target == "":
 				drop.append(t)
 				continue
-			matched += 1
 			a.track_set_path(t, NodePath(skel_path + ":" + target))
 			if a.track_get_type(t) == Animation.TYPE_POSITION_3D and target.ends_with("Hips") and a.track_get_key_count(t) > 0 and hips >= 0:
 				var v0: Vector3 = a.track_get_key_value(t, 0)
@@ -373,6 +371,7 @@ func _process(delta: float) -> void:
 			yaw = turn_to(yaw, atan2(dx, dz), delta * 8.0)
 			walk_ph += sp * 5.2
 	rotation.y = yaw
+	position.y = Data.ground.call(position.x, position.z)
 	if glb != null:
 		_anim_glb()
 		return

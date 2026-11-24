@@ -15,6 +15,13 @@ var exit_sign: MeshInstance3D
 var neon_light: OmniLight3D
 var t := 0.0
 
+## Hauteur du sol à un endroit (trottoir, piste LED, estrade du carré VIP)
+func floor_y(x: float, z: float) -> float:
+	if x > 8.0 and x < 15.0 and z > -30.0 and z < -21.0: return 0.3
+	if z > 0.0 and z < 6.0 and absf(x) < 22.0: return 0.12
+	if absf(x) < 6.0 and z > -24.0 and z < -12.0: return 0.08
+	return 0.0
+
 func zpt(z: String) -> Vector3:
 	var r = ZR[z]
 	return Vector3(randf_range(r[0], r[1]), 0, randf_range(r[2], r[3]))
