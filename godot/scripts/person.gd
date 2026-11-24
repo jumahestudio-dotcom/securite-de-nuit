@@ -51,6 +51,9 @@ var model_path := ""
 var meta := {}
 var hs_word := ""
 var cur_clip := ""
+var skel_ref: Skeleton3D = null
+var foot_ids: Array = []
+var foot_h := 0.05
 
 func setup(o: Dictionary) -> void:
 	sex = o.get("sex", "H" if randf() < 0.55 else "F")
@@ -254,6 +257,17 @@ func _build_model() -> bool:
 	var skel: Skeleton3D = null
 	var skels: Array = glb.find_children("*", "Skeleton3D", true, false)
 	if skels.size() > 0: skel = skels[0]
+	# os des pieds, pour poser le personnage sur le sol à chaque image
+	if skel != null:
+		skel_ref = skel
+		for bi in skel.get_bone_count():
+			var bn := skel.get_bone_name(bi)
+			if bn.ends_with("LeftToeBase") or bn.ends_with("RightToeBase"): foot_ids.append(bi)
+		if foot_ids.is_empty():
+			foot_h = 0.09
+			for bi in skel.get_bone_count():
+				var bn2 := skel.get_bone_name(bi)
+				if bn2.ends_with("LeftFoot") or bn2.ends_with("RightFoot"): foot_ids.append(bi)
 	if skel == null or Data.ANIMS.is_empty():
 		return true
 	var root: Node = glb_anim.get_node(glb_anim.root_node)
@@ -378,9 +392,24 @@ func _anim_glb() -> void:
 				glb_anim.play(full, 0.25)
 				glb_anim.seek(randf() * 0.5 if n != "Fall" else 0.0)
 			break
+	_ground()
 	# légère titubation des personnes ivres
 	if sway > 0.0:
 		glb.rotation.z = sin(Time.get_ticks_msec() / 1000.0 * 1.6 + ph) * 0.1 * sway
+
+## Recale le modèle pour que le pied le plus bas touche le sol (corrige les tailles de squelette différentes)
+func _ground() -> void:
+	if skel_ref == null or foot_ids.is_empty() or not is_inside_tree(): return
+	var low := INF
+	for bi in foot_ids:
+		var gp: Vector3 = (skel_ref.global_transform * skel_ref.get_bone_global_pose(bi)).origin
+		low = min(low, gp.y)
+	if low == INF: return
+	var err: float = (low - global_position.y) - foot_h
+	if absf(err) > 0.25:
+		glb.position.y -= err
+	else:
+		glb.position.y -= err * 0.25
 
 func _anim_prim(t: float) -> void:
 	var leg := 0.0; var arm := 0.0; var bob := 0.0; var lean := 0.0; var roll := 0.0
