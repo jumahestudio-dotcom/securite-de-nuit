@@ -79,7 +79,7 @@ func setup(o: Dictionary) -> void:
 	# vrai personnage 3D si disponible
 	model_path = o.get("model", "")
 	if model_path == "" and not o.get("prim", false):
-		model_path = Data.pick_model("A" if agent else sex)
+		model_path = Data.pick_model("A" if agent else sex, o.get("no_surv", false))
 	if model_path != "":
 		meta = Data.CHAR_META.get(model_path.get_file(), {})
 		skin_word = str(meta.get("peau", ""))

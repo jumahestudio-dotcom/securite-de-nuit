@@ -147,8 +147,7 @@ func _scan_assets() -> void:
 			for an in ap.get_animation_list():
 				if an == "RESET": continue
 				var anim: Animation = ap.get_animation(an).duplicate(true)
-				var key: String = p.get_file().get_basename()
-				key = key.substr(0, 1).to_upper() + key.substr(1)
+				var key := anim_key(p.get_file().get_basename())
 				ANIMS[key] = anim
 				break
 		inst.free()
@@ -157,10 +156,12 @@ func _scan_assets() -> void:
 func has_models() -> bool:
 	return CHARS["H"].size() + CHARS["F"].size() > 0
 
-func pick_model(cat: String) -> String:
+func pick_model(cat: String, no_surv := false) -> String:
 	var l: Array = []
 	for p in CHARS.get(cat, []):
-		if not p in reserved: l.append(p)
+		if p in reserved: continue
+		if no_surv and str(CHAR_META.get(p.get_file(), {}).get("tenue", "")) == "surv": continue
+		l.append(p)
 	if l.is_empty(): return ""
 	return l.pick_random()
 
@@ -172,3 +173,18 @@ func signed_models() -> Array:
 			var m: Dictionary = CHAR_META.get(p.get_file(), {})
 			if str(m.get("signe", "")) != "": out.append([p, str(m["signe"]), cat])
 	return out
+
+## Nom d'animation à partir du nom de fichier Mixamo (Walking.fbx → Walk, Hip Hop Dancing.fbx → Dance…)
+func anim_key(fname: String) -> String:
+	var k := fname.to_lower().replace(" ", "_").replace("-", "_")
+	var re := RegEx.new()
+	re.compile("_?\\(\\d+\\)$")
+	k = re.sub(k, "")
+	var alias := {"idle": "Idle", "breathing_idle": "Idle", "walking": "Walk", "walk": "Walk", "running": "Run", "run": "Run",
+		"hip_hop_dancing": "Dance", "dancing": "Dance", "dance": "Dance", "salsa_dancing": "Dance", "dying": "Fall", "falling_back_death": "Fall", "fall": "Fall",
+		"talking": "Talk", "talk": "Talk", "punching_bag": "Fight", "fighting_idle": "Fight", "boxing": "Fight", "fight": "Fight",
+		"drinking": "Drink", "drink": "Drink", "talking_on_phone": "Phone", "phone": "Phone", "sitting_idle": "Sit", "sit": "Sit", "surrender": "Surrender"}
+	if alias.has(k): return alias[k]
+	for a in alias.keys():
+		if k.begins_with(a): return alias[a]
+	return fname.substr(0, 1).to_upper() + fname.substr(1)

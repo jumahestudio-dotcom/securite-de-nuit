@@ -49,6 +49,12 @@ assets/animations/     leurs animations (Idle.fbx, Walk.fbx…)
 
 ## Vrais personnages réalistes (Mixamo, gratuit)
 
+> **Ta sélection actuelle est déjà décrite** dans `assets/characters/personnages.json`
+> (Remy, Ch02, Ch06, Ch12, Ch26, Ch27, Ch33, Ch37 + Ch18 comme agent).
+> Pas besoin de renommer quoi que ce soit : mets tous les personnages dans `assets/characters/`
+> et toutes les animations (Idle, Walking, Running, Hip_Hop_Dancing, Dying, Talking, Punching_Bag)
+> dans `assets/animations/`, avec leurs noms d'origine.
+
 Le jeu remplace automatiquement les personnages provisoires par les vrais dès que tu mets des fichiers
 dans les bons dossiers. Tu peux en mettre peu au début (2 hommes, 2 femmes, 1 agent) et en ajouter ensuite.
 

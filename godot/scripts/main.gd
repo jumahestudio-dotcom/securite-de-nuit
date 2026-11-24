@@ -225,7 +225,7 @@ func _gen_client(i: int, opt := {}) -> Dictionary:
 	return c
 
 func _client_look(c: Dictionary) -> Dictionary:
-	var o := {"sex": c["sex"], "dress": c["tenue"] == "robe"}
+	var o := {"sex": c["sex"], "dress": c["tenue"] == "robe", "no_surv": c["testing"]}
 	match c["tenue"]:
 		"surv":
 			var col = ["#1f3fae", "#111111", "#7a1414"].pick_random()
@@ -258,6 +258,16 @@ func _mk_client_npc(c: Dictionary, i: int) -> void:
 	var n = _mk_person(o)
 	n.sway = 1.0 if c["iv"] == 2 else (0.3 if c["iv"] == 1 else 0.0)
 	n.data = c
+	# avec un vrai personnage, la tenue décrite est celle du modèle
+	if n.meta.has("tenue"):
+		c["tenue"] = n.meta["tenue"]
+	if n.meta.has("tenue_txt"):
+		c["tenue_txt"] = n.meta["tenue_txt"]
+	if n.model_path != "" and n.meta.has("sexe"):
+		var sx := "F" if str(n.meta["sexe"]).to_upper().begins_with("F") else "H"
+		if sx != c["sex"]:
+			c["sex"] = sx
+			c["first"] = (Data.PREN_H if sx == "H" else Data.PREN_F).pick_random()
 	c["npc"] = n
 	c["mates"] = []
 	for k in range(1, c["size"]):
@@ -267,6 +277,7 @@ func _mk_client_npc(c: Dictionary, i: int) -> void:
 		c["mates"].append(m)
 
 func _tenue_txt(c: Dictionary) -> String:
+	if c.has("tenue_txt"): return c["tenue_txt"]
 	match c["tenue"]:
 		"soignee": return "Tenue de soirée" if c["sex"] == "F" else "Costume sombre"
 		"jean": return "Jean et chaussures de ville"
@@ -364,7 +375,7 @@ func _door_panel() -> void:
 		body += "\n" + c["palp"] + "\n"
 	for a in c["asked"]:
 		body += "\n[b]" + a[0] + "[/b]\n" + a[1] + "\n"
-	var bl := "\n[color=#b9b3cc][b]Consignes[/b] : 18 ans minimum, pièce exigée · pas de survêtement ni casquette · capacité %d[/color]\n[color=#ff9a9a][b]Liste noire[/b][/color]\n" % cap
+	var bl := "\n[color=#b9b3cc][b]Consignes[/b] : 18 ans minimum, pièce exigée · pas de survêtement, sweat à capuche ni casquette · capacité %d[/color]\n[color=#ff9a9a][b]Liste noire[/b][/color]\n" % cap
 	for b in black:
 		bl += "• %s — %s ([i]%s[/i])\n" % [b["name"], b["t"], b["motif"]]
 	body += bl

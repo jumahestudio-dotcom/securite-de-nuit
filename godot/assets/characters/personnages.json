@@ -1,0 +1,79 @@
+{
+ "_aide": "Description des personnages Mixamo (clé = nom exact du fichier, tel que téléchargé). tenue : soignee / chemise / jean / robe / surv (surv = refusée par le dress code). signe = signe distinctif : ce personnage peut être sur la liste noire. Les fichiers peuvent être rangés directement dans assets/characters/.",
+ "Remy.fbx": {
+  "sexe": "H",
+  "peau": "claire",
+  "cheveux": "châtain clair",
+  "coiffure": "courts",
+  "tenue": "chemise",
+  "tenue_txt": "Pull sans manches gris et jean",
+  "signe": ""
+ },
+ "Ch06_nonPBR.fbx": {
+  "sexe": "H",
+  "peau": "mate",
+  "cheveux": "noirs",
+  "coiffure": "cachés par la capuche",
+  "tenue": "surv",
+  "tenue_txt": "Sweat à capuche noir, casque audio, baskets rouges et blanches",
+  "signe": "sweat à capuche noir, casque audio sur la tête"
+ },
+ "Ch12_nonPBR.fbx": {
+  "sexe": "H",
+  "peau": "mate",
+  "cheveux": "noirs",
+  "coiffure": "très courts sur les côtés",
+  "tenue": "jean",
+  "tenue_txt": "T-shirt bleu clair et pantalon kaki",
+  "signe": ""
+ },
+ "Ch33_nonPBR.fbx": {
+  "sexe": "H",
+  "peau": "claire",
+  "cheveux": "bruns foncés",
+  "coiffure": "plaqués en arrière",
+  "tenue": "soignee",
+  "tenue_txt": "Costume et cravate",
+  "signe": "costume-cravate, cheveux plaqués en arrière"
+ },
+ "Ch02_nonPBR.fbx": {
+  "sexe": "F",
+  "peau": "claire",
+  "cheveux": "blonds",
+  "coiffure": "en chignon",
+  "tenue": "jean",
+  "tenue_txt": "Haut orange et jean",
+  "signe": ""
+ },
+ "Ch26_nonPBR.fbx": {
+  "sexe": "F",
+  "peau": "claire",
+  "cheveux": "bruns",
+  "coiffure": "afro bouclés",
+  "tenue": "jean",
+  "tenue_txt": "Haut rayé, jean et talons",
+  "signe": "cheveux afro, haut rayé vert et rose"
+ },
+ "Ch27_nonPBR.fbx": {
+  "sexe": "F",
+  "peau": "claire",
+  "cheveux": "châtains",
+  "coiffure": "courts",
+  "tenue": "soignee",
+  "tenue_txt": "Tailleur et talons",
+  "signe": ""
+ },
+ "Ch37_nonPBR.fbx": {
+  "sexe": "F",
+  "peau": "claire",
+  "cheveux": "châtains",
+  "coiffure": "en chignon",
+  "tenue": "surv",
+  "tenue_txt": "Sweat zippé rose et legging de sport",
+  "signe": ""
+ },
+ "Ch18_nonPBR.fbx": {
+  "role": "agent",
+  "sexe": "H"
+ }
+}
