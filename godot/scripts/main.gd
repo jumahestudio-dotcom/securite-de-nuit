@@ -4,6 +4,8 @@ extends Node3D
 const PersonScript = preload("res://scripts/person.gd")
 const WorldScript = preload("res://scripts/world.gd")
 const LifeScript = preload("res://scripts/life.gd")
+const AidScript = preload("res://scripts/aid.gd")
+const IdCardScript = preload("res://scripts/idcard.gd")
 const UIScript = preload("res://scripts/ui.gd")
 const FightScript = preload("res://scripts/fight.gd")
 const AudioScript = preload("res://scripts/audio.gd")
@@ -11,6 +13,8 @@ const CareerScript = preload("res://scripts/career.gd")
 
 var world
 var life
+var aid
+var idcard
 var ui
 var fight
 var audio
@@ -82,6 +86,9 @@ func _ready() -> void:
 	add_child(fight)
 	audio = AudioScript.new()
 	add_child(audio)
+	aid = AidScript.new()
+	aid.game = self
+	add_child(aid)
 	life = LifeScript.new()
 	life.game = self
 	add_child(life)
@@ -102,6 +109,8 @@ func _ready() -> void:
 	compass.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	compass.draw.connect(_draw_compass)
 	ui.add_child(compass)
+	idcard = IdCardScript.new()
+	ui.add_child(idcard)
 	crosshair = Label.new()
 	crosshair.text = "+"
 	crosshair.add_theme_font_size_override("font_size", 26)
@@ -620,6 +629,10 @@ func _door_panel() -> void:
 	for x in _cues(c):
 		body += "• " + x + "\n"
 	body += "\n[i]" + _quote(c) + "[/i]\n"
+	if c["id_checked"] and (c["has_id"] or c.get("student_card", false)):
+		idcard.show_for(c, c["npc"].id_words())
+	else:
+		idcard.visible = false
 	if c["id_checked"]:
 		body += "\n[color=#9fd3ff][b]Pièce d'identité[/b][/color]\n"
 		if not c["has_id"] and c.get("student_card", false):
@@ -872,6 +885,7 @@ func _done_client(title: String, res: Array) -> void:
 	_result_panel(title, res, _next_client)
 
 func _result_panel(title: String, res: Array, next = null) -> void:
+	idcard.visible = false
 	var body := ""
 	for r in res:
 		var col := "#9fe0b4"
@@ -887,6 +901,7 @@ func _result_panel(title: String, res: Array, next = null) -> void:
 	ui.open_panel(title, "", body, [{"t": "Continuer", "k": "main", "cb": cont}])
 
 func _close_panel() -> void:
+	idcard.visible = false
 	ui.close_panel()
 	if phase == "door" or phase == "salle":
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -1004,6 +1019,12 @@ func _spawn_incident(ty: String) -> void:
 	mk.add_child(lt)
 	inc["mk"] = mk; inc["dia"] = dia; inc["dm"] = dm; inc["lt"] = lt; inc["fire"] = fire
 	incs.append(inc)
+	# certains faits sont discrets : personne ne donne l'alerte, il faut les voir soi-même pendant la ronde
+	if ty in HIDDEN_INC and randf() < 0.55:
+		inc["hidden"] = true
+		inc["dl"] = inc["dl"] * 1.8
+		mk.visible = false
+		return
 	var who = null
 	for a in colleagues:
 		if a.task == null and a.position.distance_to(p) < 9.0: who = a
@@ -1013,11 +1034,31 @@ func _spawn_incident(ty: String) -> void:
 		_set_radio("Un barman : « Il se passe quelque chose côté %s ! »" % WorldScript.ZLBL[z].to_lower())
 	audio.sfx("radio")
 
+const HIDDEN_INC := ["ghb", "ghbhomme", "photo", "serveuse", "pickpockets", "deal", "racket", "sacvole", "mineur", "laser", "cigarette", "seringue", "vol"]
+
+## Un fait discret se remarque quand on passe à côté en regardant dans sa direction
+func _spot_hidden() -> void:
+	if player == null or phase != "salle": return
+	var f := Vector3(sin(cam_yaw), 0, cos(cam_yaw))
+	for i in incs:
+		if not i.get("hidden", false) or i["st"] != "open": continue
+		var dv: Vector3 = i["p"] - player.position
+		dv.y = 0
+		var dd := dv.length()
+		if dd < 6.5 and (dd < 2.0 or dv.normalized().dot(f) > 0.55):
+			i["hidden"] = false
+			if is_instance_valid(i.get("mk")): i["mk"].visible = true
+			_set_radio("Toi : « Je repère quelque chose de louche côté %s. »" % WorldScript.ZLBL[i["z"]].to_lower())
+			_mc("Repéré pendant la ronde : %s (%s)" % [Data.clean(Data.INC[i["ty"]]["t"]), WorldScript.ZLBL[i["z"]]])
+			_good("Vigilance : %s repéré pendant la ronde, sans alerte." % Data.clean(Data.INC[i["ty"]]["t"]).to_lower())
+			audio.sfx("radio")
+
 func _near_inc():
 	var best = null
 	var bd := 2.6
 	for i in incs:
 		if i["st"] != "open" and i["st"] != "assigned": continue
+		if i.get("hidden", false): continue
 		var d: float = player.position.distance_to(i["p"])
 		if d < bd:
 			bd = d; best = i
@@ -1038,6 +1079,9 @@ func _inc_panel(inc: Dictionary) -> void:
 	for oi in order:
 		var idx: int = oi
 		bts.append({"t": Data.lbl(d["o"][idx]["t"]), "cb": func(): _decide(idx)})
+	if AidScript.has_protocol(inc["ty"]):
+		var aid_inc: Dictionary = inc
+		bts.push_front({"t": "Porter secours moi-même (gestes de premiers secours)", "k": "main", "cb": func(): aid.start(aid_inc)})
 	if _is_viol(inc["ty"]):
 		var the_inc: Dictionary = inc
 		bts.append({"t": "Intervention physique", "k": "bad", "cb": func(): fight.start({"inc": the_inc, "title": Data.clean(Data.INC[the_inc["ty"]]["t"])})})
@@ -1123,7 +1167,10 @@ func _fail_inc(inc: Dictionary) -> void:
 	secu += float(f.get("s", 0)); rep += float(f.get("r", 0))
 	_clampg()
 	_fault("%s non traité (%s) : %s" % [Data.clean(d["t"]), Data.fmt_clock(minute), f.get("txt", "ça a dégénéré")], f.get("f", "") if f.has("txt") else "")
-	_mc("%s (%s) — personne sur place à temps" % [Data.clean(d["t"]), WorldScript.ZLBL[inc["z"]]])
+	if inc.get("hidden", false):
+		_mc("%s (%s) — personne ne l'a remarqué pendant la ronde" % [Data.clean(d["t"]), WorldScript.ZLBL[inc["z"]]])
+	else:
+		_mc("%s (%s) — personne sur place à temps" % [Data.clean(d["t"]), WorldScript.ZLBL[inc["z"]]])
 	_set_radio("« %s : trop tard… %s »" % [Data.clean(d["t"]), f.get("txt", "")])
 	_end_inc(inc)
 
@@ -1131,7 +1178,7 @@ func _radio_menu() -> void:
 	var bts := []
 	var body := ""
 	for inc in incs:
-		if inc["st"] != "open": continue
+		if inc["st"] != "open" or inc.get("hidden", false): continue
 		var row := []
 		for a in colleagues:
 			var ag = a
@@ -1423,6 +1470,7 @@ func _daze_wobble() -> Vector3:
 
 func _process(delta: float) -> void:
 	world.animate(delta)
+	_spot_hidden()
 	if post != null and post.visible:
 		var pm: ShaderMaterial = post.material
 		var fa: bool = fight.active
@@ -1472,6 +1520,7 @@ func _process(delta: float) -> void:
 		ui.obj.text = "RONDE EN SALLE\nRejoins les incidents (repères rouges) et appuie sur E.\nR : radio, envoyer un collègue · Maj : courir"
 	var lst := ""
 	for i in incs:
+		if i.get("hidden", false): continue
 		if i["st"] == "open":
 			lst += "%s — %s · %d s\n" % [Data.clean(Data.INC[i["ty"]]["t"]), WorldScript.ZLBL[i["z"]], max(0, ceil(i["dl"] - (salle_t - i["t0"])))]
 		elif i["st"] == "assigned":
@@ -1539,6 +1588,7 @@ func _draw_minimap() -> void:
 	var t := Time.get_ticks_msec() / 1000.0
 	for i in incs:
 		if i["st"] != "open" and i["st"] != "assigned" and i["st"] != "fight": continue
+		if i.get("hidden", false): continue
 		var col := Color(0.3, 0.9, 1.0) if i["st"] == "assigned" else (Color(1, 0.25, 0.25) if sin(t * 8.0) > 0 else Color(1, 0.7, 0.7))
 		minimap.draw_circle(_mm(i["p"].x, i["p"].z, sz), 6.0, col)
 	for a in colleagues:
@@ -1555,7 +1605,7 @@ func _nearest_open_inc():
 	var best = null
 	var bd := 1e9
 	for i in incs:
-		if i["st"] != "open": continue
+		if i["st"] != "open" or i.get("hidden", false): continue
 		var d: float = player.position.distance_to(i["p"])
 		if d < bd:
 			bd = d; best = i

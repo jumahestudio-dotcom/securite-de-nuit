@@ -949,7 +949,7 @@ func finish(ko: bool) -> void:
 		if o["wname"] != "" and (o["weapon"] or S["disarm"] > 0): armed_seen = true
 		if o["st"] == "controlled" and is_instance_valid(o["npc"]): handed.append(o)
 	if handed.size() > 0 or down.size() > 0 or armed_seen or ko:
-		_call_police(handed, fight_pos)
+		_call_police(handed, fight_pos, S["hit_nosd"] > 0 or S["hit_down"] > 0 or S["hit_flee"] > 0, down.size() > 0 or armed_seen)
 		if handed.size() > 0:
 			game._good("%s : %d personne(s) interpellée(s) et remise(s) à la police." % [Data.clean(title), handed.size()])
 			res.append(["", "La police arrive et prend en charge la personne maîtrisée.", "Art. 73 du Code de procédure pénale : en cas de délit flagrant, toute personne peut appréhender l'auteur et le conduire devant l'officier de police judiciaire le plus proche."])
@@ -995,9 +995,55 @@ func _recover() -> void:
 	if is_instance_valid(game.pvis): game.pvis.anim = "idle"
 	hp = 55.0
 
+## Les policiers recueillent ta version des faits
+func _statement(bad: bool) -> void:
+	var waited := 0.0
+	while (game.ui.panel_open or active or game.ui.screen_open) and waited < 40.0:
+		await get_tree().create_timer(0.5).timeout
+		waited += 0.5
+	if game.phase == "end" or game.ui.panel_open: return
+	var ttl := title
+	var tell := func(k: int):
+		var txt := ""
+		match k:
+			0:
+				if bad:
+					game.rep += 1
+					txt = "Tu racontes tout, y compris tes propres coups. Les policiers le notent : les vidéos confirment ta version. Ton geste sera examiné, mais ta parole reste crédible."
+				else:
+					game.secu += 2; game.rep += 2
+					txt = "Récit factuel, heure par heure, avec les témoins : les policiers ont tout ce qu'il faut. Tu rédiges ensuite ta main courante interne."
+				game._good("%s : déclaration factuelle et complète à la police." % Data.clean(ttl))
+			1:
+				if bad:
+					game.secu -= 4; game.rep -= 6
+					game._fault("%s : tu as minimisé tes propres coups devant la police." % Data.clean(ttl),
+						"Les vidéos des clients te contredisent : ta crédibilité s'effondre. Le code de déontologie de la sécurité privée (art. R631-1 et suivants du Code de la sécurité intérieure) impose loyauté et probité envers les forces de l'ordre.")
+					txt = "Tu dis l'avoir « juste repoussé ». Un policier te montre la vidéo d'un client sur son téléphone… Le ton change."
+				else:
+					txt = "Tu restes vague, alors qu'il n'y avait rien à cacher : les policiers devront reconstituer les faits avec les vidéos."
+			2:
+				game.rep -= 4
+				game._fault("%s : faits exagérés contre le client dans ta déclaration." % Data.clean(ttl),
+					"Accuser quelqu'un de faits que l'on sait faux peut constituer une dénonciation calomnieuse (art. 226-10 Code pénal).")
+				txt = "Tu en rajoutes (« il a menacé de tous nous tuer »). Les témoins racontent autre chose : ta déclaration perd toute valeur."
+		game._clampg()
+		game.ui.open_panel("Déclaration", "", txt, [{"t": "Continuer", "k": "main", "cb": game._close_panel}])
+	var opts := [[0, "Raconter les faits tels qu'ils se sont passés, y compris tes propres gestes, avec l'heure et les témoins"],
+		[1, "Minimiser ce que tu as fait (« je l'ai juste repoussé »)"],
+		[2, "Charger le client pour être sûr qu'il soit poursuivi"]]
+	opts.shuffle()
+	var bts := []
+	for o in opts:
+		var kk: int = o[0]
+		bts.append({"t": o[1], "cb": func(): tell.call(kk)})
+	game.ui.open_panel("La police est là", Data.clean(ttl), "Deux policiers arrivent. L'un prend en charge la personne interpellée, l'autre sort son carnet : « Racontez-nous. »", bts)
+
 ## La police arrive par la rue, rejoint la scène et repart avec les personnes interpellées
-func _call_police(handed: Array, where: Vector3) -> void:
-	game._set_radio("Police : « Équipage en route, deux minutes. »")
+func _call_police(handed: Array, where: Vector3, bad := false, urgent := false) -> void:
+	# délai réaliste : 6 à 10 min si arme ou blessé, sinon 10 à 20 min (1 min de jeu ≈ 1,4 s)
+	var mins: float = randf_range(6.0, 10.0) if urgent else randf_range(10.0, 20.0)
+	game._set_radio("Police (17) : « Équipage engagé, environ %d minutes. Gardez la personne à vue sans la brutaliser. »" % int(mins))
 	game._mc("Appel police (17) : %s" % Data.clean(title))
 	var cops := []
 	for k in 2:
@@ -1007,14 +1053,15 @@ func _call_police(handed: Array, where: Vector3) -> void:
 	for o in handed:
 		o["st"] = "out"
 		o["npc"].set_tag("")
-	await get_tree().create_timer(6.0).timeout
+	await get_tree().create_timer(maxf(4.0, mins * 1.4 - 10.0)).timeout
 	for k in cops.size():
 		var c = cops[k]
 		if not is_instance_valid(c): continue
 		c.run = true
 		c.walk_to(game.world.route(c.position, where + Vector3(0.8 * k, 0, 0.8)))
-	await get_tree().create_timer(12.0).timeout
-	game._set_radio("Police : « On prend le relais. Merci pour la main courante. »")
+	await get_tree().create_timer(10.0).timeout
+	game._set_radio("Police : « On prend le relais. Vous pouvez nous dire ce qui s'est passé ? »")
+	_statement(bad)
 	for o in handed:
 		if not is_instance_valid(o["npc"]): continue
 		o["npc"].anim = "walk"
