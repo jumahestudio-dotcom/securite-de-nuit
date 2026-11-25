@@ -32,6 +32,7 @@ var pvis
 var cam: Camera3D
 var cam_yaw := PI * 0.82
 var cam_pitch := 0.32
+var crosshair: Label
 
 var phase := "menu"
 var minute := 0.0
@@ -98,8 +99,17 @@ func _ready() -> void:
 	compass.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	compass.draw.connect(_draw_compass)
 	ui.add_child(compass)
+	crosshair = Label.new()
+	crosshair.text = "+"
+	crosshair.add_theme_font_size_override("font_size", 26)
+	crosshair.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
+	crosshair.anchor_left = 0.5; crosshair.anchor_right = 0.5; crosshair.anchor_top = 0.5; crosshair.anchor_bottom = 0.5
+	crosshair.offset_left = -8; crosshair.offset_top = -17
+	crosshair.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	crosshair.visible = false
+	ui.add_child(crosshair)
 	cam = Camera3D.new()
-	cam.fov = 62
+	cam.fov = 75.0 if Data.fps else 62.0
 	cam.far = 200
 	add_child(cam)
 	cam.current = true
@@ -145,7 +155,7 @@ func _mk_person(o: Dictionary):
 func _menu() -> void:
 	phase = "menu"
 	ui.show_screen("Sécurité de nuit 3D",
-		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité de nuit, de 23 h à 5 h, dans quatre établissements : un bar de quartier, une discothèque, un club chic et un club électro géant.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nMaj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  A : frapper  ·  Tab : verrouiller un adversaire  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
+		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité de nuit, de 23 h à 5 h, dans quatre établissements : un bar de quartier, une discothèque, un club chic et un club électro géant.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nV : vue 1re / 3e personne  ·  Maj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  A : frapper  ·  Tab : verrouiller un adversaire  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
 		_menu_buttons())
 
 func _menu_buttons() -> Array:
@@ -1188,7 +1198,7 @@ func _exclude() -> void:
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		cam_yaw -= e.relative.x * 0.0026 * sens
-		cam_pitch = clamp(cam_pitch + e.relative.y * 0.0022 * sens, -0.25, 1.0)
+		cam_pitch = clamp(cam_pitch + e.relative.y * 0.0022 * sens, -1.2 if Data.fps else -0.25, 1.2 if Data.fps else 1.0)
 	if fight.active and not ui.panel_open and not ui.screen_open:
 		if e is InputEventMouseButton and e.pressed:
 			if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
@@ -1213,6 +1223,8 @@ func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and not e.echo:
 		if e.physical_keycode == KEY_E and not ui.panel_open and not ui.screen_open and (phase == "door" or phase == "salle"):
 			_interact()
+		elif e.physical_keycode == KEY_V and not ui.panel_open and not ui.screen_open:
+			_toggle_view()
 		elif e.physical_keycode == KEY_R and not ui.panel_open and phase == "salle":
 			_radio_menu()
 		elif e.physical_keycode == KEY_ESCAPE:
@@ -1234,7 +1246,7 @@ func _physics_process(delta: float) -> void:
 		if mv.length() > 0.01 and not down:
 			var sp: float = (3.6 if run else 2.2) if fight.active else (5.4 if run else 2.9)
 			player.velocity = mv * sp
-			if not fight.active: pvis.yaw = pvis.turn_to(pvis.yaw, atan2(mv.x, mv.z), delta * 10.0)
+			if not fight.active and not Data.fps: pvis.yaw = pvis.turn_to(pvis.yaw, atan2(mv.x, mv.z), delta * 10.0)
 			pvis.anim = "walk"
 			pvis.walk_ph += sp * delta * (4.0 if run else 5.2)
 		else:
@@ -1253,6 +1265,20 @@ func _physics_process(delta: float) -> void:
 			_step_salle(delta)
 	else:
 		player.velocity = Vector3.ZERO
+	crosshair.visible = Data.fps and (phase == "door" or phase == "salle") and not ui.screen_open
+	pvis.visible = not Data.fps
+	if Data.fps:
+		# vue à la première personne : la caméra est dans les yeux de l'agent
+		pvis.yaw = cam_yaw
+		var head := player.position + Vector3(0, 1.68, 0) + Vector3(sin(cam_yaw), 0, cos(cam_yaw)) * 0.12
+		if pvis.anim == "fallen": head.y = player.position.y + 0.35
+		if fight.shake > 0:
+			fight.shake = max(0.0, fight.shake - delta * 0.8)
+			head += Vector3(randf() - 0.5, randf() - 0.5, randf() - 0.5) * fight.shake * 0.5
+		cam.position = head
+		var cpf := cos(cam_pitch)
+		cam.look_at(head + Vector3(sin(cam_yaw) * cpf, -sin(cam_pitch), cos(cam_yaw) * cpf))
+		return
 	# caméra 3e personne avec anti-collision
 	var tg := player.position + Vector3(0, 1.55, 0)
 	var cp := cos(cam_pitch)
@@ -1333,8 +1359,14 @@ func _pause_menu() -> void:
 		{"row": [{"t": "Souris −", "cb": func(): sens = max(0.3, sens - 0.1); _pause_menu()}, {"t": "Souris +", "cb": func(): sens = min(3.0, sens + 0.1); _pause_menu()}]},
 		{"row": [{"t": "Volume −", "cb": func(): audio.set_master(audio.volume_master - 0.1); _pause_menu()}, {"t": "Volume +", "cb": func(): audio.set_master(audio.volume_master + 0.1); _pause_menu()}]},
 		{"t": "Effets graphiques : activer / désactiver (si le jeu rame)", "cb": _toggle_hq},
+		{"t": "Vue : %s (touche V)" % ("1re personne" if Data.fps else "3e personne"), "cb": func(): _toggle_view(); _pause_menu()},
 		{"t": "Plein écran : activer / désactiver", "cb": _toggle_fullscreen},
 		{"t": "Abandonner la nuit et revenir au menu", "k": "bad", "cb": func(): get_tree().reload_current_scene()}])
+
+func _toggle_view() -> void:
+	Data.fps = not Data.fps
+	cam.fov = 75.0 if Data.fps else 62.0
+	cam_pitch = 0.05 if Data.fps else 0.32
 
 func _toggle_hq() -> void:
 	hq = not hq
