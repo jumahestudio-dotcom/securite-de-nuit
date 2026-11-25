@@ -107,7 +107,6 @@ func step(delta: float) -> void:
 				free.append(a)
 		if free.size() > 0:
 			var ag = free.pick_random()
-			var w = game.world
 			var tgt: Vector3 = ag.home + Vector3(randf_range(-3.0, 3.0), 0, randf_range(-3.0, 3.0))
 			var chat_bar: bool = randf() < 0.25 and barmen.size() > 0
 			if chat_bar:
