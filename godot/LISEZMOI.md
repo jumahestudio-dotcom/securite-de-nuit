@@ -136,3 +136,9 @@ Copie-moi cette ligne et les éventuelles erreurs en rouge.
 5. ✅ Carrière : vestiaire, habitués (Kévin, Lucas, Nadia…), événements de porte, gérant, équipe, équipement, trophées, journal
 6. Les autres établissements (Le Comptoir, Le Palace, L'Usine)
 7. ✅ Son et musique, minicarte, pause — reste : export en .exe
+
+## Établissements
+Quatre lieux, chacun avec sa taille, sa jauge, sa file, son équipe et son rythme d'incidents :
+Le Comptoir (bar de quartier, 60) · Le Néon (discothèque, 110) · Le Palace (club chic, 160, débloqué à 300 XP) · L'Usine (club électro, 300, débloqué à 700 XP).
+En carrière, on commence au Comptoir et on change de lieu depuis le vestiaire. En nuit libre, on choisit directement.
+Le décor utilise les modèles de `assets/decor/` (CC-BY 4.0, voir `assets/decor/CREDITS.md`). S'ils manquent, le jeu retombe sur des formes simples.

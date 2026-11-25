@@ -38,6 +38,8 @@ var rep := 65.0
 var inside := 30
 var cap := 110
 var cash := 0
+var price := 15
+var inc_k := 1.0
 var faults: Array = []
 var goods: Array = []
 var mcourante: Array = []
@@ -65,7 +67,7 @@ func _ready() -> void:
 	_setup_env()
 	world = WorldScript.new()
 	add_child(world)
-	world.build()
+	world.build(Data.venue)
 	Data.ground = Callable(world, "floor_y")
 	ui = UIScript.new()
 	add_child(ui)
@@ -138,7 +140,7 @@ func _mk_person(o: Dictionary):
 func _menu() -> void:
 	phase = "menu"
 	ui.show_screen("Sécurité de nuit 3D",
-		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité au [b]Néon[/b], de 23 h à 5 h.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nMaj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  A : frapper  ·  Tab : verrouiller un adversaire  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
+		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité de nuit, de 23 h à 5 h, dans quatre établissements : un bar de quartier, une discothèque, un club chic et un club électro géant.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nMaj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  A : frapper  ·  Tab : verrouiller un adversaire  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
 		_menu_buttons())
 
 func _menu_buttons() -> Array:
@@ -149,14 +151,61 @@ func _menu_buttons() -> Array:
 		bts.append({"t": "Nouvelle carrière (efface la progression)", "cb": func(): career.new_career(); career.vestiaire()})
 	else:
 		bts.append({"t": "Commencer la carrière (saisons de 5 nuits)", "k": "main", "cb": func(): career.new_career(); career.vestiaire()})
-	bts.append({"t": "Nuit libre (sans carrière)", "cb": func(): Data.CAR = null; _start()})
+	bts.append({"t": "Nuit libre (sans carrière) — choisir l'établissement", "cb": func(): Data.CAR = null; venue_menu(false)})
+	bts.append({"t": "Crédits des modèles 3D", "cb": _credits})
 	return bts
+
+## Choix de l'établissement (nuit libre : tous ; carrière : selon l'expérience)
+func venue_menu(career_mode: bool) -> void:
+	var xp: int = int(Data.CAR["xp"]) if (career_mode and Data.CAR != null) else 99999
+	var body := "[color=#b9b3cc]Chaque lieu a sa taille, sa jauge, son public et son équipe.[/color]\n\n"
+	var bts := []
+	for k in WorldScript.VENUES.keys():
+		var v: Dictionary = WorldScript.VENUES[k]
+		var locked: bool = xp < int(v["unlock"])
+		body += "[b]%s[/b] — %s · jauge %d · équipe : %s\n[color=#b9b3cc]%s%s[/color]\n\n" % [v["name"], v["type"], v["cap"], ", ".join(PackedStringArray(v["agents"])), v["sub"],
+			(" · [color=#ff9a9a]débloqué à %d XP[/color]" % v["unlock"]) if locked else ""]
+		var kk: String = k
+		var pick := func():
+			Data.venue = kk
+			if career_mode:
+				Data.CAR["venue"] = kk
+				career.save()
+				career.vestiaire()
+			else:
+				_start()
+		bts.append({"t": v["name"] + (" (verrouillé)" if locked else ""), "k": "main" if k == Data.venue else "", "off": locked, "cb": pick})
+	var back := func():
+		if career_mode: career.vestiaire()
+		else: _menu()
+	bts.append({"t": "Retour", "cb": back})
+	ui.show_screen("Choisir l'établissement", body, bts)
+
+func _credits() -> void:
+	var t := "[b]Modèles 3D du décor[/b] (licence Creative Commons Attribution 4.0, via Sketchfab)\n\n"
+	t += "• « Bar Bar » — anDDDres\n• « Bright bar table and stool set » — WwWuengy\n• « UFO modern chandelier » — WwWuengy\n• « Equalizer with 3D indicators » — s7ntech\n• « Night dance club lowpoly » — 00amza\n\n"
+	t += "Personnages et animations : Mixamo (Adobe), non redistribués.\nJeu : jumahestudi."
+	ui.show_screen("Crédits", t, [{"t": "Retour", "k": "main", "cb": _menu}])
+
+## Reconstruit le décor si l'établissement a changé depuis le chargement
+func _ensure_world() -> void:
+	if world.vk == Data.venue: return
+	remove_child(world)
+	world.queue_free()
+	world = WorldScript.new()
+	add_child(world)
+	world.build(Data.venue)
+	Data.ground = Callable(world, "floor_y")
 
 # =====================================================================
 #  NOUVELLE NUIT
 # =====================================================================
 func _start() -> void:
 	ui.hide_screen()
+	_ensure_world()
+	var V: Dictionary = world.V
+	cap = int(V["cap"]); nq = int(V["nq"]); price = int(V["price"]); inc_k = float(V["inc_k"])
+	inside = int(round(cap * 0.27))
 	phase = "door"
 	audio.start()
 	minimap.visible = true
@@ -176,11 +225,24 @@ func _start() -> void:
 	pvis.setup({"agent": true, "sex": "H", "skin": Data.SKINS[2], "hair": Data.HAIRS[0], "hs": "buzz", "height": 1.82, "no_beard": true})
 	player.add_child(pvis)
 	# collègues
-	var mo = _mk_person({"agent": true, "sex": "H", "pos": Vector3(-1.1, 0, 0.6), "skin": Data.SKINS[4], "hair": Data.HAIRS[0], "hs": "buzz", "height": 1.9, "band": "#33e1ff", "no_beard": true, "yaw": PI})
-	mo.pname = "Moussa"; mo.home = Vector3(-9.4, 0, -12.5)
-	var sa = _mk_person({"agent": true, "sex": "F", "pos": Vector3(1.6, 0, 0.6), "skin": Data.SKINS[1], "hair": Data.HAIRS[5], "hs": "bun", "height": 1.7, "band": "#ff3d9a", "yaw": PI})
-	sa.pname = "Sarah"; sa.home = Vector3(3, 0, -11.5)
-	colleagues = [mo, sa]
+	var AG := {
+		"Moussa": {"sex": "H", "skin": Data.SKINS[4], "hair": Data.HAIRS[0], "hs": "buzz", "height": 1.9, "band": "#33e1ff", "no_beard": true, "home": Vector3(world.X(-9.4), 0, world.Zm(-12.5))},
+		"Sarah": {"sex": "F", "skin": Data.SKINS[1], "hair": Data.HAIRS[5], "hs": "bun", "height": 1.7, "band": "#ff3d9a", "home": Vector3(world.X(3.0), 0, world.Zm(-11.5))},
+		"Karim": {"sex": "H", "skin": Data.SKINS[3], "hair": Data.HAIRS[1], "hs": "short", "height": 1.85, "band": "#ffc04d", "home": Vector3(world.X(8.0), 0, world.Zm(-20.0))},
+		"Inès": {"sex": "F", "skin": Data.SKINS[2], "hair": Data.HAIRS[0], "hs": "long", "height": 1.68, "band": "#3ee08f", "home": Vector3(world.X(-6.0), 0, world.Zm(-25.0))}}
+	colleagues = []
+	var gx := [-1.1, 1.6, -2.0, 2.4]
+	var names: Array = V["agents"]
+	for i in names.size():
+		var nm: String = names[i]
+		var d: Dictionary = AG[nm].duplicate()
+		d["agent"] = true
+		d["pos"] = Vector3(gx[i % 4], 0, 0.6 + 0.4 * floorf(i / 2.0))
+		d["yaw"] = PI
+		var ag = _mk_person(d)
+		ag.pname = nm
+		ag.home = d["home"]
+		colleagues.append(ag)
 	if Data.CAR != null:
 		career.setup_night()
 		career.setup_team()
@@ -200,7 +262,7 @@ func _start() -> void:
 			Data.reserved.append(sm[k][0])
 		black.append(e)
 	# public déjà à l'intérieur
-	for i in 30:
+	for i in int(V["crowd"]):
 		_spawn_inside(null, true)
 	# file
 	var test_i := randi_range(2, nq - 1)
@@ -551,7 +613,7 @@ func _admit() -> void:
 	var res := []
 	var full: bool = inside + c["size"] > cap
 	inside += c["size"]
-	cash += 15 * c["size"]
+	cash += price * c["size"]
 	if full:
 		secu -= 10
 		_fault("Jauge dépassée (%d/%d)." % [inside, cap], "Règlement de sécurité incendie des ERP : l'effectif maximal ne doit jamais être dépassé.")
@@ -699,7 +761,8 @@ func _close_panel() -> void:
 #  LA SALLE
 # =====================================================================
 func _spawn_inside(c, init: bool) -> void:
-	var z: String = ["piste", "piste", "piste", "bar", "bar", "vip", "fumoir", "toilettes"].pick_random()
+	var zs: Array = ["piste", "piste", "piste", "bar", "bar", "vip", "fumoir", "toilettes"].filter(func(k): return world.ZR.has(k))
+	var z: String = zs.pick_random()
 	var p: Vector3 = world.zpt(z)
 	var n
 	if c == null:
@@ -756,7 +819,7 @@ func _spawn_incident(ty: String) -> void:
 	var d: Dictionary = Data.INC[ty]
 	var zs := []
 	for z in d["zones"]:
-		if WorldScript.ZR.has(z): zs.append(z)
+		if world.ZR.has(z): zs.append(z)
 	if zs.is_empty(): zs = ["piste"]
 	var z: String = zs.pick_random()
 	var p: Vector3 = world.zpt(z)
@@ -999,11 +1062,11 @@ func _step_salle(delta: float) -> void:
 				if k in Data.EXCL: continue
 				var ok := false
 				for z in Data.INC[k]["zones"]:
-					if WorldScript.ZR.has(z): ok = true
+					if world.ZR.has(z): ok = true
 				if ok: pool.append(k)
 			ty = pool.pick_random()
 		_spawn_incident(ty)
-		next_inc = salle_t + randf_range(22, 38)
+		next_inc = salle_t + randf_range(22, 38) * inc_k
 	for i in incs:
 		if i["st"] == "open" and salle_t - i["t0"] > i["dl"]:
 			_fail_inc(i)
@@ -1203,7 +1266,7 @@ func _physics_process(delta: float) -> void:
 func _process(delta: float) -> void:
 	world.animate(delta)
 	if player != null:
-		audio.set_place(player.position.x, player.position.z)
+		audio.set_place(world.region(player.position.x, player.position.z), player.position.z)
 		minimap.queue_redraw()
 		compass.queue_redraw()
 	# repères d'incidents
@@ -1283,19 +1346,21 @@ func _toggle_fullscreen() -> void:
 #  MINICARTE ET BOUSSOLE
 # =====================================================================
 func _mm(x: float, z: float, sz: Vector2) -> Vector2:
-	var sc: float = min(sz.x / 32.0, sz.y / 40.0)
-	var ox: float = (sz.x - 32.0 * sc) / 2.0
-	return Vector2(ox + (x + 16.0) * sc, (z + 31.0) * sc)
+	var w: float = 2.0 * world.W + 2.0
+	var h: float = -world.ZB + 9.0
+	var sc: float = min(sz.x / w, sz.y / h)
+	var ox: float = (sz.x - w * sc) / 2.0
+	return Vector2(ox + (x + world.W + 1.0) * sc, (z - world.ZB + 1.0) * sc)
 
 func _draw_minimap() -> void:
 	var sz := minimap.size
-	var sc: float = min(sz.x / 32.0, sz.y / 40.0)
+	var sc: float = min(sz.x / (2.0 * world.W + 2.0), sz.y / (-world.ZB + 9.0))
 	minimap.draw_rect(Rect2(Vector2.ZERO, sz), Color(0.04, 0.03, 0.07, 0.85))
-	minimap.draw_rect(Rect2(_mm(-15, -30, sz), Vector2(30, 30) * sc), Color(0.1, 0.08, 0.14))
-	minimap.draw_rect(Rect2(_mm(-16, 0, sz), Vector2(32, 7) * sc), Color(0.12, 0.12, 0.14))
+	minimap.draw_rect(Rect2(_mm(-world.W, world.ZB, sz), Vector2(2.0 * world.W, -world.ZB) * sc), Color(0.1, 0.08, 0.14))
+	minimap.draw_rect(Rect2(_mm(-world.W - 1.0, 0, sz), Vector2(2.0 * world.W + 2.0, 7) * sc), Color(0.12, 0.12, 0.14))
 	var zc := {"piste": Color("#ff3d9a"), "bar": Color("#ffc04d"), "vip": Color("#b04dff"), "fumoir": Color("#99aaaa"), "toilettes": Color("#33e1ff"), "vestiaire": Color("#88aa66"), "secours": Color("#3ee08f"), "hall": Color("#5a1030"), "porte": Color("#444444")}
-	for k in WorldScript.ZR.keys():
-		var r: Array = WorldScript.ZR[k]
+	for k in world.ZR.keys():
+		var r: Array = world.ZR[k]
 		var c: Color = zc.get(k, Color.GRAY)
 		c.a = 0.35
 		minimap.draw_rect(Rect2(_mm(r[0], r[2], sz), Vector2(r[1] - r[0], r[3] - r[2]) * sc), c)

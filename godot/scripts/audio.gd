@@ -56,12 +56,12 @@ func _make_buses() -> void:
 	AudioServer.set_bus_send(crowd_bus, "Master")
 
 ## Réglage selon l'endroit où se trouve le joueur
-func set_place(x: float, z: float) -> void:
-	if z > 0.4:            # dehors
+func set_place(reg: String, _z: float) -> void:
+	if reg == "out":       # dehors
 		target_cut = 450.0; target_mvol = -10.0; target_cvol = -40.0
-	elif z > -6.2:         # hall
+	elif reg == "hall":
 		target_cut = 1400.0; target_mvol = -6.0; target_cvol = -24.0
-	elif (x < -9.1 and z < -25.0) or (x > 9.1 and z > -14.1 and z < -6.0):   # toilettes / fumoir
+	elif reg == "toi" or reg == "fum":   # toilettes / fumoir
 		target_cut = 900.0; target_mvol = -8.0; target_cvol = -26.0
 	else:                  # salle
 		target_cut = 16000.0; target_mvol = -2.0; target_cvol = -16.0

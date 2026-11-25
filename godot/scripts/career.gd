@@ -4,6 +4,7 @@ extends Node
 ## grades, trophées et journal du lendemain. Sauvegarde dans user://carriere.json.
 
 const SAVE := "user://carriere.json"
+const WorldScript = preload("res://scripts/world.gd")
 var game
 var D := {}                 # données (data/carriere.json)
 var new_troph: Array = []
@@ -34,7 +35,7 @@ func save() -> void:
 
 func new_career() -> void:
 	Data.CAR = {"night": 0, "season": 1, "xp": 0, "sat": 60.0, "morale": 70.0, "funds": 150, "equip": {}, "lopez": 0, "martin": 0,
-		"samk": 0, "sam": false, "sam_gone": false, "hab": {}, "troph": {}, "hist": [], "discri": false, "papers": [],
+		"samk": 0, "sam": false, "sam_gone": false, "hab": {}, "troph": {}, "hist": [], "discri": false, "venue": "comptoir", "papers": [],
 		"alea": null, "tev": null, "tev_res": "", "gone": "", "drunk_ag": "", "extra": false}
 	_hab_init()
 	save()
@@ -86,8 +87,9 @@ func setup_night() -> void:
 	if c["alea"] == null: c["alea"] = D["ALEAS3"][0]
 	var n := N()
 	var al: Dictionary = c["alea"]
-	game.cap = int(round(110.0 * float(n["cap"]) / 110.0))
-	game.nq = int(n["nQ"]) + int(al.get("nQ", 0)) + min(3, int(c["season"]) - 1)
+	var V: Dictionary = game.world.V
+	game.cap = int(round(float(V["cap"]) * float(n["cap"]) / 110.0))
+	game.nq = int(n["nQ"]) + (int(V["nq"]) - 14) + int(al.get("nQ", 0)) + min(3, int(c["season"]) - 1)
 	game.mod_minor = float(n["minor"]) * float(al.get("minor", 1))
 	game.mod_iv = float(n["iv"]) + float(al.get("iv", 0))
 	game.mod_agr = 1 if al.get("agr", 0) else 0
@@ -604,10 +606,15 @@ func vestiaire() -> void:
 	var nt := 0
 	for t in D["TROPH3"]:
 		if c["troph"].has(t["id"]): nt += 1
-	var team := "Moussa, Sarah" + (", Sam (débutant)" if c["sam"] else "") + ((" · [b]%s[/b] absent(e) ce soir" % c["gone"]) if c["gone"] != "" else "")
+	var vn: String = c.get("venue", "neon")
+	if not WorldScript.VENUES.has(vn): vn = "neon"
+	Data.venue = vn
+	var VV: Dictionary = WorldScript.VENUES[vn]
+	var team := ", ".join(PackedStringArray(VV["agents"])) + (", Sam (débutant)" if c["sam"] else "") + ((" · [b]%s[/b] absent(e) ce soir" % c["gone"]) if c["gone"] != "" else "")
 	var body := "[color=#b9b3cc]Saison %d · %s — %s[/color]\n\n" % [c["season"], n["name"], n["sub"]]
 	body += "[color=#ffc04d][b]%s[/b][/color] · %d XP%s\n" % [D["RANKS3"][r][1], c["xp"], (" · prochain grade : %s (%d XP)" % [nx[1], nx[0]]) if nx != null else " · grade maximal"]
 	body += "Gérant : [b]%d/100[/b] · Moral de l'équipe : [b]%s[/b] · Fonds : [b]%d €[/b]\n" % [round(c["sat"]), mood, c["funds"]]
+	body += "Établissement : [b]%s[/b] (%s, jauge %d)\n" % [VV["name"], VV["type"], VV["cap"]]
 	body += "Équipe : %s\n\n" % team
 	body += "[color=#ffd27a][b]Ce soir : %s[/b][/color]\n%s\n\n" % [Data.clean(c["alea"]["t"]), c["alea"]["d"]]
 	var tev: Dictionary = c["tev"]
@@ -619,6 +626,7 @@ func vestiaire() -> void:
 			var idx: int = i
 			bts.append({"t": tev["o"][i], "cb": func(): _team_do(idx)})
 	bts.append({"t": "Prendre son service" if c["tev_res"] != "" else "Règle d'abord la situation de l'équipe", "k": "main", "off": c["tev_res"] == "", "cb": _go})
+	bts.append({"t": "Changer d'établissement", "cb": func(): game.venue_menu(true)})
 	bts.append({"t": "Équipement (fonds : %d €)" % c["funds"], "cb": _shop})
 	bts.append({"t": "Trophées (%d/%d) et revue de presse" % [nt, D["TROPH3"].size()], "cb": _trophies})
 	bts.append({"t": "Menu principal", "cb": func(): game._menu()})
@@ -714,7 +722,17 @@ func end_night(note: int) -> String:
 		s += "\n\n[color=#ff8a8a][b]Le gérant met fin à ta mission.[/b] Satisfaction trop basse : tu es remplacé. Ton grade et tes trophées sont conservés : tu repars au début de la saison suivante.[/color]"
 	return s
 
+## Titre de presse adapté à l'établissement (« au Néon », « à L'Usine »…)
 func headline() -> Dictionary:
+	var h := _headline_neon()
+	var nm: String = game.world.V["name"]
+	var au := ("au " + nm.substr(3)) if nm.begins_with("Le ") else ("à " + nm)
+	var du := ("du " + nm.substr(3)) if nm.begins_with("Le ") else ("de " + nm)
+	for k in ["t", "sub"]:
+		h[k] = String(h[k]).replace("au Néon", au).replace("du Néon", du).replace("Le Néon", nm)
+	return h
+
+func _headline_neon() -> Dictionary:
 	var F := ""
 	for f in game.faults: F += f[0] + " " + f[1] + " "
 	var rules := [["inconscient|SAMU appelé", "Un client hospitalisé après une intervention musclée au Néon", "Une enquête est ouverte sur les méthodes de la sécurité."],
