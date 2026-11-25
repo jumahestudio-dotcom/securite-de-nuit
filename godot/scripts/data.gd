@@ -155,8 +155,12 @@ func _scan_assets() -> void:
 			for an in ap.get_animation_list():
 				if an == "RESET": continue
 				var anim: Animation = ap.get_animation(an).duplicate(true)
-				var key := anim_key(p.get_file().get_basename())
-				ANIMS[key] = anim
+				var base := p.get_file().get_basename()
+				var key := anim_key(base)
+				# une animation au nom exact passe avant une variante (« drunk walk » avant « drunk walking »)
+				var exact: bool = base.to_lower().replace(" ", "_").replace("-", "_") in ["drunk_walk", "walking", "idle", "running", "talking", "dying", "kicking", "mma_kick", "headbutt", "cheering", "smoking", "waving", "drunk_idle"]
+				if not ANIMS.has(key) or exact:
+					ANIMS[key] = anim
 				break
 		inst.free()
 	print("Personnages : %d hommes, %d femmes, %d agents · animations : %s" % [CHARS["H"].size(), CHARS["F"].size(), CHARS["A"].size(), ", ".join(PackedStringArray(ANIMS.keys()))])
@@ -198,8 +202,11 @@ func anim_key(fname: String) -> String:
 		"shove": "Shove", "pushing": "Shove", "push": "Shove", "kneeling_idle": "Kneel", "kneeling": "Kneel", "kneel": "Kneel",
 		"texting": "Phone", "talking_on_a_cell_phone": "Phone", "sitting": "Sit", "drunk_walk": "DrunkWalk", "drunk_walking": "DrunkWalk", "drunk_run_forward": "DrunkWalk",
 		"kicking": "Kick", "kick": "Kick", "mma_kick": "Kick", "headbutt": "Headbutt", "cheering": "Cheer", "cheer": "Cheer", "dancing_twerk": "Cheer",
-		"smoking": "Smoke", "smoke": "Smoke", "leaning": "Lean", "standing_up": "GetUp", "getting_up": "GetUp", "waving": "Wave", "wave": "Wave"}
+		"smoking": "Smoke", "smoke": "Smoke", "leaning": "Lean", "standing_up": "GetUp", "getting_up": "GetUp", "waving": "Wave", "wave": "Wave", "drunk_idle": "DrunkIdle"}
 	if alias.has(k): return alias[k]
+	# variantes (marche arrière, demi-tour…) : on ne les prend pas pour l'animation principale
+	for bad in ["backward", "turn", "left", "right", "variation", "arc"]:
+		if bad in k: return fname.substr(0, 1).to_upper() + fname.substr(1)
 	for a in alias.keys():
 		if k.begins_with(a): return alias[a]
 	return fname.substr(0, 1).to_upper() + fname.substr(1)

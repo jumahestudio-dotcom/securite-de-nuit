@@ -303,7 +303,7 @@ func _build_model() -> bool:
 		bmap[suf] = bnm
 		if suf == "Hips": hips = bi
 	for key in Data.ANIMS.keys():
-		if not key in ["Idle", "Walk", "Run", "Dance", "Fight", "Fall", "Talk", "Drink", "Phone", "Sit", "Surrender", "Punch", "Hit", "Block", "Shove", "Kneel", "DrunkWalk", "Kick", "Headbutt", "Cheer", "Smoke", "Lean", "GetUp", "Wave"]: continue
+		if not key in ["Idle", "Walk", "Run", "Dance", "Fight", "Fall", "Talk", "Drink", "Phone", "Sit", "Surrender", "Punch", "Hit", "Block", "Shove", "Kneel", "DrunkWalk", "Kick", "Headbutt", "Cheer", "Smoke", "Lean", "GetUp", "Wave", "DrunkIdle"]: continue
 		var a: Animation = Data.ANIMS[key].duplicate(true)
 		var loop: bool = not key in ["Fall", "Punch", "Hit", "Shove", "Kick", "Headbutt", "GetUp"]
 		a.loop_mode = Animation.LOOP_LINEAR if loop else Animation.LOOP_NONE
@@ -450,6 +450,7 @@ func _anim_glb() -> void:
 	var list: Array = wanted.get(anim, ["Idle"])
 	if run and anim == "walk": list = ["Run", "Walk"]
 	elif anim == "walk" and sway > 0.5: list = ["DrunkWalk", "Walk"]
+	elif anim == "idle" and sway > 0.5: list = ["DrunkIdle", "Idle"]
 	elif anim == "dance" and int(ph * 10.0) % 3 == 0: list = ["Cheer", "Dance", "Idle"]
 	for n in list:
 		var full: String = "sdn/" + n
