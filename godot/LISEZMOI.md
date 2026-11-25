@@ -142,3 +142,13 @@ Quatre lieux, chacun avec sa taille, sa jauge, sa file, son équipe et son rythm
 Le Comptoir (bar de quartier, 60) · Le Néon (discothèque, 110) · Le Palace (club chic, 160, débloqué à 300 XP) · L'Usine (club électro, 300, débloqué à 700 XP).
 En carrière, on commence au Comptoir et on change de lieu depuis le vestiaire. En nuit libre, on choisit directement.
 Le décor utilise les modèles de `assets/decor/` (CC-BY 4.0, voir `assets/decor/CREDITS.md`). S'ils manquent, le jeu retombe sur des formes simples.
+
+## Le Velvet (5e lieu)
+La salle du Velvet est le modèle 3D « Night Dance Club » (assets/decor). On y entre par la porte capitonnée au fond du hall
+(fondu au noir), on en ressort par la porte « SORTIE » derrière soi en arrivant. Débloqué à 500 XP en carrière.
+
+## Animations Mixamo conseillées (facultatives)
+Télécharge-les sur mixamo.com (« Without Skin », FBX) et mets-les dans assets/animations/ :
+Drunk Walk, Kicking (ou Mma Kick), Headbutt, Cheering, Smoking, Leaning, Standing Up, Waving, Texting, Sitting, Drinking,
+Hook Punch, Stomach Hit, Body Block, Pushing, Kneeling Idle.
+Le jeu les reconnaît tout seul ; s'il en manque une, il utilise l'animation la plus proche.

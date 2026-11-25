@@ -354,11 +354,14 @@ func _start() -> void:
 	cap = int(V["cap"]); nq = int(V["nq"]); price = int(V["price"]); inc_k = float(V["inc_k"])
 	inside = int(round(cap * 0.27))
 	phase = "door"
+	audio.set_style(world.theme, world.rain != null)
 	audio.start()
 	minimap.visible = true
 	# joueur
 	player = CharacterBody3D.new()
 	player.motion_mode = CharacterBody3D.MOTION_MODE_FLOATING
+	player.collision_layer = 4      # invisible pour la détection du sol
+	player.collision_mask = 3       # bute sur les murs (1) et le mobilier (2)
 	var cs := CollisionShape3D.new()
 	var caps := CapsuleShape3D.new()
 	caps.radius = 0.3
@@ -377,6 +380,11 @@ func _start() -> void:
 		"Sarah": {"sex": "F", "skin": Data.SKINS[1], "hair": Data.HAIRS[5], "hs": "bun", "height": 1.7, "band": "#ff3d9a", "home": Vector3(world.X(3.0), 0, world.Zm(-11.5))},
 		"Karim": {"sex": "H", "skin": Data.SKINS[3], "hair": Data.HAIRS[1], "hs": "short", "height": 1.85, "band": "#ffc04d", "home": Vector3(world.X(8.0), 0, world.Zm(-20.0))},
 		"Inès": {"sex": "F", "skin": Data.SKINS[2], "hair": Data.HAIRS[0], "hs": "long", "height": 1.68, "band": "#3ee08f", "home": Vector3(world.X(-6.0), 0, world.Zm(-25.0))}}
+	if world.vk == "club":
+		AG["Moussa"]["home"] = Vector3(-13.6, 0, -51.0)
+		AG["Sarah"]["home"] = Vector3(2.0, 0, -45.0)
+		AG["Karim"]["home"] = Vector3(-1.0, 0, -59.0)
+		AG["Inès"]["home"] = Vector3(-6.0, 0, -41.0)
 	colleagues = []
 	var gx := [-1.1, 1.6, -2.0, 2.4]
 	var names: Array = V["agents"]
@@ -1434,6 +1442,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			fight.hp = min(100.0, fight.hp + 1.5 * delta)
 		player.position.y = world.floor_y(player.position.x, player.position.z)
+		_club_doors()
 		if phase == "salle":
 			_step_salle(delta)
 	else:
@@ -1470,14 +1479,34 @@ func _physics_process(delta: float) -> void:
 	cam.position = eye + _daze_wobble()
 	cam.look_at(tg + Vector3(sin(cam_yaw) * 1.2, -0.15, cos(cam_yaw) * 1.2))
 
+## Le Velvet : la porte du hall mène à la salle (modèle 3D placé plus loin)
+func _club_doors() -> void:
+	if world.vk != "club" or fight.active: return
+	var P := player.position
+	if P.z < -6.5 and P.z > -20.0:
+		player.position = Vector3(WorldScript.CLUB_IN.x, 0, WorldScript.CLUB_IN.y)
+		cam_yaw = PI
+		ui.flash(Color(0, 0, 0, 0.9))
+	elif P.z < -20.0 and Vector2(P.x, P.z).distance_to(WorldScript.CLUB_OUT) < 0.9:
+		player.position = Vector3(0, 0, -5.4)
+		cam_yaw = 0.0
+		ui.flash(Color(0, 0, 0, 0.9))
+
 ## Sonné : la vision tangue
 func _daze_wobble() -> Vector3:
 	if not fight.active or fight.daze <= 0.0: return Vector3.ZERO
 	var tt := Time.get_ticks_msec() / 1000.0
 	return Vector3(sin(tt * 1.7), sin(tt * 2.3) * 0.5, cos(tt * 1.3)) * (fight.daze / 100.0) * 0.18
 
+var heart_t := 0.0
+
 func _process(delta: float) -> void:
 	world.animate(delta)
+	if fight.active and fight.hp < 40.0:
+		heart_t -= delta
+		if heart_t <= 0.0:
+			heart_t = 0.55 + fight.hp / 100.0
+			audio.sfx("heart", 4.0)
 	if phase == "door" or phase == "salle":
 		talk.step(delta)
 	_spot_hidden()

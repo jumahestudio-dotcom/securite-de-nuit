@@ -303,9 +303,9 @@ func _build_model() -> bool:
 		bmap[suf] = bnm
 		if suf == "Hips": hips = bi
 	for key in Data.ANIMS.keys():
-		if not key in ["Idle", "Walk", "Run", "Dance", "Fight", "Fall", "Talk", "Drink", "Phone", "Sit", "Surrender", "Punch", "Hit", "Block", "Shove", "Kneel"]: continue
+		if not key in ["Idle", "Walk", "Run", "Dance", "Fight", "Fall", "Talk", "Drink", "Phone", "Sit", "Surrender", "Punch", "Hit", "Block", "Shove", "Kneel", "DrunkWalk", "Kick", "Headbutt", "Cheer", "Smoke", "Lean", "GetUp", "Wave"]: continue
 		var a: Animation = Data.ANIMS[key].duplicate(true)
-		var loop: bool = not key in ["Fall", "Punch", "Hit", "Shove"]
+		var loop: bool = not key in ["Fall", "Punch", "Hit", "Shove", "Kick", "Headbutt", "GetUp"]
 		a.loop_mode = Animation.LOOP_LINEAR if loop else Animation.LOOP_NONE
 		# échelle des déplacements : hauteur des hanches du personnage / hauteur des hanches dans l'animation
 		var ratio := 1.0
@@ -394,6 +394,14 @@ func turn_to(a: float, b: float, k: float) -> float:
 func _process(delta: float) -> void:
 	var t := Time.get_ticks_msec() / 1000.0
 	# suivi de chemin
+	if path.size() > 0 and path[0] is Vector3:
+		# passage d'une porte : on réapparaît de l'autre côté
+		var tp: Vector3 = path.pop_front()
+		position.x = tp.x; position.z = tp.z
+		if path.is_empty() and on_arrive != null:
+			var cb0 = on_arrive
+			on_arrive = null
+			if cb0 is Callable and cb0.is_valid(): cb0.call(self)
 	if path.size() > 0:
 		var q = path[0]
 		var dx: float = q.x - position.x
@@ -427,7 +435,7 @@ func _anim_glb() -> void:
 	if glb_anim == null: return
 	var now := Time.get_ticks_msec() / 1000.0
 	if now < act_until:
-		var alt := {"Windup": ["Punch", "Fight"], "Grab": ["Shove", "Punch", "Fight"], "Shove": ["Shove", "Punch"], "Verbal": ["Talk"], "Block": ["Block", "Fight"], "Hit": ["Hit"], "Punch": ["Punch"]}
+		var alt := {"Windup": ["Punch", "Fight"], "Grab": ["Shove", "Punch", "Fight"], "Shove": ["Shove", "Punch"], "Verbal": ["Talk"], "Block": ["Block", "Fight"], "Hit": ["Hit"], "Punch": ["Punch"], "Kick": ["Kick", "Punch"], "Headbutt": ["Headbutt", "Punch"], "GetUp": ["GetUp", "Idle"], "Wave": ["Wave", "Talk"]}
 		for n2 in alt.get(act_name, [act_name]):
 			var f2: String = "sdn/" + n2
 			if glb_anim.has_animation(f2):
@@ -437,9 +445,12 @@ func _anim_glb() -> void:
 				_ground()
 				return
 	var wanted := {"kneel": ["Kneel", "Sit", "Idle"], "walk": ["Walk"], "dance": ["Dance", "Idle"], "fight": ["Fight", "Idle"], "fallen": ["Fall"], "sit": ["Sit", "Idle"],
-		"drink": ["Drink", "Talk", "Idle"], "talk": ["Talk", "Idle"], "phone": ["Phone", "Talk", "Idle"], "raise": ["Surrender", "Idle"], "idle": ["Idle"]}
+		"drink": ["Drink", "Talk", "Idle"], "talk": ["Talk", "Idle"], "phone": ["Phone", "Talk", "Idle"], "raise": ["Surrender", "Idle"], "idle": ["Idle"],
+		"smoke": ["Smoke", "Phone", "Idle"], "lean": ["Lean", "Idle"], "cheer": ["Cheer", "Dance", "Idle"]}
 	var list: Array = wanted.get(anim, ["Idle"])
 	if run and anim == "walk": list = ["Run", "Walk"]
+	elif anim == "walk" and sway > 0.5: list = ["DrunkWalk", "Walk"]
+	elif anim == "dance" and int(ph * 10.0) % 3 == 0: list = ["Cheer", "Dance", "Idle"]
 	for n in list:
 		var full: String = "sdn/" + n
 		if glb_anim.has_animation(full):

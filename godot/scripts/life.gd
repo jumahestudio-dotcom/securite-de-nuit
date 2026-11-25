@@ -22,8 +22,8 @@ func _now() -> float:
 func setup() -> void:
 	var w = game.world
 	var nb: int = 1 if w.vk == "comptoir" else (2 if w.vk != "usine" else 3)
-	var bz0: float = w.Zm(-22.0)
-	var bz1: float = w.Zm(-10.0)
+	var bz0: float = w.geo["bar_z0"]
+	var bz1: float = w.geo["bar_z1"]
 	var bxs: float = w.geo["barman_x"]
 	for i in nb:
 		var z: float = lerpf(bz0, bz1, (i + 0.5) / nb)
@@ -38,11 +38,11 @@ func setup() -> void:
 	# fumeurs sur le trottoir, à côté de l'entrée
 	for k in randi_range(2, 4):
 		var s = game._mk_person({"pos": Vector3(-3.2 - k * 0.9 + randf_range(-0.2, 0.2), 0, 1.0 + randf_range(-0.2, 0.4)), "yaw": randf_range(-PI, PI)})
-		s.anim = ["phone", "talk", "idle"].pick_random()
+		s.anim = ["smoke", "smoke", "phone", "talk"].pick_random()
 		s.pname = "Fumeur"
 		smokers.append(s)
 	if w.vk != "comptoir":
-		dj = game._mk_person({"pos": Vector3(0, 0, w.geo["djz"] + 0.35), "yaw": 0.0, "no_surv": true})
+		dj = game._mk_person({"pos": w.geo["dj_pos"], "yaw": w.geo["dj_yaw"], "no_surv": true})
 		dj.pname = "DJ"
 		dj.anim = "dance"
 
@@ -71,7 +71,7 @@ func step(delta: float) -> void:
 				b.anim = "drink" if r < 0.7 else "talk"
 				b.yaw = PI / 2.0
 	if dj != null and is_instance_valid(dj):
-		dj.yaw = sin(now * 0.4) * 0.3
+		dj.yaw = float(w.geo["dj_yaw"]) + sin(now * 0.4) * 0.3
 	# dans la file : on patiente, on regarde son téléphone, on discute
 	queue_t -= delta
 	if queue_t <= 0.0 and game.phase == "door":
@@ -111,7 +111,7 @@ func step(delta: float) -> void:
 			var tgt: Vector3 = ag.home + Vector3(randf_range(-3.0, 3.0), 0, randf_range(-3.0, 3.0))
 			var chat_bar: bool = randf() < 0.25 and barmen.size() > 0
 			if chat_bar:
-				tgt = Vector3(w.X(-9.6), 0, clampf(ag.position.z, w.Zm(-22.0), w.Zm(-10.0)))
+				tgt = Vector3(w.geo["bar_front_x"], 0, clampf(ag.position.z, w.geo["bar_z0"], w.geo["bar_z1"]))
 			if randf() < 0.4: tgt = ag.home
 			var arrive := func(q):
 				q.anim = "talk" if chat_bar else "idle"
@@ -158,8 +158,9 @@ func _new_activity(n, progress: float) -> void:
 	if randf() < leave_w:
 		_leave(n)
 		return
-	var opts := [["piste", 5.0], ["bar", 4.0], ["toilettes", 1.2], ["fumoir", 1.5]]
-	if w.ZR.has("vip"): opts.append(["vip", 1.0])
+	var opts := []
+	for o in [["piste", 5.0], ["bar", 4.0], ["toilettes", 1.2], ["fumoir", 1.5], ["vip", 1.0]]:
+		if w.ZR.has(o[0]): opts.append(o)
 	var tot := 0.0
 	for o in opts: tot += o[1]
 	var r := randf() * tot

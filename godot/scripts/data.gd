@@ -195,7 +195,10 @@ func anim_key(fname: String) -> String:
 		"punching": "Punch", "punch": "Punch", "cross_punch": "Punch", "jab": "Punch", "hook_punch": "Punch",
 		"hit_reaction": "Hit", "head_hit": "Hit", "stomach_hit": "Hit", "big_hit_to_head": "Hit", "hit": "Hit",
 		"block": "Block", "blocking": "Block", "center_block": "Block", "body_block": "Block",
-		"shove": "Shove", "pushing": "Shove", "push": "Shove", "kneeling_idle": "Kneel", "kneeling": "Kneel", "kneel": "Kneel"}
+		"shove": "Shove", "pushing": "Shove", "push": "Shove", "kneeling_idle": "Kneel", "kneeling": "Kneel", "kneel": "Kneel",
+		"texting": "Phone", "talking_on_a_cell_phone": "Phone", "sitting": "Sit", "drunk_walk": "DrunkWalk", "drunk_walking": "DrunkWalk", "drunk_run_forward": "DrunkWalk",
+		"kicking": "Kick", "kick": "Kick", "mma_kick": "Kick", "headbutt": "Headbutt", "cheering": "Cheer", "cheer": "Cheer", "dancing_twerk": "Cheer",
+		"smoking": "Smoke", "smoke": "Smoke", "leaning": "Lean", "standing_up": "GetUp", "getting_up": "GetUp", "waving": "Wave", "wave": "Wave"}
 	if alias.has(k): return alias[k]
 	for a in alias.keys():
 		if k.begins_with(a): return alias[a]

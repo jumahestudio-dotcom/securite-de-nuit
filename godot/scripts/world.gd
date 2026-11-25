@@ -16,7 +16,10 @@ const VENUES := {
 		"neon": "#ffd27a", "wall": "#3a0f16", "floor": "#e6e0d4", "accent": "#c9a227", "unlock": 300, "facade": "#2b2418", "fh": 6.0, "theme": "chic"},
 	"usine": {"name": "L'Usine", "type": "Club électro géant", "sub": "Ancien entrepôt, 300 personnes, DJ internationaux, murs d'équaliseurs. Le plus dur.",
 		"sx": 1.42, "sz": 1.45, "cap": 300, "crowd": 70, "nq": 20, "agents": ["Moussa", "Sarah", "Karim", "Inès"], "no_vip": false, "price": 20, "inc_k": 0.72,
-		"neon": "#33e1ff", "wall": "#40444c", "floor": "#4a4c50", "accent": "#3a6ea8", "unlock": 700, "facade": "#2a2d33", "fh": 9.0, "theme": "indus"}}
+		"neon": "#33e1ff", "wall": "#40444c", "floor": "#4a4c50", "accent": "#3a6ea8", "unlock": 700, "facade": "#2a2d33", "fh": 9.0, "theme": "indus"},
+	"club": {"name": "Le Velvet", "type": "Club lounge", "sub": "Grande salle avec podium central, banquettes, mezzanine : une clientèle qui sort, qui boit, et qui joue.",
+		"sx": 1.0, "sz": 1.0, "cap": 220, "crowd": 46, "nq": 16, "agents": ["Moussa", "Sarah", "Karim"], "no_vip": false, "price": 20, "inc_k": 0.85,
+		"neon": "#b04dff", "wall": "#2a1a33", "floor": "#1a1420", "accent": "#7a2a9a", "unlock": 500, "facade": "#24182e", "fh": 7.0, "theme": "model"}}
 
 const ZLBL := {"porte":"Entrée (dehors)","hall":"Hall","vestiaire":"Vestiaire","piste":"Piste","bar":"Bar","vip":"Carré VIP","fumoir":"Fumoir","toilettes":"Toilettes","secours":"Issue de secours"}
 
@@ -30,6 +33,9 @@ var sx := 1.0
 var sz := 1.0
 var geo := {}          # repères calculés (toilettes, fumoir…)
 var UP := {}
+const CLUB_O := Vector3(1.0, 0.0, -50.0)      # décalage du modèle 3D du Velvet
+const CLUB_IN := Vector2(-2.0, -38.5)         # où l'on arrive dans la salle
+const CLUB_OUT := Vector2(-2.0, -36.9)        # porte de sortie vers le hall
 const PARENT := {"out": "hall", "hall": "main", "toi": "main", "fum": "main", "main": ""}
 
 var tiles := []
@@ -62,6 +68,17 @@ func Zm(z: float) -> float:
 	return z if z > -6.1 else -6.1 + (z + 6.1) * sz
 
 func _geo() -> void:
+	if vk == "club":
+		W = 18.9; ZB = -67.9; HC = 4.3
+		ZR = {"porte": [-1.5, 4.0, 1.2, 4.0], "hall": [-3.0, 3.0, -5.5, -1.0], "vestiaire": [-3.6, -2.6, -5.0, -1.0],
+			"piste": [-8.0, 1.0, -53.0, -47.5], "bar": [-16.0, -14.6, -58.0, -45.0], "vip": [-8.0, 5.0, -63.0, -60.5],
+			"secours": [7.0, 9.0, -54.0, -48.0]}
+		var bx := -16.4
+		geo = {"djz": -51.8, "djw": 0.0, "djh": 0.0, "barman_x": (bx - 0.45 + (-W + 0.7)) / 2.0, "bar_z0": -58.0, "bar_z1": -45.0,
+			"bar_front_x": bx + 1.0, "bx": bx, "dj_pos": Vector3(-10.5, 0, -51.8), "dj_yaw": PI / 2.0,
+			"tx": -99.0, "tz": -99.0, "fx": 99.0, "fz0": -99.0, "dz": -99.0, "gx0": -99.0, "gx1": -98.0}
+		UP = {"out": [Vector2(0, 1), Vector2(0, -0.8)], "hall": [Vector2(0, -4.6), Vector2(0, -6.0)]}
+		return
 	W = 15.0 * sx
 	ZB = Zm(-30.0)
 	HC = 5.5 if vk == "usine" else 4.05
@@ -71,7 +88,7 @@ func _geo() -> void:
 		"secours": [W - 2.5, W - 0.6, Zm(-20.0), Zm(-16.0)]}
 	if not V["no_vip"]:
 		ZR["vip"] = [X(9.0), X(14.0), Zm(-29.0), Zm(-21.0)]
-	geo = {"djz": Zm(-27.5), "djw": 0.0 if vk == "comptoir" else 4.0 * minf(sx, 1.2), "djh": 1.2 if vk == "usine" else 0.6, "barman_x": (X(-11.0) - 0.45 + (-W + 0.7)) / 2.0, "tx": X(-9.1), "tz": Zm(-25.1), "fx": X(9.1), "fz0": Zm(-14.1), "dz": Zm(-9.4), "gx0": X(-12.4), "gx1": X(-10.0)}
+	geo = {"bar_z0": Zm(-22.0), "bar_z1": Zm(-10.0), "bar_front_x": X(-9.6), "dj_pos": Vector3(0, 0, Zm(-27.5) + 0.35), "dj_yaw": 0.0, "djz": Zm(-27.5), "djw": 0.0 if vk == "comptoir" else 4.0 * minf(sx, 1.2), "djh": 1.2 if vk == "usine" else 0.6, "barman_x": (X(-11.0) - 0.45 + (-W + 0.7)) / 2.0, "tx": X(-9.1), "tz": Zm(-25.1), "fx": X(9.1), "fz0": Zm(-14.1), "dz": Zm(-9.4), "gx0": X(-12.4), "gx1": X(-10.0)}
 	var gm: float = (geo["gx0"] + geo["gx1"]) / 2.0
 	UP = {"out": [Vector2(0, 1), Vector2(0, -0.8)], "hall": [Vector2(0, -4.6), Vector2(0, -7.6)],
 		"toi": [Vector2(gm, geo["tz"] - 1.2), Vector2(gm, geo["tz"] + 1.4)],
@@ -79,6 +96,10 @@ func _geo() -> void:
 
 ## Hauteur du sol à un endroit (trottoir, piste LED, estrade du carré VIP)
 func floor_y(x: float, z: float) -> float:
+	if theme == "model" and z < -20.0:
+		var q := PhysicsRayQueryParameters3D.create(Vector3(x, 3.4, z), Vector3(x, -3.5, z), 1)
+		var h := get_world_3d().direct_space_state.intersect_ray(q)
+		return h["position"].y if not h.is_empty() else 0.0
 	if ZR.has("vip"):
 		var v: Array = ZR["vip"]
 		if x > v[0] - 1.0 and x < W and z > v[2] - 1.0 and z < v[3]: return 0.3
@@ -94,6 +115,10 @@ func zpt(z: String) -> Vector3:
 
 # ---------- navigation par points de passage ----------
 func region(x: float, z: float) -> String:
+	if theme == "model":
+		if z > 0.4: return "out"
+		if z > -6.6: return "hall"
+		return "main"
 	if z > 0.4: return "out"
 	if z > -6.2: return "hall"
 	if x < geo["tx"] and z < geo["tz"]: return "toi"
@@ -104,6 +129,21 @@ func route(a: Vector3, b: Vector3) -> Array:
 	var ra := region(a.x, a.z)
 	var rb := region(b.x, b.z)
 	if ra == rb: return [Vector2(b.x, b.z)]
+	if theme == "model":
+		# le Velvet : on passe du hall à la salle par la porte (un Vector3 = téléportation)
+		var pts := []
+		if ra == "out": pts.append_array(UP["out"])
+		if ra == "main":
+			pts.append(CLUB_OUT)
+			pts.append(Vector3(0, 0, -5.6))
+			if rb == "out": pts.append_array([Vector2(0, -0.8), Vector2(0, 1)])
+		elif rb == "main":
+			pts.append_array(UP["hall"])
+			pts.append(Vector3(CLUB_IN.x, 0, CLUB_IN.y))
+		elif ra == "hall" and rb == "out":
+			pts.append_array([Vector2(0, -0.8), Vector2(0, 1)])
+		pts.append(Vector2(b.x, b.z))
+		return pts
 	var ca := []
 	var cb := []
 	var r := ra
@@ -471,6 +511,9 @@ func build(key := "neon") -> void:
 	box(Vector3(FW + 5, 9, 5), Vector3(1, 18, 40), "#120f1a", true)
 	box(Vector3(0, 1, 16.5), Vector3(2 * FW + 20, 2, 1), "#120f1a", true)
 	# ---- INTÉRIEUR ----
+	if theme == "model":
+		_build_club()
+		return
 	var D: float = -ZB
 	var flo := box(Vector3(0, -0.05, ZB / 2.0), Vector3(2 * W, 0.1, D), V["floor"], true, "", 0.0, 0.3, 0.1)
 	match theme:
@@ -612,6 +655,97 @@ func build(key := "neon") -> void:
 			sph(Vector3(px, HC - 0.1, pz), 0.12, "#000000", "#ffcf9a" if theme == "pub" or theme == "chic" else NE, 3.0)
 			pz -= 6.0
 		px += 6.0
+
+# ---------- le Velvet : la salle vient du modèle 3D « Night Dance Club » ----------
+func _build_club() -> void:
+	var NE: String = V["neon"]
+	var WC: String = V["wall"]
+	# hall (même organisation que les autres lieux)
+	box(Vector3(0, -0.05, -3.05), Vector3(2 * W, 0.1, 6.1), V["floor"], true)
+	box(Vector3(0, HC, -3.05), Vector3(2 * W, 0.1, 6.1), "#09070d")
+	box(Vector3(-(3 + W) / 2.0, HC / 2.0, -6.1), Vector3(W - 3, HC, 0.3), WC, true)
+	box(Vector3((3 + W) / 2.0, HC / 2.0, -6.1), Vector3(W - 3, HC, 0.3), WC, true)
+	box(Vector3(4.1, HC / 2.0, -3), Vector3(0.3, HC, 6), WC, true)
+	box(Vector3(-10, HC / 2.0, -3), Vector3(0.3, HC, 6), WC, true)
+	box(Vector3(0, 0.01, -3), Vector3(3.6, 0.02, 5), V["accent"])
+	box(Vector3(-4.4, 0.55, -3), Vector3(0.8, 1.1, 4), "#3a2a1c", true)
+	box(Vector3(-4.4, 1.12, -3), Vector3(0.9, 0.05, 4.1), "#6b4a2c")
+	box(Vector3(-5.2, HC / 2.0, -3), Vector3(0.1, HC, 6), WC)
+	var z := -5.0
+	while z < -0.8:
+		box(Vector3(-6.5, 1.6, z), Vector3(0.5, 1, 0.28), ["#3d6fd8", "#c0392b", "#2c3e50", "#8e44ad", "#16a085", "#111111", "#c49a6c"].pick_random())
+		z += 0.35
+	omni(Vector3(-3, 3.6, -3), "#ffd9a8", 7.0, 1.0)
+	# grande porte capitonnée vers la salle
+	box(Vector3(0, 1.5, -6.28), Vector3(6.0, 3.0, 0.06), "#2a0f34", false, "#1a0622", 0.6, 0.9)
+	neons.append(box(Vector3(0, 3.05, -6.2), Vector3(6.2, 0.06, 0.04), "#000000", false, NE, 4.0))
+	sign3d(Vector3(0, 3.4, -6.18), "VELVET", Color(0.85, 0.6, 1.0), PI, 80)
+	_hall_bits()
+	# la salle (modèle 3D)
+	if has_decor("night_dance_club_lowpoly"):
+		var sc = load("res://assets/decor/night_dance_club_lowpoly.glb")
+		var inst: Node3D = sc.instantiate()
+		inst.position = CLUB_O
+		add_child(inst)
+		for mi in inst.find_children("*", "MeshInstance3D", true, false):
+			var m3 := mi as MeshInstance3D
+			m3.create_trimesh_collision()
+			var room := String(m3.name).begins_with("BaseRoom")
+			for ch in m3.get_children():
+				if ch is StaticBody3D:
+					ch.collision_layer = 1 if room else 2
+	else:
+		box(CLUB_O + Vector3(-5, -0.05, 0), Vector3(30, 0.1, 32), V["floor"], true)
+	# porte de sortie (retour au hall)
+	box(Vector3(CLUB_OUT.x, 1.2, CLUB_OUT.y + 0.35), Vector3(2.0, 2.4, 0.08), "#1a0622", false, "#300a40", 0.8)
+	sign3d(Vector3(CLUB_OUT.x, 2.6, CLUB_OUT.y + 0.3), "SORTIE", Color(0.2, 1.0, 0.45), PI, 40)
+	omni(Vector3(CLUB_OUT.x, 2.4, CLUB_OUT.y - 0.5), "#30ff7a", 4.0, 0.6)
+	# bar le long du mur de gauche
+	_build_bar(geo["bx"], geo["bar_z0"] - 1.0, geo["bar_z1"] + 1.0)
+	# scène DJ au bout du podium
+	var dp: Vector3 = geo["dj_pos"]
+	box(dp + Vector3(1.0, 0.5, 0), Vector3(0.8, 1.0, 2.6), "#0c0c12", true, "#0a0006", 1.0)
+	neons.append(box(dp + Vector3(1.42, 1.02, 0), Vector3(0.04, 0.04, 2.6), "#000000", false, "#33e1ff", 5.0))
+	# lumière : lyres au-dessus du podium, couleurs, fumée
+	var pr: Array = ZR["piste"]
+	pc = Vector2((pr[0] + pr[1]) / 2.0, (pr[2] + pr[3]) / 2.0)
+	theme = "led"   # mêmes animations de lumière que le Néon
+	for k in 4:
+		dj_lights.append(mover(Vector3(pc.x - 4.0 + k * 2.7, HC - 0.25, pc.y - 4.0), [NE, "#33e1ff", "#ffffff", "#ffc04d"][k]))
+	dj_lights.append_array([omni(Vector3(pc.x - 3, HC - 0.4, pc.y), NE, 10.0, 2.0, true), omni(Vector3(pc.x + 3, HC - 0.4, pc.y), "#33e1ff", 10.0, 2.0)])
+	var fv := FogVolume.new()
+	fv.size = Vector3(14.0, HC, 12.0)
+	fv.position = Vector3(pc.x, HC / 2.0, pc.y)
+	var fm := FogMaterial.new()
+	fm.density = 0.05
+	fm.albedo = Color(0.9, 0.85, 1.0)
+	fm.edge_fade = 0.4
+	fv.material = fm
+	add_child(fv)
+	theme = "model"
+	for p in [Vector3(-12, 3.6, -40), Vector3(5, 3.6, -42), Vector3(-5, 3.6, -62), Vector3(6, 3.6, -58), Vector3(-15, 3.6, -52)]:
+		omni(p, ["#b04dff", "#ff3d9a", "#ffc04d"].pick_random(), 10.0, 1.2)
+	# lumières de salle pour la fermeture
+	for p in [Vector3(-10, 3.9, -42), Vector3(2, 3.9, -42), Vector3(-10, 3.9, -58), Vector3(2, 3.9, -58), Vector3(-4, 3.9, -50)]:
+		house.append(omni(p, "#fff4e0", 12.0, 0.0))
+	_build_atmosphere()
+	_build_street_life()
+
+## Hall du Velvet : panneaux, caisse, extincteur, caméra
+func _hall_bits() -> void:
+	_extinguisher(Vector3(3.9, 0, -4.6), -PI / 2.0)
+	var bxs := box(Vector3(0, 2.95, -0.45), Vector3(0.36, 0.13, 0.06), "#f2f2f2", false, "#2aff70", 1.2)
+	bxs.rotation.y = PI
+	sign3d(Vector3(0, 2.95, -0.485), "SORTIE  →", Color(0.1, 0.9, 0.35), PI, 20)
+	sign3d(Vector3(-5.12, 2.6, -3.0), "VESTIAIRE", Color(1.0, 0.85, 0.6), PI / 2.0, 36)
+	sign3d(Vector3(4.05, 2.2, -2.0), "Interdit de fumer et de vapoter\nArt. L3512-8 Code de la santé publique", Color(0.95, 0.95, 0.95), -PI / 2.0, 16, false)
+	sign3d(Vector3(4.05, 1.7, -2.0), "Vente d'alcool interdite aux mineurs", Color(0.95, 0.95, 0.95), -PI / 2.0, 16, false)
+	box(Vector3(2.9, 0.55, -2.2), Vector3(1.6, 1.1, 0.7), "#22202a", true, "", 0.0, 0.5)
+	box(Vector3(2.9, 1.12, -2.2), Vector3(1.7, 0.05, 0.8), "#4a4752", false, "", 0.0, 0.25, 0.3)
+	box(Vector3(2.6, 1.22, -2.27), Vector3(0.06, 0.05, 0.01), "#000000", false, "#3ee08f", 1.5)
+	sign3d(Vector3(2.9, 0.75, -1.84), "ENTRÉE %d €" % int(V["price"]), Color(1, 0.9, 0.6), 0.0, 26)
+	_camera_dome(Vector3(0, HC - 0.12, -3.0))
+	_camera_dome(Vector3(1.6, 3.15, 0.4))
 
 # ---------- petits détails qui font vrai ----------
 func sign3d(p: Vector3, txt: String, col: Color, ry := 0.0, sz := 48, emissive := true) -> Label3D:

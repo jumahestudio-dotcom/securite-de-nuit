@@ -581,7 +581,7 @@ func step(dt: float, mv: Vector3) -> void:
 			if o["wind"] <= 0:
 				var kind: String = o["atk"] if o["atk"] != "" else "droit"
 				o["atk"] = ""
-				n.act("Punch" if kind != "saisie" else "Grab", 0.45)
+				n.act({"saisie": "Grab", "pied": "Kick", "tete": "Headbutt"}.get(kind, "Punch"), 0.45)
 				o["cd"] = randf_range(1.3, 2.6) / o["aggr"] * (0.55 if collared != null and is_same(collared, o) else 1.0)
 				if vs_foe:
 					if td < 1.6:
