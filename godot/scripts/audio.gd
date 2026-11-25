@@ -15,6 +15,7 @@ var crowd_bus := -1
 var target_cut := 600.0
 var target_mvol := -8.0
 var target_cvol := -30.0
+var fade := 0.0               # fin de soirée : la musique s'arrête
 var volume_master := 1.0
 
 func _ready() -> void:
@@ -74,7 +75,7 @@ func _process(delta: float) -> void:
 	if lp == null: return
 	var k: float = clamp(delta * 3.0, 0.0, 1.0)
 	lp.cutoff_hz = lerp(lp.cutoff_hz, target_cut, k)
-	AudioServer.set_bus_volume_db(music_bus, lerp(AudioServer.get_bus_volume_db(music_bus), target_mvol, k))
+	AudioServer.set_bus_volume_db(music_bus, lerp(AudioServer.get_bus_volume_db(music_bus), target_mvol - fade * 40.0, k))
 	AudioServer.set_bus_volume_db(crowd_bus, lerp(AudioServer.get_bus_volume_db(crowd_bus), target_cvol, k))
 
 func sfx(snd: String, vol_db := 0.0) -> void:

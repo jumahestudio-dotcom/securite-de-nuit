@@ -8,6 +8,9 @@ var dj = null
 var tick := 0.0
 var arrive_t := 25.0
 var chat_t := 0.0
+var smokers: Array = []
+var queue_t := 0.0
+var close_done := false
 
 const EXIT_PTS := [Vector2(12, 5), Vector2(28, 5)]
 
@@ -31,6 +34,12 @@ func setup() -> void:
 		b.set_meta("z1", lerpf(bz0, bz1, float(i + 1) / nb))
 		b.set_meta("next", _now() + randf_range(2, 6))
 		barmen.append(b)
+	# fumeurs sur le trottoir, à côté de l'entrée
+	for k in randi_range(2, 4):
+		var s = game._mk_person({"pos": Vector3(-3.2 - k * 0.9 + randf_range(-0.2, 0.2), 0, 1.0 + randf_range(-0.2, 0.4)), "yaw": randf_range(-PI, PI)})
+		s.anim = ["phone", "talk", "idle"].pick_random()
+		s.pname = "Fumeur"
+		smokers.append(s)
 	if w.vk != "comptoir":
 		dj = game._mk_person({"pos": Vector3(0, 0, w.geo["djz"] + 0.35), "yaw": 0.0, "no_surv": true})
 		dj.pname = "DJ"
@@ -62,6 +71,31 @@ func step(delta: float) -> void:
 				b.yaw = PI / 2.0
 	if dj != null and is_instance_valid(dj):
 		dj.yaw = sin(now * 0.4) * 0.3
+	# dans la file : on patiente, on regarde son téléphone, on discute
+	queue_t -= delta
+	if queue_t <= 0.0 and game.phase == "door":
+		queue_t = 1.5
+		var qq: Array = game.queue
+		if qq.size() > 0:
+			var c: Dictionary = qq.pick_random()
+			var qn = c["npc"]
+			if is_instance_valid(qn) and qn.path.is_empty():
+				qn.anim = ["idle", "phone", "talk", "idle"].pick_random()
+				qn.yaw = -PI / 2.0 + randf_range(-0.9, 0.9)
+	# les fumeurs tournent un peu sur eux-mêmes
+	for s in smokers:
+		if is_instance_valid(s) and randf() < 0.004:
+			s.yaw = randf_range(-PI, PI)
+			s.anim = ["phone", "talk", "idle"].pick_random()
+	# fermeture : tout le monde sort
+	if game.world.closing > 0.3 and not close_done:
+		close_done = true
+		for n in game.crowd.duplicate():
+			if not _busy(n) and randf() < 0.85:
+				_leave(n)
+		for b in barmen:
+			if is_instance_valid(b): b.anim = "talk"
+		if dj != null and is_instance_valid(dj): dj.anim = "idle"
 	tick += delta
 	if tick < 0.5: return
 	tick = 0.0

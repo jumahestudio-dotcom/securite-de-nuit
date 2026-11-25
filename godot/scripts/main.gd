@@ -1251,6 +1251,13 @@ func _step_salle(delta: float) -> void:
 	for i in incs:
 		if i["st"] == "open" and salle_t - i["t0"] > i["dl"]:
 			_fail_inc(i)
+	# 4 h 45 : on rallume la lumière, la musique s'arrête, les clients sortent
+	var ck: float = clampf((salle_t - (salle_d - 30.0)) / 10.0, 0.0, 1.0)
+	if ck > 0.0 and world.closing == 0.0:
+		_set_radio("Gérant : « On rallume ! Fin de soirée, on fait sortir tout le monde dans le calme. »")
+		audio.sfx("radio")
+	world.set_closing(ck)
+	audio.fade = ck
 	if salle_t >= salle_d:
 		_end_night()
 

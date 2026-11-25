@@ -42,6 +42,14 @@ var neons := []
 var dj_lights := []
 var ball: MeshInstance3D
 var exit_sign: MeshInstance3D
+var leds: Array = []          # LED rouges des caméras de surveillance
+var cars: Array = []          # voitures qui passent dans la rue
+var tlight: Array = []        # feu tricolore [rouge, orange, vert]
+var pharma: MeshInstance3D
+var house: Array = []         # lumières de salle (rallumées à la fermeture)
+var smoke: GPUParticles3D = null
+var smoke_t := 8.0
+var closing := 0.0
 var neon_light: OmniLight3D
 var anims: Array = []
 var t := 0.0
@@ -594,6 +602,8 @@ func build(key := "neon") -> void:
 	omni(Vector3((txx - W) / 2.0, HC - 0.6, (tzz + ZB) / 2.0), "#cfe9ff", 7.0, 1.2)
 	_build_theme_decor()
 	_build_atmosphere()
+	_build_details()
+	_build_street_life()
 	# plafonniers
 	var px := -W + 3.0
 	while px <= W - 3.0:
@@ -602,6 +612,247 @@ func build(key := "neon") -> void:
 			sph(Vector3(px, HC - 0.1, pz), 0.12, "#000000", "#ffcf9a" if theme == "pub" or theme == "chic" else NE, 3.0)
 			pz -= 6.0
 		px += 6.0
+
+# ---------- petits détails qui font vrai ----------
+func sign3d(p: Vector3, txt: String, col: Color, ry := 0.0, sz := 48, emissive := true) -> Label3D:
+	var l := Label3D.new()
+	l.text = txt
+	l.position = p
+	l.rotation.y = ry
+	l.font_size = sz
+	l.pixel_size = 0.004
+	l.modulate = col
+	l.outline_size = 0
+	l.shaded = not emissive
+	l.double_sided = false
+	add_child(l)
+	return l
+
+func _extinguisher(p: Vector3, ry: float) -> void:
+	var e := cyl(p + Vector3(0, 0.55, 0), 0.08, 0.5, "#c0121e")
+	(e.material_override as StandardMaterial3D).roughness = 0.35
+	cyl(p + Vector3(0, 0.84, 0), 0.03, 0.08, "#111111")
+	var s := box(p + Vector3(0, 1.25, 0), Vector3(0.22, 0.22, 0.02), "#c0121e", false, "#40000a", 0.6)
+	s.rotation.y = ry
+	sign3d(p + Vector3(0, 1.25, 0) + Vector3(sin(ry), 0, cos(ry)) * 0.012, "EXT.", Color(1, 1, 1), ry, 22, false)
+
+func _camera_dome(p: Vector3) -> void:
+	sph(p, 0.11, "#0d0d0f", "", 0.0, 0.1, 0.6)
+	leds.append(sph(p + Vector3(0, -0.06, 0.07), 0.012, "#000000", "#ff2020", 4.0))
+
+func _build_details() -> void:
+	var tzz: float = geo["tz"]
+	var gx0: float = geo["gx0"]
+	var gx1: float = geo["gx1"]
+	var fx: float = geo["fx"]
+	var dz: float = geo["dz"]
+	var ez: float = Zm(-17.0)
+	# extincteurs (obligatoires dans un ERP) et blocs d'éclairage de sécurité
+	_extinguisher(Vector3(W - 0.15, 0, Zm(-11.0)), -PI / 2.0)
+	_extinguisher(Vector3(W - 0.15, 0, Zm(-25.0)), -PI / 2.0)
+	_extinguisher(Vector3(3.9, 0, -4.6), -PI / 2.0)
+	_extinguisher(Vector3((gx1 + geo["tx"]) / 2.0, 0, tzz + 0.15), 0.0)
+	for p in [[Vector3(0, 2.75, -6.35), PI], [Vector3(0, 2.95, -0.45), PI], [Vector3(W - 0.2, 2.25, ez), -PI / 2.0]]:
+		var bx := box(p[0], Vector3(0.36, 0.13, 0.06), "#f2f2f2", false, "#2aff70", 1.2)
+		bx.rotation.y = p[1]
+		sign3d(p[0] + Vector3(sin(p[1]), 0, cos(p[1])) * 0.035, "SORTIE  →", Color(0.1, 0.9, 0.35), p[1], 20)
+	# panneaux
+	sign3d(Vector3((gx0 + gx1) / 2.0, 3.0, tzz + 0.13), "TOILETTES", Color(0.85, 0.95, 1.0), 0.0, 40)
+	sign3d(Vector3(fx - 0.12, 3.0, dz), "FUMOIR", Color(0.9, 0.9, 0.9), -PI / 2.0, 40)
+	sign3d(Vector3(fx - 0.12, 2.6, dz), "Porte maintenue fermée", Color(0.7, 0.7, 0.7), -PI / 2.0, 18, false)
+	sign3d(Vector3(-5.12, 2.6, -3.0), "VESTIAIRE", Color(1.0, 0.85, 0.6), PI / 2.0, 36)
+	sign3d(Vector3(4.05, 2.2, -2.0), "Interdit de fumer et de vapoter\nArt. L3512-8 Code de la santé publique", Color(0.95, 0.95, 0.95), -PI / 2.0, 16, false)
+	sign3d(Vector3(4.05, 1.7, -2.0), "Vente d'alcool interdite aux mineurs", Color(0.95, 0.95, 0.95), -PI / 2.0, 16, false)
+	if ZR.has("vip"):
+		var vr: Array = ZR["vip"]
+		sign3d(Vector3(vr[0] - 1.0, 1.4, (vr[2] + vr[3]) / 2.0), "CARRÉ VIP · RÉSERVÉ", Color(1.0, 0.85, 0.5), -PI / 2.0, 30)
+	# caisse à l'entrée avec terminal de paiement
+	box(Vector3(2.9, 0.55, -2.2), Vector3(1.6, 1.1, 0.7), "#22202a", true, "", 0.0, 0.5)
+	box(Vector3(2.9, 1.12, -2.2), Vector3(1.7, 0.05, 0.8), "#4a4752", false, "", 0.0, 0.25, 0.3)
+	box(Vector3(2.6, 1.2, -2.3), Vector3(0.09, 0.14, 0.05), "#111111")
+	box(Vector3(2.6, 1.22, -2.27), Vector3(0.06, 0.05, 0.01), "#000000", false, "#3ee08f", 1.5)
+	sign3d(Vector3(2.9, 0.75, -1.84), "ENTRÉE %s" % ("LIBRE" if int(V["price"]) == 0 else "%d €" % int(V["price"])), Color(1, 0.9, 0.6), 0.0, 26)
+	# caméras de vidéoprotection
+	_camera_dome(Vector3(0, HC - 0.12, -3.0))
+	_camera_dome(Vector3(X(-9.0), HC - 0.12, Zm(-15.0)))
+	_camera_dome(Vector3(pc.x + 5.0, HC - 0.12, pc.y + 4.0))
+	_camera_dome(Vector3(1.6, 3.15, 0.4))
+	# enceintes murales
+	for z in [Zm(-12.0), Zm(-20.0)]:
+		for s in [-1, 1]:
+			var sp := box(Vector3(s * (W - 0.25), HC - 0.8, z), Vector3(0.35, 0.55, 0.35), "#0b0b0d")
+			sp.rotation.y = s * 0.3
+	# lavabos et miroirs aux toilettes
+	var sx0: float = -W + 0.8
+	while sx0 < geo["tx"] - 0.6:
+		box(Vector3(sx0, 0.85, tzz - 0.35), Vector3(0.55, 0.12, 0.4), "#e8eef2", false, "", 0.0, 0.2)
+		cyl(Vector3(sx0, 1.0, tzz - 0.2), 0.015, 0.18, "#c8c8cc")
+		box(Vector3(sx0, 1.6, tzz - 0.13), Vector3(0.6, 0.8, 0.02), "#9aa6b4", false, "#1a2028", 0.4, 0.02, 0.9)
+		sx0 += 1.1
+	# affiches de soirée dans le hall
+	var events := ["SAMEDI · DJ SET", "JEUDI ÉTUDIANT", "SOIRÉE ANNÉES 2000", "LADIES NIGHT", "AFTER WORK 18 H"]
+	for k in 3:
+		var pz: float = -1.2 - k * 1.5
+		var col := Color.from_hsv(randf(), 0.7, 0.9)
+		box(Vector3(-5.13, 1.6, pz), Vector3(0.02, 0.85, 0.6), "#111111", false, col.to_html(false), 0.8)
+		sign3d(Vector3(-5.11, 1.6, pz), events[(k + vk.length()) % events.size()].replace(" · ", "\n"), Color(1, 1, 1), PI / 2.0, 18)
+	# lumières de salle, éteintes pendant la soirée (rallumées à la fermeture)
+	var hx := -W + 4.0
+	while hx < W:
+		var hz := -9.0
+		while hz > ZB + 2.0:
+			var hl := omni(Vector3(hx, HC - 0.3, hz), "#fff4e0", 9.0, 0.0)
+			house.append(hl)
+			hz -= 8.0
+		hx += 8.0
+	# machine à fumée sur la scène (bouffées régulières)
+	if theme == "led" or theme == "indus":
+		smoke = GPUParticles3D.new()
+		smoke.amount = 60
+		smoke.lifetime = 6.0
+		smoke.emitting = false
+		smoke.one_shot = false
+		smoke.position = Vector3(0, geo["djh"] + 0.3, geo["djz"] + 1.8)
+		smoke.visibility_aabb = AABB(Vector3(-10, -2, -2), Vector3(20, 8, 16))
+		var pm := ParticleProcessMaterial.new()
+		pm.direction = Vector3(0, 0.2, 1)
+		pm.spread = 35.0
+		pm.initial_velocity_min = 1.2
+		pm.initial_velocity_max = 2.4
+		pm.gravity = Vector3(0, 0.05, 0)
+		pm.damping_min = 0.4; pm.damping_max = 0.8
+		pm.scale_min = 1.5; pm.scale_max = 3.0
+		var sc := Curve.new()
+		sc.add_point(Vector2(0, 0.3)); sc.add_point(Vector2(1, 1.0))
+		var sct := CurveTexture.new()
+		sct.curve = sc
+		pm.scale_curve = sct
+		var ga := Gradient.new()
+		ga.set_color(0, Color(1, 1, 1, 0.22)); ga.set_color(1, Color(1, 1, 1, 0.0))
+		var gt := GradientTexture1D.new()
+		gt.gradient = ga
+		pm.color_ramp = gt
+		smoke.process_material = pm
+		var q := QuadMesh.new()
+		q.size = Vector2(1.0, 1.0)
+		var sm := StandardMaterial3D.new()
+		sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		sm.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+		sm.vertex_color_use_as_albedo = true
+		sm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var rad := GradientTexture2D.new()
+		rad.fill = GradientTexture2D.FILL_RADIAL
+		rad.fill_from = Vector2(0.5, 0.5)
+		rad.fill_to = Vector2(1.0, 0.5)
+		var rg := Gradient.new()
+		rg.set_color(0, Color(0.85, 0.85, 0.95, 1.0)); rg.set_color(1, Color(0.85, 0.85, 0.95, 0.0))
+		rad.gradient = rg
+		sm.albedo_texture = rad
+		q.material = sm
+		smoke.draw_pass_1 = q
+		add_child(smoke)
+	# structure métallique (truss) qui porte les lyres
+	if theme == "led" or theme == "indus":
+		var tw: float = 13.0 * sx
+		for zz in [pc.y - 5.0 * sz, pc.y + 5.0 * sz]:
+			box(Vector3(pc.x, HC - 0.12, zz), Vector3(tw, 0.12, 0.12), "#8a8f96", false, "", 0.0, 0.3, 0.9)
+			box(Vector3(pc.x, HC - 0.36, zz), Vector3(tw, 0.04, 0.04), "#8a8f96", false, "", 0.0, 0.3, 0.9)
+
+# ---------- la rue : voitures, feu tricolore, poubelles, commerces ----------
+func _build_street_life() -> void:
+	# commerces en face : kebab et pharmacie (croix verte qui clignote)
+	sign3d(Vector3(-11.0, 3.2, 23.4), "KEBAB · OUVERT", Color(1.0, 0.55, 0.15), PI, 90)
+	omni(Vector3(-11.0, 3.0, 22.4), "#ff9a3c", 7.0, 1.2)
+	pharma = box(Vector3(9.0, 4.2, 23.35), Vector3(0.9, 0.9, 0.08), "#000000", false, "#20ff60", 4.0)
+	box(Vector3(9.0, 4.2, 23.3), Vector3(0.3, 0.9, 0.08), "#000000", false, "#20ff60", 4.0)
+	sign3d(Vector3(16.0, 3.0, 23.4), "TABAC", Color(1, 0.3, 0.3), PI, 70)
+	# poubelles, affiches collées, plaque d'égout qui fume
+	for bxp in [-14.5, -13.6]:
+		box(Vector3(bxp, 0.55, 5.4), Vector3(0.7, 1.0, 0.6), "#1d5a2a", true, "", 0.0, 0.6)
+		box(Vector3(bxp, 1.07, 5.4), Vector3(0.74, 0.06, 0.64), "#174a22")
+	for k in 4:
+		box(Vector3(-6.0 - k * 0.75, 1.5 + (k % 2) * 0.2, 0.02), Vector3(0.6, 0.85, 0.01), Color.from_hsv(randf(), 0.5, 0.8).to_html(false), false, "", 0.0, 0.9)
+	var st := GPUParticles3D.new()
+	st.amount = 24
+	st.lifetime = 3.0
+	st.position = Vector3(5.0, 0.05, 12.5)
+	var pm := ParticleProcessMaterial.new()
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 15.0
+	pm.initial_velocity_min = 0.4; pm.initial_velocity_max = 0.8
+	pm.gravity = Vector3(0, 0.2, 0)
+	pm.scale_min = 0.8; pm.scale_max = 1.6
+	var ga := Gradient.new()
+	ga.set_color(0, Color(1, 1, 1, 0.18)); ga.set_color(1, Color(1, 1, 1, 0.0))
+	var gt := GradientTexture1D.new()
+	gt.gradient = ga
+	pm.color_ramp = gt
+	st.process_material = pm
+	var q := QuadMesh.new()
+	var sm := StandardMaterial3D.new()
+	sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	sm.vertex_color_use_as_albedo = true
+	sm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var rad := GradientTexture2D.new()
+	rad.fill = GradientTexture2D.FILL_RADIAL
+	rad.fill_from = Vector2(0.5, 0.5); rad.fill_to = Vector2(1.0, 0.5)
+	var rg := Gradient.new()
+	rg.set_color(0, Color(0.9, 0.9, 0.95, 1.0)); rg.set_color(1, Color(0.9, 0.9, 0.95, 0.0))
+	rad.gradient = rg
+	sm.albedo_texture = rad
+	q.material = sm
+	st.draw_pass_1 = q
+	add_child(st)
+	cyl(Vector3(5.0, 0.005, 12.5), 0.35, 0.01, "#222226", false, "", 0.0)
+	# feu tricolore
+	cyl(Vector3(-17.5, 1.6, 6.3), 0.06, 3.2, "#2a2a30")
+	box(Vector3(-17.5, 3.0, 6.45), Vector3(0.3, 0.8, 0.2), "#111114")
+	for k in 3:
+		tlight.append(sph(Vector3(-17.5, 3.25 - k * 0.25, 6.56), 0.08, "#151515", ["#ff2020", "#ffaa00", "#20ff60"][k], 0.001))
+	# voitures qui passent, phares allumés
+	for k in 2:
+		var car := Node3D.new()
+		var col: String = ["#d9d9de", "#1d1d22", "#7a1d1d", "#1d3d7b"][randi() % 4]
+		var b1 := MeshInstance3D.new()
+		var bm := BoxMesh.new(); bm.size = Vector3(4.2, 0.7, 1.8)
+		b1.mesh = bm; b1.material_override = _mat(Color(col), Color.BLACK, 0.0, 0.25, 0.6); b1.position.y = 0.65
+		car.add_child(b1)
+		var b2 := MeshInstance3D.new()
+		var bm2 := BoxMesh.new(); bm2.size = Vector3(2.2, 0.55, 1.6)
+		b2.mesh = bm2; b2.material_override = _mat(Color("#0d1622"), Color.BLACK, 0.0, 0.05, 0.3); b2.position = Vector3(-0.2, 1.25, 0)
+		car.add_child(b2)
+		for s in [-0.65, 0.65]:
+			var hl := MeshInstance3D.new()
+			var hs := SphereMesh.new(); hs.radius = 0.09; hs.height = 0.18
+			hl.mesh = hs; hl.material_override = _mat(Color.BLACK, Color("#fff6c8"), 5.0); hl.position = Vector3(2.1, 0.75, s)
+			car.add_child(hl)
+			var tl := MeshInstance3D.new()
+			tl.mesh = hs; tl.material_override = _mat(Color.BLACK, Color("#ff2020"), 3.0); tl.position = Vector3(-2.1, 0.75, s)
+			car.add_child(tl)
+		var sp := SpotLight3D.new()
+		sp.position = Vector3(2.2, 0.75, 0)
+		sp.rotation.y = -PI / 2.0
+		sp.light_color = Color("#fff3d0")
+		sp.light_energy = 5.0
+		sp.spot_range = 16.0
+		sp.spot_angle = 30.0
+		sp.light_volumetric_fog_energy = 1.5
+		car.add_child(sp)
+		var dirn: float = 1.0 if k == 0 else -1.0
+		car.rotation.y = 0.0 if dirn > 0 else PI
+		car.position = Vector3(-60.0 + k * 70.0, 0, 11.0 if dirn > 0 else 13.2)
+		car.set_meta("dir", dirn)
+		car.set_meta("v", randf_range(7.0, 11.0))
+		add_child(car)
+		cars.append(car)
+
+## Fin de soirée : on rallume la salle et on coupe les effets
+func set_closing(k: float) -> void:
+	closing = clampf(k, 0.0, 1.0)
+	for h in house: h.light_energy = closing * 1.6
+	for l in dj_lights: l.visible = closing < 0.6
+	for l in lasers: l.visible = closing < 0.3 and l.visible
 
 # ---------- reflets (sols brillants, flaques) et pluie ----------
 func _build_atmosphere() -> void:
@@ -941,6 +1192,10 @@ func animate(delta: float) -> void:
 				var a := 0.35 + 0.35 * maxf(0.0, sin(t * 2.5 + ij.x * 0.7 + ij.y * 0.5))
 				m.emission = Color.from_hsv(h, 0.9, 1.0)
 				m.emission_energy_multiplier = a * 4.0
+	if closing > 0.0:
+		for tl in tiles:
+			var mt: StandardMaterial3D = tl.material_override
+			mt.emission_energy_multiplier *= 1.0 - closing * 0.85
 	for p in ledwall:
 		var ij2: Vector2i = p.get_meta("ij")
 		var m3: StandardMaterial3D = p.material_override
@@ -950,7 +1205,7 @@ func animate(delta: float) -> void:
 	for k in lasers.size():
 		var lz: Node3D = lasers[k]
 		lz.rotation = Vector3(0.25 + 0.15 * sin(t * 0.7 + k), sin(t * 0.9 + k * 1.3) * 0.7, 0)
-		lz.visible = int(t * 0.5) % 3 != 0
+		lz.visible = int(t * 0.5) % 3 != 0 and closing < 0.3
 	var fl := sin(t * 23.0) > 0.97 or fmod(t * 1000.0, 4200.0) < 90.0
 	for n in neons:
 		var m2: StandardMaterial3D = n.material_override
@@ -971,6 +1226,30 @@ func animate(delta: float) -> void:
 		l.position = Vector3(pc.x + cos(a2) * 4.5 * sx, HC - 0.45, pc.y + sin(a2) * 5.0 * sz)
 		l.light_color = Color.from_hsv(fmod(t * 0.08 + k / 3.0, 1.0), 1.0, 1.0)
 	if ball: ball.rotation.y = t * 0.8
+	for k in leds.size():
+		leds[k].visible = fmod(t + k * 0.37, 2.0) < 0.15
+	if pharma:
+		var pmm: StandardMaterial3D = pharma.material_override
+		pmm.emission_energy_multiplier = 4.0 if fmod(t, 1.2) < 0.8 else 0.6
+	# feu tricolore : vert 12 s, orange 3 s, rouge 12 s
+	if tlight.size() == 3:
+		var ph := fmod(t, 27.0)
+		var on := 2 if ph < 12.0 else (1 if ph < 15.0 else 0)
+		for k in 3:
+			var tm: StandardMaterial3D = tlight[k].material_override
+			tm.emission_enabled = true
+			tm.emission_energy_multiplier = 4.0 if k == on else 0.0
+	for car in cars:
+		var dirn: float = car.get_meta("dir")
+		car.position.x += dirn * float(car.get_meta("v")) * delta
+		if absf(car.position.x) > 60.0:
+			car.position.x = -60.0 * dirn
+			car.set_meta("v", randf_range(7.0, 11.0))
+	if smoke != null and closing < 0.3:
+		smoke_t -= delta
+		if smoke_t <= 0.0:
+			smoke.emitting = not smoke.emitting
+			smoke_t = 2.5 if smoke.emitting else randf_range(18.0, 30.0)
 	if exit_sign:
 		var em: StandardMaterial3D = exit_sign.material_override
 		em.emission_energy_multiplier = 3.0 + 1.5 * sin(t * 2.0)
