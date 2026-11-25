@@ -11,6 +11,7 @@ var chat_t := 0.0
 var smokers: Array = []
 var queue_t := 0.0
 var close_done := false
+var patrol_t := 20.0
 
 const EXIT_PTS := [Vector2(12, 5), Vector2(28, 5)]
 
@@ -96,6 +97,26 @@ func step(delta: float) -> void:
 		for b in barmen:
 			if is_instance_valid(b): b.anim = "talk"
 		if dj != null and is_instance_valid(dj): dj.anim = "idle"
+	# rondes des collègues : ils bougent dans leur secteur, passent parler au barman
+	patrol_t -= delta
+	if patrol_t <= 0.0 and game.phase == "salle" and not game.fight.active:
+		patrol_t = randf_range(10.0, 18.0)
+		var free := []
+		for a in game.colleagues:
+			if is_instance_valid(a) and a.task == null and not a.get_meta("fight", false) and not a.has_meta("phone_bad") and a.path.is_empty():
+				free.append(a)
+		if free.size() > 0:
+			var ag = free.pick_random()
+			var w = game.world
+			var tgt: Vector3 = ag.home + Vector3(randf_range(-3.0, 3.0), 0, randf_range(-3.0, 3.0))
+			var chat_bar: bool = randf() < 0.25 and barmen.size() > 0
+			if chat_bar:
+				tgt = Vector3(w.X(-9.6), 0, clampf(ag.position.z, w.Zm(-22.0), w.Zm(-10.0)))
+			if randf() < 0.4: tgt = ag.home
+			var arrive := func(q):
+				q.anim = "talk" if chat_bar else "idle"
+				if chat_bar: q.yaw = -PI / 2.0
+			ag.walk_to(w.route(ag.position, tgt), arrive)
 	tick += delta
 	if tick < 0.5: return
 	tick = 0.0

@@ -5,6 +5,7 @@ const PersonScript = preload("res://scripts/person.gd")
 const WorldScript = preload("res://scripts/world.gd")
 const LifeScript = preload("res://scripts/life.gd")
 const AidScript = preload("res://scripts/aid.gd")
+const TalkScript = preload("res://scripts/talk.gd")
 const IdCardScript = preload("res://scripts/idcard.gd")
 const UIScript = preload("res://scripts/ui.gd")
 const FightScript = preload("res://scripts/fight.gd")
@@ -14,6 +15,7 @@ const CareerScript = preload("res://scripts/career.gd")
 var world
 var life
 var aid
+var talk
 var idcard
 var ui
 var fight
@@ -86,6 +88,9 @@ func _ready() -> void:
 	add_child(fight)
 	audio = AudioScript.new()
 	add_child(audio)
+	talk = TalkScript.new()
+	talk.game = self
+	add_child(talk)
 	aid = AidScript.new()
 	aid.game = self
 	add_child(aid)
@@ -1257,11 +1262,12 @@ func _step_salle(delta: float) -> void:
 		_set_radio("Gérant : « On rallume ! Fin de soirée, on fait sortir tout le monde dans le calme. »")
 		audio.sfx("radio")
 	world.set_closing(ck)
-	audio.fade = ck
+	audio.fade = maxf(ck, 1.0 if Time.get_ticks_msec() / 1000.0 < talk.cut_until else 0.0)
 	if salle_t >= salle_d:
 		_end_night()
 
 func _end_night() -> void:
+	talk.end_checks()
 	phase = "end"
 	ui.close_panel()
 	if fight.active:
@@ -1325,14 +1331,9 @@ func _interact() -> void:
 		if i != null:
 			_inc_panel(i)
 			return
-		var best = null
-		var bd := 1.8
-		for n in crowd:
-			if not is_instance_valid(n) or n.data == null: continue
-			var d: float = P.distance_to(n.position)
-			if d < bd:
-				bd = d; best = n
-		if best != null: _client_info(best)
+	if phase == "door" or phase == "salle":
+		var w = talk.who_near()
+		if w != null: talk.open_for(w)
 
 func _client_info(n) -> void:
 	sel_npc = n
@@ -1477,6 +1478,8 @@ func _daze_wobble() -> Vector3:
 
 func _process(delta: float) -> void:
 	world.animate(delta)
+	if phase == "door" or phase == "salle":
+		talk.step(delta)
 	_spot_hidden()
 	if post != null and post.visible:
 		var pm: ShaderMaterial = post.material
@@ -1509,11 +1512,9 @@ func _process(delta: float) -> void:
 			var ni = _near_inc()
 			if ni != null:
 				pr = "[E]  Intervenir : " + Data.clean(Data.INC[ni["ty"]]["t"])
-			else:
-				for n in crowd:
-					if is_instance_valid(n) and n.data != null and P.distance_to(n.position) < 1.8:
-						pr = "[E]  Observer " + n.data["first"]
-						break
+		if pr == "" and (phase == "door" or phase == "salle"):
+			var w = talk.who_near()
+			if w != null: pr = "[E]  " + talk.label_for(w)
 	ui.prompt.text = pr
 	ui_t += delta
 	if ui_t < 0.2: return
