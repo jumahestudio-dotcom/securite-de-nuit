@@ -184,6 +184,7 @@ func venue_menu(career_mode: bool) -> void:
 func _credits() -> void:
 	var t := "[b]Modèles 3D du décor[/b] (licence Creative Commons Attribution 4.0, via Sketchfab)\n\n"
 	t += "• « Bar Bar » — anDDDres\n• « Bright bar table and stool set » — WwWuengy\n• « UFO modern chandelier » — WwWuengy\n• « Equalizer with 3D indicators » — s7ntech\n• « Night dance club lowpoly » — 00amza\n\n"
+	t += "[b]Personnages[/b] (CC-BY 4.0, via Sketchfab)\n• « .Fuse Orion Clothes 3 » — Leonardo Carvalho\n• « Posty - Just Skin And Clothes 4 » — posty\n• « Black clothes » — 10melikasagharchi\n• « brown clothes with man » — ZEBandit3D\n• « Male Character- Clothes and Hair » — sapenton8821\n\n"
 	t += "Personnages et animations : Mixamo (Adobe), non redistribués.\nJeu : jumahestudi."
 	ui.show_screen("Crédits", t, [{"t": "Retour", "k": "main", "cb": _menu}])
 

@@ -75,5 +75,50 @@
  "Ch18_nonPBR.fbx": {
   "role": "agent",
   "sexe": "H"
+ },
+ "orion.glb": {
+  "sexe": "F",
+  "peau": "claire",
+  "cheveux": "bruns",
+  "coiffure": "longs",
+  "tenue": "jean",
+  "tenue_txt": "Combinaison moulante bleue à motifs et baskets",
+  "signe": "combinaison bleue à motifs"
+ },
+ "posty.fbx": {
+  "sexe": "F",
+  "peau": "mate",
+  "cheveux": "blonds",
+  "coiffure": "mi-longs",
+  "tenue": "jean",
+  "tenue_txt": "Crop top rose, short en jean et baskets blanches",
+  "signe": ""
+ },
+ "mara_robe_noire.fbx": {
+  "sexe": "F",
+  "peau": "claire",
+  "cheveux": "bruns",
+  "coiffure": "attachés",
+  "tenue": "robe",
+  "tenue_txt": "Robe noire épaules dénudées, ras-de-cou et talons",
+  "signe": ""
+ },
+ "homme_veste_marron.fbx": {
+  "sexe": "H",
+  "peau": "mate",
+  "cheveux": "noirs",
+  "coiffure": "courts",
+  "tenue": "chemise",
+  "tenue_txt": "Pull beige clair et pantalon assorti",
+  "signe": "ensemble beige clair des pieds à la tête"
+ },
+ "oskar_jean.fbx": {
+  "sexe": "H",
+  "peau": "claire",
+  "cheveux": "gris",
+  "coiffure": "courts",
+  "tenue": "jean",
+  "tenue_txt": "T-shirt bleu marine et jean gris",
+  "signe": ""
  }
 }

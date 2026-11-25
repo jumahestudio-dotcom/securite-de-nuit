@@ -231,6 +231,15 @@ func _build() -> void:
 	sh.position = Vector3(0, 0.012, 0)
 	add_child(sh)
 
+## Nom d'os sans préfixe Mixamo ni numéro ajouté par Sketchfab : « mixamorig:Hips_01 » -> « Hips »
+func _bkey(bn: String) -> String:
+	var r := RegEx.new()
+	r.compile("^mixamorig\\d*[_:]")
+	var k := r.sub(bn, "")
+	var r2 := RegEx.new()
+	r2.compile("_\\d+$")
+	return r2.sub(k, "")
+
 func _build_model() -> bool:
 	var sc = load(model_path)
 	if sc == null or not (sc is PackedScene):
@@ -264,12 +273,12 @@ func _build_model() -> bool:
 	if skel != null:
 		skel_ref = skel
 		for bi in skel.get_bone_count():
-			var bn := skel.get_bone_name(bi)
+			var bn := _bkey(skel.get_bone_name(bi))
 			if bn.ends_with("LeftToeBase") or bn.ends_with("RightToeBase"): foot_ids.append(bi)
 		if foot_ids.is_empty():
 			foot_h = 0.09
 			for bi in skel.get_bone_count():
-				var bn2 := skel.get_bone_name(bi)
+				var bn2 := _bkey(skel.get_bone_name(bi))
 				if bn2.ends_with("LeftFoot") or bn2.ends_with("RightFoot"): foot_ids.append(bi)
 	if skel == null or Data.ANIMS.is_empty():
 		return true
@@ -290,7 +299,7 @@ func _build_model() -> bool:
 	var hips := -1
 	for bi in skel.get_bone_count():
 		var bnm := skel.get_bone_name(bi)
-		var suf := pre.sub(bnm, "")
+		var suf := _bkey(bnm)
 		bmap[suf] = bnm
 		if suf == "Hips": hips = bi
 	for key in Data.ANIMS.keys():
@@ -312,7 +321,7 @@ func _build_model() -> bool:
 				drop.append(t)
 				continue
 			a.track_set_path(t, NodePath(skel_path + ":" + target))
-			if a.track_get_type(t) == Animation.TYPE_POSITION_3D and target.ends_with("Hips") and a.track_get_key_count(t) > 0 and hips >= 0:
+			if a.track_get_type(t) == Animation.TYPE_POSITION_3D and _bkey(target) == "Hips" and a.track_get_key_count(t) > 0 and hips >= 0:
 				var v0: Vector3 = a.track_get_key_value(t, 0)
 				var rest_y: float = skel.get_bone_rest(hips).origin.y
 				if absf(v0.y) > 0.0001 and absf(rest_y) > 0.0001:

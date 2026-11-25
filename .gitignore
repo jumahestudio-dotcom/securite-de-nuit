@@ -15,3 +15,6 @@ godot/assets/characters/**
 !godot/assets/characters/**/.gitkeep
 godot/assets/animations/*
 !godot/assets/animations/.gitkeep
+# personnages Sketchfab sous licence CC-BY : redistribuables (voir CREDITS.md)
+!godot/assets/characters/sketchfab/*.glb
+!godot/assets/characters/sketchfab/CREDITS.md
