@@ -58,7 +58,7 @@ func _geo() -> void:
 		"secours": [W - 2.5, W - 0.6, Zm(-20.0), Zm(-16.0)]}
 	if not V["no_vip"]:
 		ZR["vip"] = [X(9.0), X(14.0), Zm(-29.0), Zm(-21.0)]
-	geo = {"tx": X(-9.1), "tz": Zm(-25.1), "fx": X(9.1), "fz0": Zm(-14.1), "dz": Zm(-9.4), "gx0": X(-12.4), "gx1": X(-10.0)}
+	geo = {"djz": Zm(-27.5), "djw": 4.0 * minf(sx, 1.2), "barman_x": (X(-11.0) - 1.1) if vk == "comptoir" else (X(-11.0) - 0.45 + (-W + 0.7)) / 2.0, "tx": X(-9.1), "tz": Zm(-25.1), "fx": X(9.1), "fz0": Zm(-14.1), "dz": Zm(-9.4), "gx0": X(-12.4), "gx1": X(-10.0)}
 	var gm: float = (geo["gx0"] + geo["gx1"]) / 2.0
 	UP = {"out": [Vector2(0, 1), Vector2(0, -0.8)], "hall": [Vector2(0, -4.6), Vector2(0, -7.6)],
 		"toi": [Vector2(gm, geo["tz"] - 1.2), Vector2(gm, geo["tz"] + 1.4)],
@@ -70,6 +70,7 @@ func floor_y(x: float, z: float) -> float:
 		var v: Array = ZR["vip"]
 		if x > v[0] - 1.0 and x < W and z > v[2] - 1.0 and z < v[3]: return 0.3
 	if z > 0.0 and z < 6.0 and absf(x) < 22.0: return 0.12
+	if absf(x) < geo["djw"] and absf(z - geo["djz"]) < 1.75: return 0.6
 	var p: Array = ZR["piste"]
 	if x > p[0] - 0.5 and x < p[1] + 0.5 and z > p[2] - 0.5 and z < p[3] + 0.5: return 0.08
 	return 0.0

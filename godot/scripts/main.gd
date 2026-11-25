@@ -3,12 +3,14 @@ extends Node3D
 
 const PersonScript = preload("res://scripts/person.gd")
 const WorldScript = preload("res://scripts/world.gd")
+const LifeScript = preload("res://scripts/life.gd")
 const UIScript = preload("res://scripts/ui.gd")
 const FightScript = preload("res://scripts/fight.gd")
 const AudioScript = preload("res://scripts/audio.gd")
 const CareerScript = preload("res://scripts/career.gd")
 
 var world
+var life
 var ui
 var fight
 var audio
@@ -76,6 +78,9 @@ func _ready() -> void:
 	add_child(fight)
 	audio = AudioScript.new()
 	add_child(audio)
+	life = LifeScript.new()
+	life.game = self
+	add_child(life)
 	career = CareerScript.new()
 	career.game = self
 	add_child(career)
@@ -265,6 +270,7 @@ func _start() -> void:
 	# public déjà à l'intérieur
 	for i in int(V["crowd"]):
 		_spawn_inside(null, true)
+	life.setup()
 	# file
 	var test_i := randi_range(2, nq - 1)
 	for i in nq:
@@ -1266,6 +1272,8 @@ func _physics_process(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	world.animate(delta)
+	if phase == "door" or phase == "salle":
+		life.step(delta)
 	if player != null:
 		audio.set_place(world.region(player.position.x, player.position.z), player.position.z)
 		minimap.queue_redraw()
