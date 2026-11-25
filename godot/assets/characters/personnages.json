@@ -1,5 +1,5 @@
 {
- "_aide": "Description des personnages Mixamo (clé = nom exact du fichier, tel que téléchargé). tenue : soignee / chemise / jean / robe / surv (surv = refusée par le dress code). signe = signe distinctif : ce personnage peut être sur la liste noire. Les fichiers peuvent être rangés directement dans assets/characters/.",
+ "_aide": "Description des personnages Mixamo (clé = nom exact du fichier, tel que téléchargé). tenue : soignee / chemise / jean / robe / surv (surv = refusée par le dress code). signe = signe distinctif : ce personnage peut être sur la liste noire. Les fichiers peuvent être rangés directement dans assets/characters/. Les personnages re-riggés sur Mixamo sont reconnus sous les deux noms (posty.fbx ou posty_pour_mixamo.fbx, etc.).",
  "Remy.fbx": {
   "sexe": "H",
   "peau": "claire",
@@ -113,6 +113,42 @@
   "signe": "ensemble beige clair des pieds à la tête"
  },
  "oskar_jean.fbx": {
+  "sexe": "H",
+  "peau": "claire",
+  "cheveux": "gris",
+  "coiffure": "courts",
+  "tenue": "jean",
+  "tenue_txt": "T-shirt bleu marine et jean gris",
+  "signe": ""
+ },
+ "posty_pour_mixamo.fbx": {
+  "sexe": "F",
+  "peau": "mate",
+  "cheveux": "blonds",
+  "coiffure": "mi-longs",
+  "tenue": "jean",
+  "tenue_txt": "Crop top rose, short en jean et baskets blanches",
+  "signe": ""
+ },
+ "mara_robe_noire_pour_mixamo.fbx": {
+  "sexe": "F",
+  "peau": "claire",
+  "cheveux": "bruns",
+  "coiffure": "attachés",
+  "tenue": "robe",
+  "tenue_txt": "Robe noire épaules dénudées, ras-de-cou et talons",
+  "signe": ""
+ },
+ "homme_veste_marron_pour_mixamo.fbx": {
+  "sexe": "H",
+  "peau": "mate",
+  "cheveux": "noirs",
+  "coiffure": "courts",
+  "tenue": "chemise",
+  "tenue_txt": "Pull beige clair et pantalon assorti",
+  "signe": "ensemble beige clair des pieds à la tête"
+ },
+ "oskar_jean_pour_mixamo.fbx": {
   "sexe": "H",
   "peau": "claire",
   "cheveux": "gris",
