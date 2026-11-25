@@ -31,9 +31,10 @@ func setup() -> void:
 		b.set_meta("z1", lerpf(bz0, bz1, float(i + 1) / nb))
 		b.set_meta("next", _now() + randf_range(2, 6))
 		barmen.append(b)
-	dj = game._mk_person({"pos": Vector3(0, 0, w.geo["djz"] + 0.35), "yaw": 0.0, "no_surv": true})
-	dj.pname = "DJ"
-	dj.anim = "dance"
+	if w.vk != "comptoir":
+		dj = game._mk_person({"pos": Vector3(0, 0, w.geo["djz"] + 0.35), "yaw": 0.0, "no_surv": true})
+		dj.pname = "DJ"
+		dj.anim = "dance"
 
 func _busy(n) -> bool:
 	if not is_instance_valid(n): return true

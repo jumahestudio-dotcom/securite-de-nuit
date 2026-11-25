@@ -7,16 +7,16 @@ extends Node3D
 const VENUES := {
 	"comptoir": {"name": "Le Comptoir", "type": "Bar de quartier", "sub": "Petit bar à bières, coin danse, terrasse fumeurs. Clientèle d'habitués.",
 		"sx": 0.62, "sz": 0.55, "cap": 60, "crowd": 16, "nq": 10, "agents": ["Sarah"], "no_vip": true, "price": 0, "inc_k": 1.25,
-		"neon": "#ffc04d", "wall": "#2b2219", "floor": "#1a140e", "accent": "#e08a2c", "unlock": 0, "facade": "#3a2a1e", "fh": 4.2},
+		"neon": "#ffc04d", "wall": "#4a3322", "floor": "#3a2616", "accent": "#e08a2c", "unlock": 0, "facade": "#3a2a1e", "fh": 4.2, "theme": "pub"},
 	"neon": {"name": "Le Néon", "type": "Discothèque", "sub": "Le club du centre-ville : piste LED, carré VIP, fumoir.",
 		"sx": 1.0, "sz": 1.0, "cap": 110, "crowd": 30, "nq": 14, "agents": ["Moussa", "Sarah"], "no_vip": false, "price": 15, "inc_k": 1.0,
-		"neon": "#ff3d9a", "wall": "#231a2b", "floor": "#141019", "accent": "#9b1239", "unlock": 0, "facade": "#2a1f2e", "fh": 6.0},
+		"neon": "#ff3d9a", "wall": "#231a2b", "floor": "#141019", "accent": "#9b1239", "unlock": 0, "facade": "#2a1f2e", "fh": 6.0, "theme": "led"},
 	"palace": {"name": "Le Palace", "type": "Club chic", "sub": "Clientèle aisée, grand carré VIP avec son propre bar, dress code strict.",
 		"sx": 1.18, "sz": 1.12, "cap": 160, "crowd": 42, "nq": 16, "agents": ["Moussa", "Sarah", "Karim"], "no_vip": false, "price": 25, "inc_k": 0.9,
-		"neon": "#ffd27a", "wall": "#1f1a12", "floor": "#15110b", "accent": "#c9a227", "unlock": 300, "facade": "#2b2418", "fh": 6.0},
+		"neon": "#ffd27a", "wall": "#3a0f16", "floor": "#e6e0d4", "accent": "#c9a227", "unlock": 300, "facade": "#2b2418", "fh": 6.0, "theme": "chic"},
 	"usine": {"name": "L'Usine", "type": "Club électro géant", "sub": "Ancien entrepôt, 300 personnes, DJ internationaux, murs d'équaliseurs. Le plus dur.",
 		"sx": 1.42, "sz": 1.45, "cap": 300, "crowd": 70, "nq": 20, "agents": ["Moussa", "Sarah", "Karim", "Inès"], "no_vip": false, "price": 20, "inc_k": 0.72,
-		"neon": "#33e1ff", "wall": "#1b1e24", "floor": "#101216", "accent": "#3a6ea8", "unlock": 700, "facade": "#2a2d33", "fh": 9.0}}
+		"neon": "#33e1ff", "wall": "#40444c", "floor": "#4a4c50", "accent": "#3a6ea8", "unlock": 700, "facade": "#2a2d33", "fh": 9.0, "theme": "indus"}}
 
 const ZLBL := {"porte":"Entrée (dehors)","hall":"Hall","vestiaire":"Vestiaire","piste":"Piste","bar":"Bar","vip":"Carré VIP","fumoir":"Fumoir","toilettes":"Toilettes","secours":"Issue de secours"}
 
@@ -33,6 +33,9 @@ var UP := {}
 const PARENT := {"out": "hall", "hall": "main", "toi": "main", "fum": "main", "main": ""}
 
 var tiles := []
+var ledwall := []
+var lasers := []
+var theme := "led"
 var neons := []
 var dj_lights := []
 var ball: MeshInstance3D
@@ -58,7 +61,7 @@ func _geo() -> void:
 		"secours": [W - 2.5, W - 0.6, Zm(-20.0), Zm(-16.0)]}
 	if not V["no_vip"]:
 		ZR["vip"] = [X(9.0), X(14.0), Zm(-29.0), Zm(-21.0)]
-	geo = {"djz": Zm(-27.5), "djw": 4.0 * minf(sx, 1.2), "barman_x": (X(-11.0) - 1.1) if vk == "comptoir" else (X(-11.0) - 0.45 + (-W + 0.7)) / 2.0, "tx": X(-9.1), "tz": Zm(-25.1), "fx": X(9.1), "fz0": Zm(-14.1), "dz": Zm(-9.4), "gx0": X(-12.4), "gx1": X(-10.0)}
+	geo = {"djz": Zm(-27.5), "djw": 0.0 if vk == "comptoir" else 4.0 * minf(sx, 1.2), "djh": 1.2 if vk == "usine" else 0.6, "barman_x": (X(-11.0) - 0.45 + (-W + 0.7)) / 2.0, "tx": X(-9.1), "tz": Zm(-25.1), "fx": X(9.1), "fz0": Zm(-14.1), "dz": Zm(-9.4), "gx0": X(-12.4), "gx1": X(-10.0)}
 	var gm: float = (geo["gx0"] + geo["gx1"]) / 2.0
 	UP = {"out": [Vector2(0, 1), Vector2(0, -0.8)], "hall": [Vector2(0, -4.6), Vector2(0, -7.6)],
 		"toi": [Vector2(gm, geo["tz"] - 1.2), Vector2(gm, geo["tz"] + 1.4)],
@@ -70,7 +73,7 @@ func floor_y(x: float, z: float) -> float:
 		var v: Array = ZR["vip"]
 		if x > v[0] - 1.0 and x < W and z > v[2] - 1.0 and z < v[3]: return 0.3
 	if z > 0.0 and z < 6.0 and absf(x) < 22.0: return 0.12
-	if absf(x) < geo["djw"] and absf(z - geo["djz"]) < 1.75: return 0.6
+	if absf(x) < geo["djw"] and absf(z - geo["djz"]) < 1.75: return geo["djh"]
 	var p: Array = ZR["piste"]
 	if x > p[0] - 0.5 and x < p[1] + 0.5 and z > p[2] - 0.5 and z < p[3] + 0.5: return 0.08
 	return 0.0
@@ -266,6 +269,7 @@ func build(key := "neon") -> void:
 	vk = key if VENUES.has(key) else "neon"
 	V = VENUES[vk]
 	sx = V["sx"]; sz = V["sz"]
+	theme = V["theme"]
 	_geo()
 	var NE: String = V["neon"]
 	var WC: String = V["wall"]
@@ -395,74 +399,12 @@ func build(key := "neon") -> void:
 		z += 0.35
 	if W > 10.5: box(Vector3(-10, HC / 2.0, -3), Vector3(0.3, HC, 6), WC, true)
 	omni(Vector3(-3, 3.6, -3), "#ffd9a8", 7.0, 1.0)
-	# piste LED
-	var pr: Array = ZR["piste"]
-	pc = Vector2((pr[0] + pr[1]) / 2.0, (pr[2] + pr[3]) / 2.0)
-	var ni: int = max(4, int(round(8 * sx)))
-	var nj: int = max(4, int(round(8 * sz)))
-	for i in ni:
-		for j in nj:
-			var tl := box(Vector3(pc.x - (ni - 1) * 0.75 + i * 1.5, 0.04, pc.y - (nj - 1) * 0.75 + j * 1.5), Vector3(1.44, 0.08, 1.44), "#0a0a10", false, "#ff00ff", 1.5, 0.2)
-			tl.set_meta("ij", Vector2i(i, j))
-			tiles.append(tl)
-	# cabine DJ
-	var djz: float = Zm(-27.5)
-	box(Vector3(0, 0.3, djz), Vector3(8 * min(sx, 1.2), 0.6, 3.5), "#15121c", true)
-	box(Vector3(0, 1.1, djz + 1.1), Vector3(3.4, 1, 0.8), "#0c0c12", true, "#0a0006", 1.0)
-	neons.append(box(Vector3(0, 1.62, djz + 1.5), Vector3(3.4, 0.04, 0.04), "#000000", false, "#33e1ff", 5.0))
-	# enceintes : équaliseurs animés si le modèle est là, sinon caissons
-	var spk := [-5.0 * sx, 5.0 * sx]
-	if vk == "usine": spk = [-5.0 * sx, -9.0 * sx, 5.0 * sx, 9.0 * sx]
-	for spx in spk:
-		var hh: float = 3.6 if vk == "usine" else 2.8
-		if vk != "comptoir" and has_decor("equalizer_with_3d_indicators"):
-			prop("equalizer_with_3d_indicators", Vector3(spx, 0, djz - 0.6), 0.0, hh, true)
-		else:
-			box(Vector3(spx, hh / 2.0, djz - 1.0), Vector3(1.3, hh, 1.1), "#0b0b0f", true)
-	dj_lights = [omni(Vector3(-4, HC - 0.45, pc.y - 4), NE, 11.0, 3.0, true), omni(Vector3(4, HC - 0.45, pc.y), "#33e1ff", 11.0, 3.0), omni(Vector3(0, HC - 0.45, pc.y + 4), "#ffc04d", 10.0, 2.4)]
-	if vk == "usine":
-		dj_lights.append(omni(Vector3(-8, HC - 0.45, pc.y), "#b04dff", 13.0, 3.0))
-		dj_lights.append(omni(Vector3(8, HC - 0.45, pc.y - 6), "#30ff7a", 13.0, 2.6))
-	ball = sph(Vector3(pc.x, HC - 0.65, pc.y), 0.35, "#cccccc", "#404050", 0.5, 0.05, 1.0)
+	_build_floor_and_stage()
 	# bar
 	var bz0: float = Zm(-23.0)
 	var bz1: float = Zm(-9.0)
-	var bl: float = bz1 - bz0
-	var bzc: float = (bz0 + bz1) / 2.0
 	var bx: float = X(-11.0)
-	if vk == "comptoir" and has_decor("bar_bar"):
-		# au Comptoir, le vrai bar (comptoir, étagères à bouteilles, tabourets) remplace le bar en blocs
-		prop("bar_bar", Vector3(bx - 0.6, 0, bzc), PI / 2.0, -0.0254, false, false, true)
-		var sbb := StaticBody3D.new()
-		var csb := CollisionShape3D.new()
-		var shb := BoxShape3D.new()
-		shb.size = Vector3(0.6, 1.1, 3.2)
-		csb.shape = shb
-		sbb.position = Vector3(bx - 0.6, 0.55, bzc)
-		sbb.add_child(csb)
-		add_child(sbb)
-	else:
-		box(Vector3(bx, 0.55, bzc), Vector3(0.9, 1.1, bl), "#3b2516", true)
-		box(Vector3(bx, 1.13, bzc), Vector3(1.1, 0.06, bl + 0.2), "#7a4b28", false, "", 0.0, 0.2, 0.2)
-		neons.append(box(Vector3(bx + 0.48, 0.95, bzc), Vector3(0.03, 0.05, bl - 0.2), "#000000", false, "#33e1ff" if vk == "usine" else "#ffc04d", 5.0))
-		box(Vector3(-W + 0.4, 1.6, bzc), Vector3(0.6, 2.4, bl - 1), "#1d1410")
-		z = bz0 + 0.5
-		while z < bz1 - 0.5:
-			for by in [1.25, 1.85]:
-				cyl(Vector3(-W + 0.65, by + 0.15, z), 0.06, 0.36, "#000000", false, ["#3ee08f", "#ffc04d", "#33e1ff", "#ff7ab6", "#e74c3c"].pick_random(), 2.0)
-			z += 0.32
-		z = bz0
-		while z < bz1:
-			cyl(Vector3(bx + 0.8, 0.4, z), 0.06, 0.8, "#555555")
-			cyl(Vector3(bx + 0.8, 0.82, z), 0.22, 0.06, V["accent"])
-			z += 1.6
-	# lustres au-dessus du bar (ou simples lampes)
-	z = bz0 + 3.0
-	while z < bz1:
-		if has_decor("ufo_modern_chandelier"):
-			prop("ufo_modern_chandelier", Vector3(bx - 0.8, HC - 0.32, z), 0.0, 0.9, false, false)
-		omni(Vector3(bx - 1.0, HC - 0.7, z), "#ffb070", 8.0, 1.6)
-		z += 6.0
+	_build_bar(bx, bz0, bz1)
 	# tables hautes et tabourets autour de la piste
 	if has_decor("bright_bar_table_and_stool_set"):
 		var tsets := [[X(-7.4), Zm(-12.2)], [X(-7.4), Zm(-24.4)], [X(7.4), Zm(-16.0)], [X(7.4), Zm(-19.8)]]
@@ -543,24 +485,304 @@ func build(key := "neon") -> void:
 		cyl(Vector3(stx + 0.6, 0.25, ZB + 0.4), 0.22, 0.5, "#e8eef2")
 	box(Vector3((txx - W) / 2.0, 0.01, (tzz + ZB) / 2.0), Vector3(txx + W - 0.2, 0.02, tzz - ZB - 0.2), "#2a3a46", false, "", 0.0, 0.15)
 	omni(Vector3((txx - W) / 2.0, HC - 0.6, (tzz + ZB) / 2.0), "#cfe9ff", 7.0, 1.2)
+	_build_theme_decor()
 	# plafonniers
 	var px := -W + 3.0
 	while px <= W - 3.0:
 		var pz := -9.0
 		while pz >= ZB + 3.0:
-			sph(Vector3(px, HC - 0.1, pz), 0.12, "#000000", NE, 3.0)
+			sph(Vector3(px, HC - 0.1, pz), 0.12, "#000000", "#ffcf9a" if theme == "pub" or theme == "chic" else NE, 3.0)
 			pz -= 6.0
 		px += 6.0
 
+# ---------- sol de danse et scène, différents selon l'établissement ----------
+func _build_floor_and_stage() -> void:
+	var NE: String = V["neon"]
+	var pr: Array = ZR["piste"]
+	pc = Vector2((pr[0] + pr[1]) / 2.0, (pr[2] + pr[3]) / 2.0)
+	var ni: int = max(4, int(round(8 * sx)))
+	var nj: int = max(4, int(round(8 * sz)))
+	var djz: float = Zm(-27.5)
+	match theme:
+		"pub":
+			# parquet en planches, petit coin danse éclairé par deux spots chauds
+			var z0 := -6.3
+			var k := 0
+			while z0 > ZB:
+				box(Vector3(0, 0.005, z0 - 0.3), Vector3(2 * W - 0.1, 0.01, 0.58), ["#5a3a22", "#4f321c", "#62402a"][k % 3], false, "", 0.0, 0.55)
+				z0 -= 0.6
+				k += 1
+			for s in [-1, 1]:
+				var sp := SpotLight3D.new()
+				sp.position = Vector3(pc.x + s * 1.5, HC - 0.2, pc.y)
+				sp.rotation = Vector3(-PI / 2.0, 0, 0)
+				sp.light_color = Color("#ffb46a")
+				sp.light_energy = 4.0
+				sp.spot_range = HC + 1.0
+				sp.spot_angle = 35.0
+				add_child(sp)
+				dj_lights.append(sp)
+			# juke-box à la place de la cabine DJ
+			box(Vector3(0, 0.8, ZB + 0.5), Vector3(1.1, 1.6, 0.7), "#5a1a10", true, "", 0.0, 0.3, 0.3)
+			neons.append(box(Vector3(0, 1.1, ZB + 0.86), Vector3(0.9, 0.6, 0.02), "#000000", false, "#ff9a3c", 3.0))
+			neons.append(box(Vector3(0, 1.55, ZB + 0.86), Vector3(1.0, 0.08, 0.02), "#000000", false, "#ff3d9a", 4.0))
+			omni(Vector3(0, 1.4, ZB + 1.5), "#ff9a3c", 4.0, 1.0)
+		"chic":
+			# damier de marbre noir et blanc, bordure dorée, lumière chaude qui « respire »
+			for i in ni:
+				for j in nj:
+					var dark: bool = (i + j) % 2 == 0
+					var tl := box(Vector3(pc.x - (ni - 1) * 0.75 + i * 1.5, 0.04, pc.y - (nj - 1) * 0.75 + j * 1.5), Vector3(1.48, 0.08, 1.48), "#141210" if dark else "#efe9dc", false, "#ffcf7a", 0.0, 0.08, 0.1)
+					tl.set_meta("ij", Vector2i(i, j))
+					tl.set_meta("mode", "warm")
+					tiles.append(tl)
+			var bw: float = ni * 1.5 + 0.3
+			var bd: float = nj * 1.5 + 0.3
+			for s in [-1, 1]:
+				box(Vector3(pc.x + s * bw / 2.0, 0.05, pc.y), Vector3(0.15, 0.1, bd), "#c9a227", false, "#5a4000", 1.0, 0.2, 0.9)
+				box(Vector3(pc.x, 0.05, pc.y + s * bd / 2.0), Vector3(bw, 0.1, 0.15), "#c9a227", false, "#5a4000", 1.0, 0.2, 0.9)
+			# scène avec rideau de velours rouge
+			box(Vector3(0, 0.3, djz), Vector3(8 * min(sx, 1.2), 0.6, 3.5), "#2a0a10", true)
+			box(Vector3(0, 1.1, djz + 1.1), Vector3(3.4, 1, 0.8), "#1a1008", true, "", 0.0, 0.3, 0.4)
+			box(Vector3(0, 1.62, djz + 1.5), Vector3(3.4, 0.05, 0.05), "#c9a227", false, "#ffcf7a", 2.0, 0.2, 0.9)
+			var cx := -W + 0.4
+			while cx < W:
+				box(Vector3(cx, HC / 2.0, ZB + 0.25), Vector3(0.38, HC, 0.25 + 0.1 * float(int(cx * 3.0) % 2)), "#7a0f1f", false, "#1a0004", 0.6, 0.9)
+				cx += 0.4
+			box(Vector3(0, HC - 0.3, ZB + 0.45), Vector3(2 * W, 0.6, 0.2), "#c9a227", false, "#3a2a00", 1.0, 0.3, 0.9)
+			for spx in [-4.5 * sx, 4.5 * sx]:
+				cyl(Vector3(spx, 1.3, djz - 0.8), 0.35, 2.6, "#d8c48a", true)
+			# grands lustres au-dessus de la piste
+			for k in 3:
+				var lz: float = pc.y - 4.0 + k * 4.0
+				if has_decor("ufo_modern_chandelier"):
+					prop("ufo_modern_chandelier", Vector3(pc.x, HC - 0.55, lz), 0.0, 1.8, false, false)
+				else:
+					sph(Vector3(pc.x, HC - 0.6, lz), 0.5, "#ffffff", "#ffe2a0", 3.0)
+				dj_lights.append(omni(Vector3(pc.x, HC - 0.9, lz), "#ffd9a0", 9.0, 2.2, k == 1))
+		"indus":
+			# béton, piste en dalles grises qui flashent au rythme, mur LED et lasers
+			for i in ni:
+				for j in nj:
+					var tl := box(Vector3(pc.x - (ni - 1) * 0.75 + i * 1.5, 0.04, pc.y - (nj - 1) * 0.75 + j * 1.5), Vector3(1.42, 0.08, 1.42), "#2a2c30", false, "#ffffff", 0.0, 0.4, 0.5)
+					tl.set_meta("ij", Vector2i(i, j))
+					tl.set_meta("mode", "strobe")
+					tiles.append(tl)
+			box(Vector3(0, 0.6, djz), Vector3(8 * min(sx, 1.2), 1.2, 3.5), "#1a1c20", true, "", 0.0, 0.4, 0.7)
+			box(Vector3(0, 1.7, djz + 1.1), Vector3(3.4, 1, 0.8), "#0c0c12", true)
+			neons.append(box(Vector3(0, 2.22, djz + 1.5), Vector3(3.4, 0.04, 0.04), "#000000", false, "#30ff7a", 5.0))
+			# mur LED derrière le DJ
+			var cols: int = int(2.0 * W / 1.2)
+			var rows: int = int((HC - 1.4) / 1.0)
+			for i in cols:
+				for j in rows:
+					var p := box(Vector3(-W + 0.6 + i * 1.2, 1.4 + j * 1.0 + 0.5, ZB + 0.2), Vector3(1.15, 0.95, 0.1), "#050505", false, "#00ff88", 1.0)
+					p.set_meta("ij", Vector2i(i, j))
+					ledwall.append(p)
+			# lasers
+			for k in 6:
+				var lz := Node3D.new()
+				lz.position = Vector3(-6.0 + k * 2.4, HC - 0.3, djz + 0.5)
+				add_child(lz)
+				var beam := MeshInstance3D.new()
+				var bm := BoxMesh.new()
+				bm.size = Vector3(0.025, 0.025, 26.0)
+				beam.mesh = bm
+				var mm := StandardMaterial3D.new()
+				mm.albedo_color = Color.BLACK
+				mm.emission_enabled = true
+				mm.emission = Color("#30ff7a") if k % 2 == 0 else Color("#ff2a4a")
+				mm.emission_energy_multiplier = 6.0
+				mm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+				beam.material_override = mm
+				beam.position = Vector3(0, 0, 13.0)
+				lz.add_child(beam)
+				lasers.append(lz)
+		_:
+			# le Néon : piste LED arc-en-ciel
+			for i in ni:
+				for j in nj:
+					var tl := box(Vector3(pc.x - (ni - 1) * 0.75 + i * 1.5, 0.04, pc.y - (nj - 1) * 0.75 + j * 1.5), Vector3(1.44, 0.08, 1.44), "#0a0a10", false, "#ff00ff", 1.5, 0.2)
+					tl.set_meta("ij", Vector2i(i, j))
+					tl.set_meta("mode", "led")
+					tiles.append(tl)
+			box(Vector3(0, 0.3, djz), Vector3(8 * min(sx, 1.2), 0.6, 3.5), "#15121c", true)
+			box(Vector3(0, 1.1, djz + 1.1), Vector3(3.4, 1, 0.8), "#0c0c12", true, "#0a0006", 1.0)
+			neons.append(box(Vector3(0, 1.62, djz + 1.5), Vector3(3.4, 0.04, 0.04), "#000000", false, "#33e1ff", 5.0))
+	# enceintes / équaliseurs
+	if theme != "pub":
+		var spk := [-5.0 * sx, 5.0 * sx]
+		if theme == "indus": spk = [-5.0 * sx, -9.0 * sx, 5.0 * sx, 9.0 * sx]
+		for spx in spk:
+			var hh: float = 3.6 if theme == "indus" else 2.8
+			if theme != "chic" and has_decor("equalizer_with_3d_indicators"):
+				prop("equalizer_with_3d_indicators", Vector3(spx, 0, djz - 0.6), 0.0, hh, true)
+			elif theme != "chic":
+				box(Vector3(spx, hh / 2.0, djz - 1.0), Vector3(1.3, hh, 1.1), "#0b0b0f", true)
+	# lumières de piste
+	if theme == "led" or theme == "indus":
+		dj_lights.append_array([omni(Vector3(-4, HC - 0.45, pc.y - 4), NE, 11.0, 3.0, true), omni(Vector3(4, HC - 0.45, pc.y), "#33e1ff", 11.0, 3.0), omni(Vector3(0, HC - 0.45, pc.y + 4), "#ffc04d", 10.0, 2.4)])
+	if theme == "indus":
+		dj_lights.append(omni(Vector3(-8, HC - 0.45, pc.y), "#b04dff", 13.0, 3.0))
+		dj_lights.append(omni(Vector3(8, HC - 0.45, pc.y - 6), "#30ff7a", 13.0, 2.6))
+	if theme == "led":
+		ball = sph(Vector3(pc.x, HC - 0.65, pc.y), 0.35, "#cccccc", "#404050", 0.5, 0.05, 1.0)
+
+# ---------- le bar : comptoir, tireuses, étagères rétroéclairées, tabourets, suspensions ----------
+func _build_bar(bx: float, bz0: float, bz1: float) -> void:
+	var bl: float = bz1 - bz0
+	var bzc: float = (bz0 + bz1) / 2.0
+	var body := "#3b2516"
+	var top := "#6b4226"
+	var top_r := 0.25
+	var top_m := 0.0
+	var stool := "#7a1d1d"
+	var shelf_glow := "#ffb060"
+	match theme:
+		"pub":
+			body = "#4a2a14"; top = "#8a5a2e"; stool = "#2a1a10"; shelf_glow = "#ffb060"
+		"led":
+			body = "#0c0a12"; top = "#141018"; top_r = 0.05; stool = "#ff3d9a"; shelf_glow = "#ff3d9a"
+		"chic":
+			body = "#24160c"; top = "#efe9dc"; top_r = 0.08; stool = "#7a0f1f"; shelf_glow = "#ffd27a"
+		"indus":
+			body = "#2e3136"; top = "#8a8f96"; top_r = 0.3; top_m = 0.8; stool = "#3a3d42"; shelf_glow = "#33e1ff"
+	# comptoir
+	box(Vector3(bx, 0.55, bzc), Vector3(0.9, 1.1, bl), body, true, "", 0.0, 0.5)
+	if theme == "pub" or theme == "chic":
+		var zp := bz0 + 0.6
+		while zp < bz1 - 0.4:
+			box(Vector3(bx + 0.46, 0.55, zp), Vector3(0.02, 0.75, 0.9), "#2a160a" if theme == "pub" else "#c9a227", false, "", 0.0, 0.4, 0.5 if theme == "chic" else 0.0)
+			zp += 1.2
+	box(Vector3(bx + 0.05, 1.13, bzc), Vector3(1.15, 0.07, bl + 0.2), top, false, "", 0.0, top_r, top_m)
+	# barre repose-pieds en laiton
+	var rail := cyl(Vector3(bx + 0.62, 0.22, bzc), 0.03, bl, "#c9a227")
+	rail.rotation.x = PI / 2.0
+	# bandeau lumineux sous le plateau
+	neons.append(box(Vector3(bx + 0.5, 1.02, bzc), Vector3(0.02, 0.03, bl - 0.2), "#000000", false, shelf_glow, 3.0))
+	# tireuses à bière et verres
+	var zt := bz0 + 1.0
+	while zt < bz1 - 0.8:
+		cyl(Vector3(bx - 0.15, 1.3, zt), 0.03, 0.32, "#d8d8dc", false, "", 0.0)
+		for k in 3:
+			cyl(Vector3(bx - 0.15, 1.5, zt - 0.12 + k * 0.12), 0.018, 0.16, ["#1a1a1a", "#c0392b", "#f1c40f"][k])
+		zt += 3.0
+	zt = bz0 + 0.7
+	while zt < bz1 - 0.5:
+		if randf() < 0.55:
+			var g := cyl(Vector3(bx + randf_range(-0.1, 0.3), 1.24, zt), 0.04, 0.15, "#e8c66a" if randf() < 0.6 else "#f2f2f2", false, "#3a2a00", 0.4)
+			g.set_meta("glass", true)
+		zt += 0.45
+	# meuble arrière, miroir et étagères rétroéclairées
+	box(Vector3(-W + 0.45, 0.5, bzc), Vector3(0.6, 1.0, bl - 0.6), body, true)
+	box(Vector3(-W + 0.18, 2.0, bzc), Vector3(0.04, 1.8, bl - 1.0), "#2a3038", false, "#1a2028", 0.6, 0.02, 0.9)
+	for sy in [1.35, 1.85, 2.35]:
+		box(Vector3(-W + 0.4, sy, bzc), Vector3(0.36, 0.03, bl - 1.0), "#d8d8dc", false, shelf_glow, 1.2, 0.2, 0.3)
+		var zb := bz0 + 0.8
+		while zb < bz1 - 0.8:
+			if randf() < 0.85:
+				var bc: String = ["#2e7d32", "#6d3b12", "#a0522d", "#d0d0d0", "#1b3a5c", "#7a1d1d", "#c9a227"].pick_random()
+				var hh := randf_range(0.22, 0.34)
+				cyl(Vector3(-W + 0.4, sy + 0.02 + hh / 2.0, zb), 0.045, hh, bc, false, bc, 0.5)
+			zb += 0.16
+	omni(Vector3(-W + 1.0, 2.0, bzc), shelf_glow, maxf(6.0, bl * 0.6), 0.8)
+	# tabourets
+	var zs := bz0 + 0.4
+	while zs < bz1:
+		cyl(Vector3(bx + 0.85, 0.38, zs), 0.04, 0.76, "#c9a227" if theme == "chic" else "#555555")
+		cyl(Vector3(bx + 0.85, 0.79, zs), 0.21, 0.08, stool)
+		zs += 1.2
+	# suspensions au-dessus du comptoir
+	var zl := bz0 + 1.5
+	while zl < bz1:
+		match theme:
+			"chic":
+				if has_decor("ufo_modern_chandelier"):
+					prop("ufo_modern_chandelier", Vector3(bx - 0.1, HC - 0.32, zl), 0.0, 0.8, false, false)
+			"indus":
+				cyl(Vector3(bx - 0.1, HC - 0.6, zl), 0.008, 1.2, "#111111")
+				cyl(Vector3(bx - 0.1, HC - 1.25, zl), 0.16, 0.22, "#2e3136", false, "", 0.0)
+				sph(Vector3(bx - 0.1, HC - 1.38, zl), 0.07, "#000000", "#ffd27a", 4.0)
+			_:
+				cyl(Vector3(bx - 0.1, HC - 0.5, zl), 0.008, 1.0, "#111111")
+				cyl(Vector3(bx - 0.1, HC - 1.05, zl), 0.18, 0.16, "#1f3a2a" if theme == "pub" else "#111111", false, "", 0.0)
+				sph(Vector3(bx - 0.1, HC - 1.15, zl), 0.07, "#000000", "#ffcf8a", 4.0)
+		omni(Vector3(bx - 0.1, HC - 1.4, zl), "#ffcf8a" if theme != "led" else "#ff9ad0", 4.5, 1.4)
+		zl += 2.4 if theme == "pub" else 3.0
+
+# ---------- décor propre à chaque établissement ----------
+func _build_theme_decor() -> void:
+	match theme:
+		"pub":
+			# lambris bois, fléchettes, télé, enseignes de bière, ardoise
+			for s in [-1, 1]:
+				box(Vector3(s * (W - 0.06), 0.6, ZB / 2.0 - 3.0), Vector3(0.04, 1.2, -ZB - 6.5), "#3a2212", false, "", 0.0, 0.6)
+			box(Vector3(0, 0.6, ZB + 0.06), Vector3(2 * W, 1.2, 0.04), "#3a2212")
+			var df := cyl(Vector3(W - 0.08, 1.7, Zm(-20.0)), 0.23, 0.04, "#1a1a1a")
+			df.rotation.z = PI / 2.0
+			var df2 := cyl(Vector3(W - 0.1, 1.7, Zm(-20.0)), 0.16, 0.04, "#c0392b")
+			df2.rotation.z = PI / 2.0
+			neons.append(box(Vector3(W - 0.08, 2.4, Zm(-14.0)), Vector3(0.05, 0.75, 1.3), "#000000", false, "#3a7bd5", 1.6))
+			neons.append(box(Vector3(-W + 0.1, 2.9, Zm(-14.0)), Vector3(0.04, 0.35, 1.4), "#000000", false, "#ffb000", 3.0))
+			neons.append(box(Vector3(-W + 0.1, 2.9, Zm(-18.0)), Vector3(0.04, 0.35, 1.4), "#000000", false, "#e74c3c", 3.0))
+			box(Vector3(W - 0.08, 1.5, Zm(-11.0)), Vector3(0.04, 1.0, 0.8), "#1d2a1d")
+			# tables rondes avec chaises
+			for tp in [[X(4.0), Zm(-12.0)], [X(5.0), Zm(-24.0)], [X(-4.0), Zm(-25.0)], [X(5.0), Zm(-9.0)]]:
+				cyl(Vector3(tp[0], 0.74, tp[1]), 0.45, 0.04, "#6b4226", true)
+				cyl(Vector3(tp[0], 0.37, tp[1]), 0.05, 0.74, "#2a1a10")
+				for a in 4:
+					var ang: float = a * PI / 2.0
+					box(Vector3(tp[0] + cos(ang) * 0.7, 0.45, tp[1] + sin(ang) * 0.7), Vector3(0.4, 0.05, 0.4), "#4a2a14")
+		"chic":
+			# colonnes dorées et appliques le long des murs
+			var zz := -8.0
+			while zz > ZB + 2.0:
+				for s in [-1, 1]:
+					cyl(Vector3(s * (W - 0.35), HC / 2.0, zz), 0.22, HC, "#e8dcc0", true)
+					sph(Vector3(s * (W - 0.6), 2.4, zz + 1.2), 0.1, "#000000", "#ffe2a0", 3.0)
+				zz -= 4.0
+			omni(Vector3(0, HC - 0.5, -10.0), "#ffe2c0", 14.0, 1.2)
+		"indus":
+			# poutres métalliques, piliers et caisses de transport
+			var zz := -9.0
+			while zz > ZB + 2.0:
+				for s in [-1, 1]:
+					box(Vector3(s * W * 0.45, HC / 2.0, zz), Vector3(0.3, HC, 0.3), "#3a3f48", true, "", 0.0, 0.4, 0.8)
+				box(Vector3(0, HC - 0.2, zz), Vector3(2 * W, 0.3, 0.25), "#3a3f48", false, "", 0.0, 0.4, 0.8)
+				zz -= 6.0
+			for cp in [[-W + 1.2, -7.6], [W * 0.5, ZB + 1.5], [-W * 0.5, ZB + 1.5]]:
+				box(Vector3(cp[0], 0.45, cp[1]), Vector3(1.2, 0.9, 1.2), "#6b5a3a", true)
+			for k in 4:
+				box(Vector3(-W + 0.06, 3.2, Zm(-10.0 - k * 5.0)), Vector3(0.04, 1.4, 3.0), "#000000", false, ["#ff3d9a", "#33e1ff", "#30ff7a", "#ffc04d"][k], 0.8)
+
 func animate(delta: float) -> void:
 	t += delta
+	var beat := fmod(t * 2.0, 1.0)   # 120 BPM
 	for tl in tiles:
 		var ij: Vector2i = tl.get_meta("ij")
-		var h := fmod((ij.x * 37 + ij.y * 53) / 360.0 + t * 0.25, 1.0)
-		var a := 0.35 + 0.35 * maxf(0.0, sin(t * 2.5 + ij.x * 0.7 + ij.y * 0.5))
 		var m: StandardMaterial3D = tl.material_override
-		m.emission = Color.from_hsv(h, 0.9, 1.0)
-		m.emission_energy_multiplier = a * 4.0
+		match String(tl.get_meta("mode", "led")):
+			"warm":
+				m.emission_energy_multiplier = 0.15 + 0.15 * sin(t * 0.8 + ij.x * 0.5 + ij.y * 0.3)
+			"strobe":
+				var on: bool = (ij.x + ij.y + int(t * 2.0)) % 4 == 0
+				m.emission = Color("#30ff7a") if int(t * 0.25) % 2 == 0 else Color("#ffffff")
+				m.emission_energy_multiplier = (3.0 * (1.0 - beat)) if on else 0.0
+			_:
+				var h := fmod((ij.x * 37 + ij.y * 53) / 360.0 + t * 0.25, 1.0)
+				var a := 0.35 + 0.35 * maxf(0.0, sin(t * 2.5 + ij.x * 0.7 + ij.y * 0.5))
+				m.emission = Color.from_hsv(h, 0.9, 1.0)
+				m.emission_energy_multiplier = a * 4.0
+	for p in ledwall:
+		var ij2: Vector2i = p.get_meta("ij")
+		var m3: StandardMaterial3D = p.material_override
+		var wv := sin(ij2.x * 0.5 - t * 3.0) * 0.5 + 0.5
+		m3.emission = Color.from_hsv(fmod(0.33 + ij2.y * 0.05 + t * 0.03, 1.0), 1.0, 1.0)
+		m3.emission_energy_multiplier = 2.5 * wv * (0.4 + 0.6 * (1.0 - beat))
+	for k in lasers.size():
+		var lz: Node3D = lasers[k]
+		lz.rotation = Vector3(0.25 + 0.15 * sin(t * 0.7 + k), sin(t * 0.9 + k * 1.3) * 0.7, 0)
+		lz.visible = int(t * 0.5) % 3 != 0
 	var fl := sin(t * 23.0) > 0.97 or fmod(t * 1000.0, 4200.0) < 90.0
 	for n in neons:
 		var m2: StandardMaterial3D = n.material_override
@@ -568,6 +790,7 @@ func animate(delta: float) -> void:
 		m2.emission_energy_multiplier = n.get_meta("e0") * (0.2 if fl else 1.0)
 	if neon_light: neon_light.light_energy = 0.5 if fl else 2.0
 	for k in dj_lights.size():
+		if theme == "pub" or theme == "chic": break
 		var l: OmniLight3D = dj_lights[k]
 		var a2 := t * 0.6 + k * 2.1
 		l.position = Vector3(pc.x + cos(a2) * 4.5 * sx, HC - 0.45, pc.y + sin(a2) * 5.0 * sz)
