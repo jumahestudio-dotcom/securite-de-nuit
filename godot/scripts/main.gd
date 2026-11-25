@@ -27,6 +27,7 @@ var mod_agr := 0
 var minors_q := 0
 var minor_in := false
 var hq := true
+var post: ColorRect = null
 var player: CharacterBody3D
 var pvis
 var cam: Camera3D
@@ -72,6 +73,8 @@ func _ready() -> void:
 	add_child(world)
 	world.build(Data.venue)
 	Data.ground = Callable(world, "floor_y")
+	_venue_env()
+	_setup_post()
 	ui = UIScript.new()
 	add_child(ui)
 	fight = FightScript.new()
@@ -113,6 +116,7 @@ func _ready() -> void:
 	cam.far = 200
 	add_child(cam)
 	cam.current = true
+	apply_quality()
 	if Data.goto_vestiaire and Data.CAR != null:
 		Data.goto_vestiaire = false
 		career.vestiaire()
@@ -121,30 +125,126 @@ func _ready() -> void:
 
 func _setup_env() -> void:
 	env = Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.015, 0.01, 0.03)
+	# ciel de nuit urbain : bleu profond, horizon orangé par l'éclairage de la ville
+	var sky := Sky.new()
+	var sm := ProceduralSkyMaterial.new()
+	sm.sky_top_color = Color(0.01, 0.012, 0.035)
+	sm.sky_horizon_color = Color(0.09, 0.06, 0.07)
+	sm.ground_bottom_color = Color(0.01, 0.01, 0.015)
+	sm.ground_horizon_color = Color(0.09, 0.06, 0.07)
+	sm.sun_angle_max = 0.0
+	sm.sky_energy_multiplier = 0.6
+	sky.sky_material = sm
+	env.background_mode = Environment.BG_SKY
+	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.4, 0.33, 0.55)
-	env.ambient_light_energy = 0.75
-	env.tonemap_mode = Environment.TONE_MAPPER_ACES
-	env.tonemap_exposure = 1.35
+	env.ambient_light_energy = 0.6
+	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+	env.tonemap_mode = Environment.TONE_MAPPER_AGX
+	env.tonemap_exposure = 1.25
 	env.glow_enabled = true
-	env.glow_intensity = 0.9
-	env.glow_bloom = 0.08
-	env.glow_hdr_threshold = 1.0
+	env.glow_intensity = 0.85
+	env.glow_strength = 1.05
+	env.glow_bloom = 0.06
+	env.glow_hdr_threshold = 0.9
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SCREEN
+	for i in 7:
+		env.set_glow_level(i, [0.0, 1.0, 0.9, 0.8, 0.6, 0.4, 0.2][i])
 	env.ssao_enabled = true
+	env.ssao_radius = 1.2
+	env.ssao_intensity = 2.2
+	env.ssr_enabled = true
+	env.ssr_max_steps = 64
+	env.ssr_fade_in = 0.15
+	env.ssr_fade_out = 2.0
+	env.ssr_depth_tolerance = 0.2
 	env.volumetric_fog_enabled = true
 	env.volumetric_fog_density = 0.02
 	env.volumetric_fog_albedo = Color(0.6, 0.5, 0.8)
+	env.volumetric_fog_anisotropy = 0.6
+	env.volumetric_fog_length = 48.0
+	env.adjustment_enabled = true
+	env.adjustment_contrast = 1.08
+	env.adjustment_saturation = 1.15
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
 	moon = DirectionalLight3D.new()
 	moon.light_color = Color(0.55, 0.6, 0.9)
-	moon.light_energy = 0.35
+	moon.light_energy = 0.3
 	moon.shadow_enabled = true
 	moon.rotation = Vector3(-0.9, 0.6, 0)
 	add_child(moon)
+
+## Vignettage et grain de pellicule, par-dessus l'image 3D (sous l'interface)
+func _setup_post() -> void:
+	var cl := CanvasLayer.new()
+	cl.layer = 0
+	add_child(cl)
+	post = ColorRect.new()
+	post.anchor_right = 1.0
+	post.anchor_bottom = 1.0
+	post.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sh := Shader.new()
+	sh.code = """shader_type canvas_item;
+uniform float vig = 0.55;
+uniform float grain = 0.045;
+void fragment() {
+	vec2 p = UV - 0.5;
+	float v = smoothstep(0.3, 0.85, length(p * vec2(1.0, 0.85))) * vig;
+	float n = fract(sin(dot(floor(UV * vec2(800.0, 450.0)) + floor(TIME * 24.0) * 7.13, vec2(12.9898, 78.233))) * 43758.5453);
+	float a = clamp(v + grain, 0.0, 1.0);
+	COLOR = vec4(vec3(n * grain / max(a, 0.001)), a);
+}"""
+	var mat := ShaderMaterial.new()
+	mat.shader = sh
+	post.material = mat
+	cl.add_child(post)
+
+## Ambiance propre au lieu (fumée, couleur de l'air, lumière ambiante)
+func _venue_env() -> void:
+	match world.theme:
+		"pub":
+			env.volumetric_fog_density = 0.012
+			env.volumetric_fog_albedo = Color(0.9, 0.75, 0.6)
+			env.ambient_light_color = Color(0.55, 0.42, 0.3)
+		"chic":
+			env.volumetric_fog_density = 0.01
+			env.volumetric_fog_albedo = Color(0.95, 0.85, 0.7)
+			env.ambient_light_color = Color(0.5, 0.4, 0.32)
+		"indus":
+			env.volumetric_fog_density = 0.03
+			env.volumetric_fog_albedo = Color(0.7, 0.8, 0.9)
+			env.ambient_light_color = Color(0.3, 0.33, 0.4)
+		_:
+			env.volumetric_fog_density = 0.022
+			env.volumetric_fog_albedo = Color(0.6, 0.5, 0.8)
+			env.ambient_light_color = Color(0.4, 0.33, 0.55)
+	if world.rain != null:
+		env.volumetric_fog_density += 0.006
+
+## Niveaux de qualité : 0 bas, 1 moyen, 2 haut, 3 ultra
+const QNAMES := ["Bas", "Moyen", "Haut", "Ultra"]
+func apply_quality() -> void:
+	var q: int = Data.quality
+	var vp := get_viewport()
+	env.volumetric_fog_enabled = q >= 1
+	env.ssao_enabled = q >= 1
+	env.ssr_enabled = q >= 2
+	env.ssil_enabled = q >= 3
+	env.glow_enabled = true
+	moon.shadow_enabled = q >= 1
+	vp.msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_DISABLED, Viewport.MSAA_2X, Viewport.MSAA_4X][q]
+	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if q <= 2 else Viewport.SCREEN_SPACE_AA_DISABLED
+	vp.use_taa = q >= 3
+	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR if q == 0 else Viewport.SCALING_3D_MODE_BILINEAR
+	vp.scaling_3d_scale = 0.75 if q == 0 else 1.0
+	vp.positional_shadow_atlas_size = [1024, 2048, 4096, 8192][q]
+	env.ssr_max_steps = 96 if q >= 3 else 48
+	if world != null and world.rain != null:
+		world.rain.amount = [800, 2000, 4000, 6000][q]
+	if post != null: post.visible = q >= 1
 
 func _mk_person(o: Dictionary):
 	var p = PersonScript.new()
@@ -212,6 +312,8 @@ func _ensure_world() -> void:
 	add_child(world)
 	world.build(Data.venue)
 	Data.ground = Callable(world, "floor_y")
+	_venue_env()
+	apply_quality()
 
 # =====================================================================
 #  NOUVELLE NUIT
@@ -1351,14 +1453,14 @@ func _process(delta: float) -> void:
 #  PAUSE ET RÉGLAGES
 # =====================================================================
 func _pause_menu() -> void:
-	var body := "[color=#b9b3cc]Le temps est arrêté tant que ce menu est ouvert.[/color]\n\nSensibilité de la souris : [b]%d %%[/b]\nVolume : [b]%d %%[/b]\nEffets graphiques (brouillard, ombres, occlusion) : [b]%s[/b]\nPlein écran : [b]%s[/b]" % [
-		round(sens * 100), round(audio.volume_master * 100), "activés" if hq else "désactivés",
+	var body := "[color=#b9b3cc]Le temps est arrêté tant que ce menu est ouvert.[/color]\n\nSensibilité de la souris : [b]%d %%[/b]\nVolume : [b]%d %%[/b]\nQualité graphique : [b]%s[/b]\nPlein écran : [b]%s[/b]" % [
+		round(sens * 100), round(audio.volume_master * 100), QNAMES[Data.quality],
 		"oui" if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN else "non"]
 	ui.open_panel("Pause", "", body, [
 		{"t": "Reprendre", "k": "main", "cb": _close_panel},
 		{"row": [{"t": "Souris −", "cb": func(): sens = max(0.3, sens - 0.1); _pause_menu()}, {"t": "Souris +", "cb": func(): sens = min(3.0, sens + 0.1); _pause_menu()}]},
 		{"row": [{"t": "Volume −", "cb": func(): audio.set_master(audio.volume_master - 0.1); _pause_menu()}, {"t": "Volume +", "cb": func(): audio.set_master(audio.volume_master + 0.1); _pause_menu()}]},
-		{"t": "Effets graphiques : activer / désactiver (si le jeu rame)", "cb": _toggle_hq},
+		{"t": "Qualité graphique : %s (changer — baisse si le jeu rame)" % QNAMES[Data.quality], "cb": func(): Data.quality = (Data.quality + 1) % 4; apply_quality(); _pause_menu()},
 		{"t": "Vue : %s (touche V)" % ("1re personne" if Data.fps else "3e personne"), "cb": func(): _toggle_view(); _pause_menu()},
 		{"t": "Plein écran : activer / désactiver", "cb": _toggle_fullscreen},
 		{"t": "Abandonner la nuit et revenir au menu", "k": "bad", "cb": func(): get_tree().reload_current_scene()}])

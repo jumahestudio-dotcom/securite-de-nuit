@@ -42,6 +42,7 @@ var ANIMS := {}                            # nom -> Animation (Idle, Walk, Run�
 var reserved: Array = []                   # modèles réservés (liste noire de la nuit)
 var CAR = null                 # carrière en cours (survit au rechargement de la scène)
 var goto_vestiaire := false
+var quality := 2               # qualité graphique (0 bas … 3 ultra)
 var fps := false               # vue à la première personne
 var venue := "neon"            # établissement choisi
 var diag_done := false

@@ -36,6 +36,8 @@ var tiles := []
 var ledwall := []
 var lasers := []
 var theme := "led"
+var texc := {}
+var rain: GPUParticles3D = null
 var neons := []
 var dj_lights := []
 var ball: MeshInstance3D
@@ -131,6 +133,96 @@ func _mat(c: Color, emi := Color.BLACK, e := 0.0, rough := 0.8, metal := 0.0) ->
 		m.emission = emi
 		m.emission_energy_multiplier = e
 	return m
+
+## Textures procédurales (bruit) : grain du bois, béton, plâtre, asphalte mouillé, marbre
+func _tex(kind: String) -> Dictionary:
+	if texc.has(kind): return texc[kind]
+	var n := FastNoiseLite.new()
+	n.seed = kind.hash()
+	var lo := 0.72
+	var freq := 0.03
+	match kind:
+		"wood":
+			n.noise_type = FastNoiseLite.TYPE_PERLIN; freq = 0.06; lo = 0.68
+			n.fractal_octaves = 3
+		"concrete":
+			n.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH; freq = 0.05; lo = 0.7
+			n.fractal_octaves = 5
+		"plaster":
+			n.noise_type = FastNoiseLite.TYPE_SIMPLEX; freq = 0.08; lo = 0.86
+		"asphalt":
+			n.noise_type = FastNoiseLite.TYPE_CELLULAR; freq = 0.12; lo = 0.7
+		"marble":
+			n.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH; freq = 0.02; lo = 0.8
+			n.domain_warp_enabled = true
+			n.domain_warp_amplitude = 60.0
+		"fabric":
+			n.noise_type = FastNoiseLite.TYPE_VALUE; freq = 0.4; lo = 0.82
+	n.frequency = freq
+	var g := Gradient.new()
+	g.set_color(0, Color(lo, lo, lo))
+	g.set_color(1, Color(1, 1, 1))
+	var alb := NoiseTexture2D.new()
+	alb.width = 512; alb.height = 512; alb.seamless = true
+	alb.noise = n
+	alb.color_ramp = g
+	var nrm := NoiseTexture2D.new()
+	nrm.width = 512; nrm.height = 512; nrm.seamless = true
+	nrm.noise = n
+	nrm.as_normal_map = true
+	nrm.bump_strength = 2.0 if kind != "plaster" else 1.2
+	var d := {"alb": alb, "nrm": nrm}
+	if kind == "asphalt":
+		# flaques : grandes taches lisses qui reflètent les lumières
+		var pn := FastNoiseLite.new()
+		pn.seed = 7
+		pn.frequency = 0.012
+		var pg := Gradient.new()
+		pg.offsets = PackedFloat32Array([0.0, 0.45, 0.6, 1.0])
+		pg.colors = PackedColorArray([Color(0.05, 0.05, 0.05), Color(0.08, 0.08, 0.08), Color(0.7, 0.7, 0.7), Color(0.85, 0.85, 0.85)])
+		var rt := NoiseTexture2D.new()
+		rt.width = 512; rt.height = 512; rt.seamless = true
+		rt.noise = pn
+		rt.color_ramp = pg
+		d["rough"] = rt
+	texc[kind] = d
+	return d
+
+## Habille un objet avec une texture (projection triplanaire : pas besoin de coordonnées UV)
+func surface(mi: MeshInstance3D, kind: String, scale := 0.5, rough := -1.0) -> void:
+	if mi == null: return
+	var m: StandardMaterial3D = mi.material_override
+	var d := _tex(kind)
+	m.albedo_texture = d["alb"]
+	m.normal_enabled = true
+	m.normal_texture = d["nrm"]
+	m.normal_scale = 0.6
+	m.uv1_triplanar = true
+	m.uv1_world_triplanar = true
+	m.uv1_scale = Vector3(scale, scale, scale)
+	if kind == "wood": m.uv1_scale = Vector3(scale * 0.25, scale, scale * 3.0)
+	if d.has("rough"):
+		m.roughness = 1.0
+		m.roughness_texture = d["rough"]
+		m.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	elif rough >= 0.0:
+		m.roughness = rough
+
+## Projecteur asservi (lyre) : faisceau visible dans la fumée
+func mover(p: Vector3, col: String, energy := 14.0) -> SpotLight3D:
+	var s := SpotLight3D.new()
+	s.position = p
+	s.light_color = Color(col)
+	s.light_energy = energy
+	s.spot_range = HC + 10.0
+	s.spot_angle = 14.0
+	s.spot_attenuation = 0.6
+	s.light_volumetric_fog_energy = 4.0
+	s.set_meta("mover", true)
+	s.rotation = Vector3(-PI / 2.0, 0, 0)
+	add_child(s)
+	sph(p + Vector3(0, 0.1, 0), 0.16, "#111111", "", 0.0, 0.3, 0.8)
+	return s
 
 func box(c: Vector3, s: Vector3, col: String, collide := false, emi := "", e := 0.0, rough := 0.8, metal := 0.0) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
@@ -276,12 +368,12 @@ func build(key := "neon") -> void:
 	var FW: float = max(20.0, W + 1.5)
 	var FH: float = V["fh"]
 	# ---- DEHORS ----
-	box(Vector3(0, -0.05, 14), Vector3(2 * FW + 20, 0.1, 30), "#17161c", true, "", 0.0, 0.35)
+	surface(box(Vector3(0, -0.05, 14), Vector3(2 * FW + 20, 0.1, 30), "#1d1c22", true, "", 0.0, 0.35), "asphalt", 0.15)
 	var x := -FW - 4.0
 	while x < FW + 6.0:
 		box(Vector3(x, 0.005, 11), Vector3(2, 0.01, 0.18), "#d8d2b0")
 		x += 4.0
-	box(Vector3(0, 0.06, 3), Vector3(2 * FW + 4, 0.12, 6), "#2c2a33", false, "", 0.0, 0.5)
+	surface(box(Vector3(0, 0.06, 3), Vector3(2 * FW + 4, 0.12, 6), "#3a3840", false, "", 0.0, 0.5), "concrete", 0.4, 0.45)
 	box(Vector3(0, 0.13, 6), Vector3(2 * FW + 4, 0.02, 0.25), "#4a4752")
 	x = 2.2
 	while x < 11.0:
@@ -295,8 +387,8 @@ func build(key := "neon") -> void:
 		sph(Vector3(-1.3 + i * (2.6 / 7.0), 0.86 - sin(i / 7.0 * PI) * 0.12, 1.5), 0.045, V["accent"])
 	# façade
 	var fc: String = V["facade"]
-	box(Vector3(-(2 + FW) / 2.0, FH / 2.0, -0.2), Vector3(FW - 2, FH, 0.4), fc, true)
-	box(Vector3((2 + FW) / 2.0, FH / 2.0, -0.2), Vector3(FW - 2, FH, 0.4), fc, true)
+	surface(box(Vector3(-(2 + FW) / 2.0, FH / 2.0, -0.2), Vector3(FW - 2, FH, 0.4), fc, true), "concrete" if theme == "indus" else "plaster", 0.5)
+	surface(box(Vector3((2 + FW) / 2.0, FH / 2.0, -0.2), Vector3(FW - 2, FH, 0.4), fc, true), "concrete" if theme == "indus" else "plaster", 0.5)
 	box(Vector3(0, (3.2 + FH) / 2.0, -0.2), Vector3(4, FH - 3.2, 0.4), fc)
 	if vk == "comptoir":
 		for s in [-1, 1]: box(Vector3(s * 5, 1.6, 0.01), Vector3(3, 1.6, 0.05), "#000000", false, "#ffb860", 1.5)
@@ -338,7 +430,16 @@ func build(key := "neon") -> void:
 		cyl(Vector3(lx, 2.5, 5.6), 0.07, 5.0, "#2a2a33", true)
 		box(Vector3(lx, 5, 5.2), Vector3(0.15, 0.1, 0.8), "#2a2a33")
 		sph(Vector3(lx, 4.9, 4.85), 0.16, "#000000", "#ffd27a", 3.0)
-		omni(Vector3(lx, 4.6, 4.8), "#ffcf7a", 11.0, 1.6, lx == 9.0)
+		omni(Vector3(lx, 4.6, 4.8), "#ffcf7a", 9.0, 1.0, lx == 9.0)
+		var ls := SpotLight3D.new()
+		ls.position = Vector3(lx, 4.75, 4.85)
+		ls.rotation = Vector3(-PI / 2.0, 0, 0)
+		ls.light_color = Color("#ffcf7a")
+		ls.light_energy = 6.0
+		ls.spot_range = 7.0
+		ls.spot_angle = 38.0
+		ls.light_volumetric_fog_energy = 2.5
+		add_child(ls)
 	for car in [[-16.0, "#7b1d1d"], [-9.0, "#1d3d7b"], [15.0, "#d0d0d6"], [20.5, "#232323"]]:
 		var cx: float = car[0]
 		box(Vector3(cx, 0.65, 8.5), Vector3(4.2, 0.7, 1.8), car[1], true, "", 0.0, 0.25, 0.6)
@@ -363,13 +464,19 @@ func build(key := "neon") -> void:
 	box(Vector3(0, 1, 16.5), Vector3(2 * FW + 20, 2, 1), "#120f1a", true)
 	# ---- INTÉRIEUR ----
 	var D: float = -ZB
-	box(Vector3(0, -0.05, ZB / 2.0), Vector3(2 * W, 0.1, D), V["floor"], true, "", 0.0, 0.3, 0.1)
+	var flo := box(Vector3(0, -0.05, ZB / 2.0), Vector3(2 * W, 0.1, D), V["floor"], true, "", 0.0, 0.3, 0.1)
+	match theme:
+		"led": surface(flo, "concrete", 0.3, 0.12)
+		"chic": surface(flo, "marble", 0.12, 0.08)
+		"indus": surface(flo, "concrete", 0.35, 0.55)
+		_: surface(flo, "wood", 0.5, 0.5)
 	box(Vector3(0, HC, ZB / 2.0), Vector3(2 * W, 0.1, D), "#09070d")
-	box(Vector3(-W - 0.1, HC / 2.0, ZB / 2.0), Vector3(0.3, HC, D), WC, true)
+	var wkind := "concrete" if theme == "indus" else ("fabric" if theme == "chic" else ("wood" if theme == "pub" else "plaster"))
+	surface(box(Vector3(-W - 0.1, HC / 2.0, ZB / 2.0), Vector3(0.3, HC, D), WC, true), wkind, 0.5)
 	var ez: float = Zm(-17.0)
-	box(Vector3(W + 0.1, HC / 2.0, (ZB + ez - 1.2) / 2.0), Vector3(0.3, HC, ez - 1.2 - ZB), WC, true)
-	box(Vector3(W + 0.1, HC / 2.0, (ez + 1.2) / 2.0), Vector3(0.3, HC, -(ez + 1.2)), WC, true)
-	box(Vector3(0, HC / 2.0, ZB - 0.1), Vector3(2 * W, HC, 0.3), WC, true)
+	surface(box(Vector3(W + 0.1, HC / 2.0, (ZB + ez - 1.2) / 2.0), Vector3(0.3, HC, ez - 1.2 - ZB), WC, true), wkind, 0.5)
+	surface(box(Vector3(W + 0.1, HC / 2.0, (ez + 1.2) / 2.0), Vector3(0.3, HC, -(ez + 1.2)), WC, true), wkind, 0.5)
+	surface(box(Vector3(0, HC / 2.0, ZB - 0.1), Vector3(2 * W, HC, 0.3), WC, true), wkind, 0.5)
 	if vk == "usine":
 		x = -W + 3.0
 		while x < W:
@@ -486,6 +593,7 @@ func build(key := "neon") -> void:
 	box(Vector3((txx - W) / 2.0, 0.01, (tzz + ZB) / 2.0), Vector3(txx + W - 0.2, 0.02, tzz - ZB - 0.2), "#2a3a46", false, "", 0.0, 0.15)
 	omni(Vector3((txx - W) / 2.0, HC - 0.6, (tzz + ZB) / 2.0), "#cfe9ff", 7.0, 1.2)
 	_build_theme_decor()
+	_build_atmosphere()
 	# plafonniers
 	var px := -W + 3.0
 	while px <= W - 3.0:
@@ -494,6 +602,50 @@ func build(key := "neon") -> void:
 			sph(Vector3(px, HC - 0.1, pz), 0.12, "#000000", "#ffcf9a" if theme == "pub" or theme == "chic" else NE, 3.0)
 			pz -= 6.0
 		px += 6.0
+
+# ---------- reflets (sols brillants, flaques) et pluie ----------
+func _build_atmosphere() -> void:
+	var pin := ReflectionProbe.new()
+	pin.size = Vector3(2.0 * W, HC, -ZB)
+	pin.position = Vector3(0, HC / 2.0, ZB / 2.0)
+	pin.box_projection = true
+	pin.interior = true
+	pin.update_mode = ReflectionProbe.UPDATE_ONCE
+	pin.intensity = 0.6
+	add_child(pin)
+	var pout := ReflectionProbe.new()
+	pout.size = Vector3(60, 14, 24)
+	pout.position = Vector3(0, 6, 10)
+	pout.box_projection = true
+	pout.update_mode = ReflectionProbe.UPDATE_ONCE
+	add_child(pout)
+	# pluie fine une nuit sur deux
+	if randf() < 0.5:
+		rain = GPUParticles3D.new()
+		rain.amount = 4000
+		rain.lifetime = 0.9
+		rain.position = Vector3(0, 12, 10)
+		rain.visibility_aabb = AABB(Vector3(-40, -14, -12), Vector3(80, 16, 24))
+		var pm := ParticleProcessMaterial.new()
+		pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		pm.emission_box_extents = Vector3(34, 0.2, 9)
+		pm.direction = Vector3(0.08, -1, 0)
+		pm.spread = 2.0
+		pm.initial_velocity_min = 13.0
+		pm.initial_velocity_max = 16.0
+		pm.gravity = Vector3(0, -9.8, 0)
+		rain.process_material = pm
+		var qm := QuadMesh.new()
+		qm.size = Vector2(0.012, 0.45)
+		var rm := StandardMaterial3D.new()
+		rm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		rm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		rm.albedo_color = Color(0.75, 0.8, 0.95, 0.35)
+		rm.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y
+		rm.billboard_keep_scale = true
+		qm.material = rm
+		rain.draw_pass_1 = qm
+		add_child(rain)
 
 # ---------- sol de danse et scène, différents selon l'établissement ----------
 func _build_floor_and_stage() -> void:
@@ -509,7 +661,7 @@ func _build_floor_and_stage() -> void:
 			var z0 := -6.3
 			var k := 0
 			while z0 > ZB:
-				box(Vector3(0, 0.005, z0 - 0.3), Vector3(2 * W - 0.1, 0.01, 0.58), ["#5a3a22", "#4f321c", "#62402a"][k % 3], false, "", 0.0, 0.55)
+				surface(box(Vector3(0, 0.005, z0 - 0.3), Vector3(2 * W - 0.1, 0.01, 0.58), ["#5a3a22", "#4f321c", "#62402a"][k % 3], false, "", 0.0, 0.55), "wood", 0.8, 0.45)
 				z0 -= 0.6
 				k += 1
 			for s in [-1, 1]:
@@ -533,6 +685,7 @@ func _build_floor_and_stage() -> void:
 				for j in nj:
 					var dark: bool = (i + j) % 2 == 0
 					var tl := box(Vector3(pc.x - (ni - 1) * 0.75 + i * 1.5, 0.04, pc.y - (nj - 1) * 0.75 + j * 1.5), Vector3(1.48, 0.08, 1.48), "#141210" if dark else "#efe9dc", false, "#ffcf7a", 0.0, 0.08, 0.1)
+					surface(tl, "marble", 0.3, 0.06)
 					tl.set_meta("ij", Vector2i(i, j))
 					tl.set_meta("mode", "warm")
 					tiles.append(tl)
@@ -621,7 +774,22 @@ func _build_floor_and_stage() -> void:
 				box(Vector3(spx, hh / 2.0, djz - 1.0), Vector3(1.3, hh, 1.1), "#0b0b0f", true)
 	# lumières de piste
 	if theme == "led" or theme == "indus":
-		dj_lights.append_array([omni(Vector3(-4, HC - 0.45, pc.y - 4), NE, 11.0, 3.0, true), omni(Vector3(4, HC - 0.45, pc.y), "#33e1ff", 11.0, 3.0), omni(Vector3(0, HC - 0.45, pc.y + 4), "#ffc04d", 10.0, 2.4)])
+		dj_lights.append_array([omni(Vector3(-4, HC - 0.45, pc.y - 4), NE, 11.0, 2.0, true), omni(Vector3(4, HC - 0.45, pc.y), "#33e1ff", 11.0, 2.0), omni(Vector3(0, HC - 0.45, pc.y + 4), "#ffc04d", 10.0, 1.6)])
+		# lyres au plafond, faisceaux dans la fumée
+		var nm: int = 6 if theme == "indus" else 4
+		for k in nm:
+			var mx: float = pc.x - 6.0 * sx + k * (12.0 * sx / maxf(1.0, nm - 1))
+			dj_lights.append(mover(Vector3(mx, HC - 0.25, pc.y - 5.0 * sz), [NE, "#33e1ff", "#ffffff", "#b04dff", "#30ff7a", "#ffc04d"][k % 6]))
+		# fumée sur la piste
+		var fv := FogVolume.new()
+		fv.size = Vector3(14.0 * sx, HC, 14.0 * sz)
+		fv.position = Vector3(pc.x, HC / 2.0, pc.y)
+		var fm := FogMaterial.new()
+		fm.density = 0.05 if theme == "led" else 0.08
+		fm.albedo = Color(0.9, 0.9, 1.0)
+		fm.edge_fade = 0.4
+		fv.material = fm
+		add_child(fv)
 	if theme == "indus":
 		dj_lights.append(omni(Vector3(-8, HC - 0.45, pc.y), "#b04dff", 13.0, 3.0))
 		dj_lights.append(omni(Vector3(8, HC - 0.45, pc.y - 6), "#30ff7a", 13.0, 2.6))
@@ -791,7 +959,14 @@ func animate(delta: float) -> void:
 	if neon_light: neon_light.light_energy = 0.5 if fl else 2.0
 	for k in dj_lights.size():
 		if theme == "pub" or theme == "chic": break
-		var l: OmniLight3D = dj_lights[k]
+		var l: Light3D = dj_lights[k]
+		if l.has_meta("mover"):
+			# balayage des lyres, couleurs qui changent toutes les 4 mesures
+			var sw := t * 0.7 + k * 1.1
+			l.rotation = Vector3(-PI / 2.0 + sin(sw) * 0.55, cos(sw * 0.8) * 0.6, 0)
+			l.light_color = Color.from_hsv(fmod(floor(t / 8.0) * 0.17 + k * 0.12, 1.0), 0.9, 1.0)
+			l.light_energy = 14.0 * (0.55 + 0.45 * (1.0 - beat)) if theme == "indus" else 12.0
+			continue
 		var a2 := t * 0.6 + k * 2.1
 		l.position = Vector3(pc.x + cos(a2) * 4.5 * sx, HC - 0.45, pc.y + sin(a2) * 5.0 * sz)
 		l.light_color = Color.from_hsv(fmod(t * 0.08 + k / 3.0, 1.0), 1.0, 1.0)
