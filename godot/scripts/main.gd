@@ -188,14 +188,29 @@ func _setup_post() -> void:
 	post.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var sh := Shader.new()
 	sh.code = """shader_type canvas_item;
+uniform sampler2D scr : hint_screen_texture, filter_linear_mipmap;
 uniform float vig = 0.55;
-uniform float grain = 0.045;
+uniform float grain = 0.04;
+uniform float pain = 0.0;
+uniform float daze = 0.0;
+uniform float hit = 0.0;
 void fragment() {
-	vec2 p = UV - 0.5;
-	float v = smoothstep(0.3, 0.85, length(p * vec2(1.0, 0.85))) * vig;
+	vec2 uv = SCREEN_UV;
+	vec2 dir = UV - 0.5;
+	float ca = 0.006 * hit + 0.004 * daze;
+	float lod = daze * 2.2;
+	vec3 c;
+	c.r = textureLod(scr, uv + dir * ca, lod).r;
+	c.g = textureLod(scr, uv, lod).g;
+	c.b = textureLod(scr, uv - dir * ca, lod).b;
+	float g = dot(c, vec3(0.299, 0.587, 0.114));
+	c = mix(c, vec3(g), daze * 0.6);
+	float v = smoothstep(0.3, 0.85, length(dir * vec2(1.0, 0.85)));
+	c *= 1.0 - v * (vig + daze * 0.45);
+	c = mix(c, vec3(0.55, 0.0, 0.0), v * pain * 0.75);
 	float n = fract(sin(dot(floor(UV * vec2(800.0, 450.0)) + floor(TIME * 24.0) * 7.13, vec2(12.9898, 78.233))) * 43758.5453);
-	float a = clamp(v + grain, 0.0, 1.0);
-	COLOR = vec4(vec3(n * grain / max(a, 0.001)), a);
+	c += (n - 0.5) * grain;
+	COLOR = vec4(c, 1.0);
 }"""
 	var mat := ShaderMaterial.new()
 	mat.shader = sh
@@ -255,7 +270,7 @@ func _mk_person(o: Dictionary):
 func _menu() -> void:
 	phase = "menu"
 	ui.show_screen("Sécurité de nuit 3D",
-		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité de nuit, de 23 h à 5 h, dans quatre établissements : un bar de quartier, une discothèque, un club chic et un club électro géant.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nV : vue 1re / 3e personne  ·  Maj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive  ·  A : frapper  ·  Tab : verrouiller un adversaire  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
+		"[color=#b9b3cc]jumahestudi — prototype Godot[/color]\n\nTu es agent de sécurité de nuit, de 23 h à 5 h, dans quatre établissements : un bar de quartier, une discothèque, un club chic et un club électro géant.\n\nD'abord [b]la porte[/b] : chaque client s'avance. Observe-le, contrôle sa pièce, propose une palpation, pose une question, puis décide. Ensuite [b]la salle[/b] : fais tes rondes, rejoins les incidents à pied et interviens. Chaque décision est jugée selon le droit français.\n\n[b]Commandes[/b]\nZQSD / WASD : se déplacer  ·  Souris : regarder (clique dans le jeu)\nV : vue 1re / 3e personne  ·  Maj : courir  ·  E : parler / contrôler / intervenir\nR : radio, envoyer un collègue (en salle)  ·  Échap : libérer la souris / fermer\n\n[b]Baston[/b]\nClic gauche : repousser  ·  Clic droit : saisir (clé de bras)  ·  F maintenu : garde\nEspace : esquive (ou se relever)  ·  A : frapper (regard haut = visage, bas = corps)  ·  H : secourir (PLS)  ·  Tab : verrouiller un adversaire  ·  T : injonction  ·  E : escorter dehors  ·  R : renfort\nChaque geste est jugé : un agent n'a pas plus de droits qu'un citoyen.",
 		_menu_buttons())
 
 func _menu_buttons() -> Array:
@@ -836,7 +851,7 @@ func _refuse(k: String) -> void:
 		for m in c["mates"]:
 			m.path = []; m.on_arrive = null; m.anim = "fight"
 		res.append(["b", "Il ne l'accepte pas : il revient vers toi, le poing serré…", ""])
-		var fsrc := {"npc": n, "mates": c["mates"], "name": c["first"], "weapon": c["weapon"] and c["found"] == "", "title": "Agression à la porte", "door": true}
+		var fsrc := {"npc": n, "mates": c["mates"], "name": c["first"], "weapon": c["weapon"] and c["found"] == "", "title": "Agression à la porte", "door": true, "drunk": int(c.get("iv", 0)) >= 1}
 		_clampg()
 		cur = null
 		served += 1
@@ -1318,6 +1333,7 @@ func _unhandled_input(e: InputEvent) -> void:
 				KEY_T: fight.verbal()
 				KEY_E: fight.escort()
 				KEY_R: fight.backup()
+				KEY_H: fight.aid()
 				KEY_ESCAPE: _pause_menu()
 			return
 	if e is InputEventMouseButton and e.pressed and not ui.panel_open and not ui.screen_open and (phase == "door" or phase == "salle"):
@@ -1346,7 +1362,7 @@ func _physics_process(delta: float) -> void:
 		var run := Input.is_physical_key_pressed(KEY_SHIFT)
 		var down: bool = pvis.anim == "fallen"
 		if mv.length() > 0.01 and not down:
-			var sp: float = (3.6 if run else 2.2) if fight.active else (5.4 if run else 2.9)
+			var sp: float = ((3.6 if run else 2.2) * fight.move_mult()) if fight.active else (5.4 if run else 2.9)
 			player.velocity = mv * sp
 			if not fight.active and not Data.fps: pvis.yaw = pvis.turn_to(pvis.yaw, atan2(mv.x, mv.z), delta * 10.0)
 			pvis.anim = "walk"
@@ -1377,6 +1393,7 @@ func _physics_process(delta: float) -> void:
 		if fight.shake > 0:
 			fight.shake = max(0.0, fight.shake - delta * 0.8)
 			head += Vector3(randf() - 0.5, randf() - 0.5, randf() - 0.5) * fight.shake * 0.5
+		head += _daze_wobble()
 		cam.position = head
 		var cpf := cos(cam_pitch)
 		cam.look_at(head + Vector3(sin(cam_yaw) * cpf, -sin(cam_pitch), cos(cam_yaw) * cpf))
@@ -1395,11 +1412,23 @@ func _physics_process(delta: float) -> void:
 	if fight.shake > 0:
 		fight.shake = max(0.0, fight.shake - delta * 0.8)
 		eye += Vector3(randf() - 0.5, randf() - 0.5, randf() - 0.5) * fight.shake
-	cam.position = eye
+	cam.position = eye + _daze_wobble()
 	cam.look_at(tg + Vector3(sin(cam_yaw) * 1.2, -0.15, cos(cam_yaw) * 1.2))
+
+## Sonné : la vision tangue
+func _daze_wobble() -> Vector3:
+	if not fight.active or fight.daze <= 0.0: return Vector3.ZERO
+	var tt := Time.get_ticks_msec() / 1000.0
+	return Vector3(sin(tt * 1.7), sin(tt * 2.3) * 0.5, cos(tt * 1.3)) * (fight.daze / 100.0) * 0.18
 
 func _process(delta: float) -> void:
 	world.animate(delta)
+	if post != null and post.visible:
+		var pm: ShaderMaterial = post.material
+		var fa: bool = fight.active
+		pm.set_shader_parameter("pain", clampf(fight.pain / 100.0, 0.0, 1.0) if fa else 0.0)
+		pm.set_shader_parameter("daze", clampf(fight.daze / 100.0, 0.0, 1.0) if fa else 0.0)
+		pm.set_shader_parameter("hit", fight.hit_fx if fa else 0.0)
 	if phase == "door" or phase == "salle":
 		life.step(delta)
 	if player != null:

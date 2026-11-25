@@ -25,6 +25,18 @@ var sta := 100.0
 var cd := 0.0
 var dodge := 0.0
 var dodge_dir := Vector3.ZERO
+# état physique de l'agent (réalisme)
+var daze := 0.0              # sonné (coups à la tête) : vision trouble, gestes lents, chute à 100
+var pain := 0.0              # douleur ressentie (bords de l'écran rouges)
+var bleed := 0.0             # saignement (coupure) : perte de vie continue
+var collared = null          # adversaire qui te tient par le col
+var hand_hurt := false       # main blessée en frappant un visage
+var p_down := 0.0            # au sol, temps restant avant de se relever
+var hit_fx := 0.0            # choc visuel au moment d'un coup reçu
+var ring: Array = []         # curieux en cercle autour de la bagarre
+
+const WIND := {"droit": 0.45, "crochet": 0.65, "saisie": 0.5, "tete": 0.4, "pied": 0.75, "lame": 0.55}
+const ATK_TXT := {"droit": "COUP DROIT", "crochet": "CROCHET", "saisie": "SAISIE", "tete": "COUP DE TÊTE", "pied": "COUP DE PIED", "lame": "COUP DE LAME"}
 
 func _now() -> float:
 	return Time.get_ticks_msec() / 1000.0
@@ -43,7 +55,8 @@ func _mk_foe(npc, o := {}) -> Dictionary:
 		"agit": o.get("agit", randf_range(62, 95)), "aggr": o.get("aggr", randf_range(0.45, 1.0)),
 		"weapon": o.get("weapon", false), "wname": o.get("wname", "couteau"), "st": "active", "wind": 0.0, "cd": randf_range(0.6, 1.6),
 		"last_atk": -99.0, "stag": 0.0, "ctrl_t": 0.0, "ctrl_by": null, "warned": 0, "other": null,
-		"pushes": 0, "hit_by": 0, "aggro": o.get("aggro", false)}
+		"pushes": 0, "hit_by": 0, "aggro": o.get("aggro", false), "drunk": o.get("drunk", randf() < 0.45), "atk": "",
+		"down_t": 0.0, "ko_t": randf_range(15.0, 40.0), "head": false, "pls": false, "no_aid": false, "fled": false}
 
 func start(s: Dictionary) -> void:
 	game.ui.close_panel()
@@ -56,9 +69,11 @@ func start(s: Dictionary) -> void:
 	log_lines = []
 	lock = null
 	stats = {"cut": 0, "disarm": 0, "push": 0, "grab": 0, "grab_ok": 0, "verb": 0, "verb_ok": 0, "hit_sd": 0, "hit_nosd": 0, "hit_down": 0,
-		"blocked": 0, "dodged": 0, "taken": 0.0, "long_pin": 0, "escort": 0, "col_ctrl": 0}
+		"blocked": 0, "dodged": 0, "taken": 0.0, "long_pin": 0, "escort": 0, "col_ctrl": 0,
+		"head_hits": 0, "body_hits": 0, "hit_flee": 0, "aid": 0, "fled": 0, "collared": 0, "head_taken": 0, "p_down": 0}
 	hp = max(hp, 60.0)
 	sta = 100.0
+	daze = 0.0; pain = 0.0; bleed = 0.0; collared = null; hand_hurt = false; p_down = 0.0; hit_fx = 0.0
 	if s.has("inc"):
 		var inc: Dictionary = s["inc"]
 		inc["st"] = "fight"
@@ -74,7 +89,7 @@ func start(s: Dictionary) -> void:
 		elif foes.size() > 0:
 			foes[0]["aggro"] = true
 	else:
-		foes.append(_mk_foe(s["npc"], {"aggro": true, "name": s.get("name", "Le client"), "agit": randf_range(80, 98), "aggr": randf_range(0.75, 1.0), "weapon": s.get("weapon", false)}))
+		foes.append(_mk_foe(s["npc"], {"aggro": true, "name": s.get("name", "Le client"), "agit": randf_range(80, 98), "aggr": randf_range(0.75, 1.0), "weapon": s.get("weapon", false), "drunk": s.get("drunk", randf() < 0.6)}))
 		for m in s.get("mates", []):
 			if randf() < 0.5:
 				foes.append(_mk_foe(m, {"aggro": true, "agit": randf_range(55, 85), "aggr": randf_range(0.4, 0.8)}))
@@ -96,6 +111,29 @@ func start(s: Dictionary) -> void:
 			c.anim = "phone"
 			c.yaw = atan2(fight_pos.x - c.position.x, fight_pos.z - c.position.z)
 			witnesses.append(c)
+	# les curieux s'approchent et font cercle (sans s'interposer)
+	ring = []
+	var k2 := 0
+	for c in game.crowd:
+		if ring.size() >= 8: break
+		if not is_instance_valid(c) or c in witnesses: continue
+		var is_f := false
+		for o in foes:
+			if o["npc"] == c: is_f = true
+		if is_f or c.position.distance_to(fight_pos) > 11.0: continue
+		var ang := k2 * TAU / 8.0 + randf_range(-0.2, 0.2)
+		var rp := Vector2(fight_pos.x + cos(ang) * 3.4, fight_pos.z + sin(ang) * 3.4)
+		var fp := fight_pos
+		var look := func(q):
+			q.anim = ["talk", "phone", "idle"].pick_random()
+			q.yaw = atan2(fp.x - q.position.x, fp.z - q.position.z)
+		c.walk_to([rp], look)
+		ring.append(c)
+		k2 += 1
+	for o in foes:
+		if o["drunk"]:
+			o["npc"].sway = 0.8
+			o["sta"] = 75.0
 	game.ui.flash(Color(1, 0.2, 0.2, 0.25))
 	_log("Tu arrives au contact." if s.has("inc") else "Le client se jette sur toi.")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -128,6 +166,21 @@ func _target(rng: float, sts: Array, cone := 0.85):
 			best = o
 	return best
 
+## Visée : on frappe au visage quand on regarde à hauteur de tête, au corps sinon
+func aim_head() -> bool:
+	return game.cam_pitch < (0.12 if Data.fps else 0.22)
+
+## Vitesse de déplacement de l'agent pendant la bagarre (fatigue, sonné, tenu au col, au sol)
+func move_mult() -> float:
+	if p_down > 0 or collared != null: return 0.0
+	var m := 1.0
+	if sta < 20: m *= 0.6
+	m *= 1.0 - minf(daze, 90.0) / 180.0
+	return m
+
+func busy() -> bool:
+	return p_down > 0
+
 func _self_def(o: Dictionary) -> bool:
 	return _now() - o["last_atk"] < 2.6 or (o["weapon"] and o["st"] == "active")
 
@@ -141,8 +194,20 @@ func _allies_near(o: Dictionary) -> int:
 #  ACTIONS DU JOUEUR
 # =====================================================================
 func push() -> void:
-	if cd > 0 or sta < 10: return
+	if cd > 0 or sta < 10 or busy(): return
 	cd = 0.45; sta -= 12
+	if collared != null:
+		var co: Dictionary = collared
+		if randf() < 0.45 + sta / 250.0 + (0.2 if co["drunk"] else 0.0):
+			collared = null
+			co["stag"] = 0.6
+			co["npc"].position += _fwd() * 0.7
+			game.pvis.act("Shove", 0.45)
+			_log("Tu te dégages de la prise de %s." % co["name"])
+		else:
+			sta -= 8
+			_log("%s te tient toujours par le col !" % co["name"])
+		return
 	game.pvis.act("Shove", 0.45)
 	game.audio.sfx("whoosh")
 	var o = _target(1.6, ["active", "calm"])
@@ -160,34 +225,80 @@ func push() -> void:
 	_log("Tu repousses %s." % o["name"])
 
 func punch() -> void:
-	if cd > 0 or sta < 10: return
-	cd = 0.55; sta -= 15
+	if cd > 0 or sta < 10 or busy(): return
+	var head := aim_head()
+	cd = 0.55 if not hand_hurt else 0.8
+	sta -= 15 if head else 12
 	game.pvis.act("Punch", 0.5)
-	var o = _target(1.45, ["active", "calm", "controlled", "down", "grabbed"])
+	var o = _target(1.45, ["active", "calm", "controlled", "down", "grabbed", "flee"])
 	if o == null:
 		_log("Ton coup part dans le vide.")
 		return
 	var lawful: bool = o["st"] == "active" and _self_def(o)
-	if o["st"] in ["down", "controlled", "calm"]: stats["hit_down"] += 1
-	elif lawful: stats["hit_sd"] += 1
-	else: stats["hit_nosd"] += 1
-	o["hp"] -= 24; o["hit_by"] += 1; o["aggro"] = true; o["stag"] = 0.9; o["wind"] = 0.0; o["sta"] -= 15
+	if o["st"] in ["down", "controlled", "calm"]:
+		stats["hit_down"] += 1
+	elif o["st"] == "flee":
+		stats["hit_flee"] += 1
+		stats["hit_nosd"] += 1
+	elif lawful:
+		stats["hit_sd"] += 1
+	else:
+		stats["hit_nosd"] += 1
+	var k := 0.5 if hand_hurt else 1.0
+	o["hit_by"] += 1; o["aggro"] = true; o["wind"] = 0.0; o["atk"] = ""
 	o["agit"] = clamp(o["agit"] + (2 if lawful else 12), 0, 100)
+	if head:
+		stats["head_hits"] += 1
+		o["hp"] -= 22 * k; o["stag"] = 0.9; o["sta"] -= 10
+		_log("Tu frappes %s au visage." % o["name"])
+		# un coup au visage peut faire tomber net, et la tête heurte le sol
+		var ko_p: float = (0.1 + (100.0 - o["sta"]) / 500.0 + (0.12 if o["drunk"] else 0.0)) * k
+		if o["hp"] <= 0 or randf() < ko_p:
+			_knock_out(o)
+		if not hand_hurt and randf() < 0.07:
+			hand_hurt = true
+			_log("Douleur vive : tu t'es blessé à la main en frappant.")
+	else:
+		stats["body_hits"] += 1
+		o["hp"] -= 10 * k; o["sta"] -= 28 * k; o["stag"] = 1.3
+		_log("Tu frappes %s au ventre : il se plie en deux." % o["name"])
+		if o["hp"] <= 0: _knock_out(o)
 	shake = 0.12
-	o["npc"].act("Hit", 0.6)
+	if o["st"] != "down": o["npc"].act("Hit", 0.6)
 	o["npc"].position += _fwd() * 0.4
 	game.audio.sfx("punch")
 	_hitstop(0.06)
-	_log("Tu frappes %s." % o["name"])
-	if o["hp"] <= 0 and o["st"] != "down":
-		o["st"] = "down"
-		o["npc"].anim = "fallen"
-		o["npc"].act("", 0)
-		_log("%s s'effondre et ne bouge plus." % o["name"])
-		game.ui.flash(Color(1, 0, 0, 0.3))
+
+func _knock_out(o: Dictionary) -> void:
+	if o["st"] == "down": return
+	o["st"] = "down"
+	o["down_t"] = 0.0
+	o["head"] = randf() < 0.4
+	o["npc"].anim = "fallen"
+	o["npc"].act("", 0)
+	if collared != null and is_same(collared, o): collared = null
+	_log("%s s'effondre%s. (H : PLS et appel du 15)" % [o["name"], " — sa tête heurte violemment le sol" if o["head"] else ""])
+	game.ui.flash(Color(1, 0, 0, 0.3))
+
+## Secourir une personne au sol : position latérale de sécurité et appel du SAMU
+func aid() -> void:
+	if busy(): return
+	var P: Vector3 = _p().position
+	for o in foes:
+		if o["st"] != "down" or o["pls"]: continue
+		if o["npc"].position.distance_to(P) > 2.0: continue
+		o["pls"] = true
+		stats["aid"] += 1
+		cd = 2.0
+		game.pvis.act("Kneel", 1.6)
+		game._set_radio("Toi : « Une personne inconsciente, elle respire, je la mets en PLS. Appelez le 15 ! »")
+		game.audio.sfx("radio")
+		_log("Tu mets %s en position latérale de sécurité. Le 15 est appelé." % o["name"])
+		return
+	_log("Personne à secourir à côté de toi.")
 
 func grab() -> void:
-	if cd > 0 or sta < 15: return
+	if cd > 0 or sta < 15 or busy(): return
 	cd = 0.6; sta -= 18
 	game.pvis.act("Grab", 0.45)
 	var o = _target(1.3, ["active", "calm"])
@@ -195,7 +306,7 @@ func grab() -> void:
 		_log("Tu attrapes le vide.")
 		return
 	stats["grab"] += 1
-	var p: float = 0.18 + (100.0 - o["sta"]) / 140.0 + (0.35 if o["stag"] > 0 else 0.0) + _allies_near(o) * 0.18 - o["agit"] / 320.0 + (0.5 if o["st"] == "calm" else 0.0) - (0.15 if o["weapon"] else 0.0)
+	var p: float = 0.18 + (0.12 if o["drunk"] else 0.0) + (100.0 - o["sta"]) / 140.0 + (0.35 if o["stag"] > 0 else 0.0) + _allies_near(o) * 0.18 - o["agit"] / 320.0 + (0.5 if o["st"] == "calm" else 0.0) - (0.15 if o["weapon"] else 0.0)
 	if randf() < clamp(p, 0.05, 0.95):
 		stats["grab_ok"] += 1
 		o["st"] = "grabbed"; o["wind"] = 0.0; o["ctrl_t"] = 0.0
@@ -238,7 +349,11 @@ func verbal() -> void:
 	_log(["« Calmez-vous ! Ça s'arrête maintenant ! »", "« Sécurité ! On se sépare ! »", "« Recule ! Recule ! »"].pick_random())
 
 func do_dodge(mv: Vector3) -> void:
-	if sta < 20 or dodge > 0: return
+	if p_down > 0:
+		# se relever plus vite
+		p_down = maxf(0.0, p_down - 0.6)
+		return
+	if sta < 20 or dodge > 0 or collared != null: return
 	sta -= 22
 	dodge = 0.38
 	dodge_dir = mv if mv.length() > 0.01 else -_fwd()
@@ -308,10 +423,31 @@ func step(dt: float, mv: Vector3) -> void:
 	t += dt
 	vcd = max(0.0, vcd - dt)
 	cd = max(0.0, cd - dt)
-	var blocking := Input.is_physical_key_pressed(KEY_F) and sta > 0
-	sta = clamp(sta + (-9.0 if blocking else 16.0) * dt, 0, 100)
+	var blocking := Input.is_physical_key_pressed(KEY_F) and sta > 0 and p_down <= 0
+	# une vraie bagarre épuise vite : la récupération baisse au fil des secondes
+	var fatigue: float = clampf(1.0 - t / 70.0, 0.35, 1.0)
+	sta = clamp(sta + (-9.0 if blocking else 16.0 * fatigue * (1.0 - minf(pain, 80.0) / 200.0)) * dt, 0, 100)
+	daze = maxf(0.0, daze - 7.0 * dt)
+	pain = maxf(0.0, pain - 12.0 * dt)
+	hit_fx = maxf(0.0, hit_fx - 2.5 * dt)
+	if bleed > 0:
+		hp -= bleed * dt * 0.5
 	var pl: CharacterBody3D = _p()
 	var P := pl.position
+	if p_down > 0:
+		p_down -= dt
+		game.pvis.anim = "fallen"
+		if p_down <= 0:
+			game.pvis.anim = "fight"
+			_log("Tu te relèves, encore sonné.")
+	if collared != null:
+		var co: Dictionary = collared
+		if not is_instance_valid(co["npc"]) or co["st"] != "active":
+			collared = null
+		else:
+			var cf: Vector3 = co["npc"].position - P
+			cf.y = 0
+			if cf.length() > 0.7: co["npc"].position = P + cf.normalized() * 0.65
 	if dodge > 0:
 		dodge -= dt
 		pl.velocity = dodge_dir * 6.5
@@ -329,7 +465,7 @@ func step(dt: float, mv: Vector3) -> void:
 		var n = o["npc"]
 		if not is_instance_valid(n): continue
 		o["stag"] = max(0.0, o["stag"] - dt)
-		o["sta"] = clamp(o["sta"] + 5 * dt, 0, 100)
+		o["sta"] = clamp(o["sta"] + (5.0 * fatigue - 1.5) * dt, 0, 100)
 		var d3: Vector3 = P - n.position
 		d3.y = 0
 		var d := d3.length()
@@ -368,10 +504,43 @@ func step(dt: float, mv: Vector3) -> void:
 				n.anim = "raise"
 				o["ctrl_t"] += dt
 				continue
+			"down":
+				o["down_t"] += dt
+				n.anim = "fallen"
+				if not o["pls"] and o["down_t"] > 25.0 and not o["no_aid"]:
+					o["no_aid"] = true
+					_log("%s est toujours inconscient au sol, personne ne s'en occupe…" % o["name"])
+				if not o["head"] and o["down_t"] > o["ko_t"]:
+					o["st"] = "calm"; o["ctrl_t"] = 0.0; o["agit"] = 15.0
+					n.anim = "raise"
+					_log("%s reprend ses esprits, groggy." % o["name"])
+				continue
+			"flee":
+				continue
 			"active":
 				pass
 			_:
 				continue
+		# à bout de souffle et en infériorité numérique, il préfère partir
+		if not o["weapon"] and o["sta"] < 35 and t > 6.0 and _allies_near(o) + 1 >= 2 and randf() < 0.3 * dt:
+			o["st"] = "flee"; o["fled"] = true; o["wind"] = 0.0
+			stats["fled"] += 1
+			if collared != null and is_same(collared, o): collared = null
+			n.run = true
+			var pts: Array = game.world.route(n.position, Vector3(randf_range(-0.5, 0.5), 0, 1.5))
+			pts.append(Vector2(14, 6)); pts.append(Vector2(30, 6))
+			var oo: Dictionary = o
+			var gone := func(q):
+				oo["st"] = "out"
+				q.queue_free()
+			n.walk_to(pts, gone)
+			_log("%s prend la fuite vers la sortie." % o["name"])
+			continue
+		# l'alcool fait tituber, parfois tomber tout seul
+		if o["drunk"] and randf() < 0.02 * dt and o["stag"] <= 0:
+			o["stag"] = 1.2
+			n.act("Hit", 0.8)
+			_log("%s titube et manque de tomber." % o["name"])
 		# désescalade naturelle
 		o["agit"] = clamp(o["agit"] - (0.3 if o["weapon"] else 1.1) * dt - (2.0 * dt if o["sta"] < 30 else 0.0), 0, 100)
 		if o["agit"] < 22:
@@ -405,46 +574,23 @@ func step(dt: float, mv: Vector3) -> void:
 				continue
 		var ty := atan2(tx.x - n.position.x, tx.z - n.position.z)
 		n.yaw = n.turn_to(n.yaw, ty, dt * 8.0)
-		# élan puis coup
+		# élan puis coup (le type de coup se voit à l'élan)
 		if o["wind"] > 0:
 			o["wind"] -= dt
 			n.act("Windup", 0.1)
 			if o["wind"] <= 0:
-				n.act("Punch", 0.45)
-				o["cd"] = randf_range(1.3, 2.6) / o["aggr"]
+				var kind: String = o["atk"] if o["atk"] != "" else "droit"
+				o["atk"] = ""
+				n.act("Punch" if kind != "saisie" else "Grab", 0.45)
+				o["cd"] = randf_range(1.3, 2.6) / o["aggr"] * (0.55 if collared != null and is_same(collared, o) else 1.0)
 				if vs_foe:
 					if td < 1.6:
 						other["hp"] -= 6
 						other["npc"].act("Hit", 0.4)
+						if other["hp"] <= 0: _knock_out(other)
 					continue
 				o["last_atk"] = _now()
-				if d < 1.6:
-					if dodge > 0:
-						stats["dodged"] += 1
-						_log("Tu esquives le coup de %s." % o["name"])
-					else:
-						var dmg: float = 26.0 if o["weapon"] else randf_range(6, 10)
-						if o["weapon"] and game.career.eq("gilet"): dmg *= 0.4
-						if o["weapon"] and game.career.eq("gants"): dmg *= 0.85
-						if blocking and not o["weapon"]:
-							dmg *= 0.18
-							stats["blocked"] += 1
-							sta -= 10
-						elif blocking:
-							dmg *= 0.6
-						hp -= dmg
-						stats["taken"] += dmg
-						shake = 0.08 if blocking else 0.22
-						game.audio.sfx("block" if blocking else "punch")
-						if not blocking:
-							var back: Vector3 = -d3.normalized() * -0.25
-							pl.position += Vector3(back.x, 0, back.z)
-							_hitstop(0.05)
-						if not blocking: game.pvis.act("Hit", 0.4)
-						game.ui.flash(Color(1, 0, 0, 0.45) if o["weapon"] else Color(1, 0.15, 0.15, 0.25))
-						if o["weapon"]: _log("%s te touche avec son %s !" % [o["name"], o["wname"]])
-						elif blocking: _log("Tu bloques le coup de %s." % o["name"])
-						else: _log("%s te frappe !" % o["name"])
+				_resolve_attack(o, kind, d, d3, blocking, pl)
 			continue
 		var reach := 1.0 if vs_foe else 1.15
 		if td > reach:
@@ -456,8 +602,10 @@ func step(dt: float, mv: Vector3) -> void:
 		else:
 			n.anim = "fight"
 		o["cd"] -= dt
-		if td < 1.7 and o["cd"] <= 0 and (vs_foe or atk < 2) and randf() < o["aggr"] * (o["agit"] / 100.0) + 0.15:
-			o["wind"] = 0.6
+		if td < 1.9 and o["cd"] <= 0 and (vs_foe or atk < 2) and randf() < o["aggr"] * (o["agit"] / 100.0) + 0.15:
+			var kind := _pick_attack(o, td, vs_foe)
+			o["atk"] = kind
+			o["wind"] = WIND[kind] * (1.3 if o["drunk"] else 1.0)
 		elif o["cd"] <= 0:
 			o["cd"] = 0.4
 	_step_colleagues(dt)
@@ -466,7 +614,7 @@ func step(dt: float, mv: Vector3) -> void:
 		return
 	var done := true
 	for o in foes:
-		if not (o["st"] == "out" or o["st"] == "down" or (o["st"] == "controlled" and o["ctrl_by"] != null)):
+		if not (o["st"] == "out" or o["st"] == "flee" or o["st"] == "down" or (o["st"] == "controlled" and o["ctrl_by"] != null)):
 			done = false
 	if done:
 		if end_t < 0: end_t = t
@@ -477,6 +625,108 @@ func step(dt: float, mv: Vector3) -> void:
 	if ui_t > 0.15:
 		ui_t = 0
 		_hud()
+
+func _pick_attack(o: Dictionary, td: float, vs_foe: bool) -> String:
+	if o["weapon"]: return "lame"
+	if vs_foe: return ["droit", "crochet"].pick_random()
+	var opts := [["droit", 3.0], ["crochet", 3.5]]
+	if td < 1.1: opts.append(["saisie", 2.5])
+	if td < 0.9: opts.append(["tete", 1.0])
+	if td > 1.1: opts.append(["pied", 1.0])
+	var tot := 0.0
+	for x in opts: tot += x[1]
+	var r := randf() * tot
+	for x in opts:
+		r -= x[1]
+		if r <= 0.0: return x[0]
+	return "droit"
+
+## Ce que fait réellement le coup de l'adversaire, selon ta défense
+func _resolve_attack(o: Dictionary, kind: String, d: float, d3: Vector3, blocking: bool, pl: CharacterBody3D) -> void:
+	var reach: float = {"droit": 1.6, "crochet": 1.5, "saisie": 1.25, "tete": 1.0, "pied": 1.95, "lame": 1.6}.get(kind, 1.6)
+	if d > reach:
+		_log("%s frappe dans le vide." % o["name"])
+		return
+	if o["drunk"] and randf() < 0.3:
+		o["stag"] = 0.8
+		_log("%s, ivre, rate complètement son coup." % o["name"])
+		return
+	if dodge > 0 and kind != "tete":
+		stats["dodged"] += 1
+		_log("Tu esquives : %s de %s." % [ATK_TXT[kind].to_lower(), o["name"]])
+		return
+	var blk := blocking and p_down <= 0
+	var dmg := 0.0
+	var dz := 0.0
+	match kind:
+		"saisie":
+			if collared == null:
+				collared = o
+				stats["collared"] += 1
+				sta -= 10
+				_log("%s t'attrape par le col ! (clic gauche : se dégager)" % o["name"])
+			return
+		"droit":
+			dmg = randf_range(7, 10); dz = 14.0
+			if blk:
+				dmg *= 0.15; dz = 0.0
+		"crochet":
+			dmg = randf_range(9, 13); dz = 28.0
+			if blk:
+				dmg *= 0.3; dz = 4.0; sta -= 6
+		"tete":
+			dmg = 14.0; dz = 45.0
+			if blk:
+				dmg *= 0.5; dz = 20.0
+		"pied":
+			dmg = 12.0 if p_down <= 0 else 16.0
+			dz = 6.0 if p_down <= 0 else 18.0
+			if blk:
+				dmg *= 0.5; dz = 0.0
+			var push3: Vector3 = -d3.normalized() * 0.6
+			pl.position += Vector3(push3.x, 0, push3.z)
+		"lame":
+			dmg = 26.0
+			if game.career.eq("gilet"): dmg *= 0.4
+			if game.career.eq("gants"): dmg *= 0.85
+			if blk:
+				dmg *= 0.6
+				bleed += 1.5
+				_log("Tu pares la lame avec l'avant-bras : coupure profonde.")
+			else:
+				bleed += 3.0
+			stats["cut"] += 1
+	if blk and kind != "lame":
+		stats["blocked"] += 1
+		sta -= 10
+	hp -= dmg
+	stats["taken"] += dmg
+	pain = minf(100.0, pain + dmg * 3.0)
+	if dz > 0:
+		daze += dz
+		stats["head_taken"] += 1
+	hit_fx = 1.0 if not blk else 0.3
+	shake = 0.08 if blk else 0.25
+	game.audio.sfx("block" if blk else ("hurt" if kind == "lame" else "punch"))
+	if not blk:
+		var back: Vector3 = -d3.normalized() * -0.25
+		pl.position += Vector3(back.x, 0, back.z)
+		_hitstop(0.05)
+		if p_down <= 0: game.pvis.act("Hit", 0.4)
+	game.ui.flash(Color(1, 0, 0, 0.45) if kind == "lame" else Color(1, 0.15, 0.15, 0.25))
+	if kind == "lame": _log("%s te touche avec son %s !" % [o["name"], o["wname"]])
+	elif blk: _log("Tu bloques : %s de %s." % [ATK_TXT[kind].to_lower(), o["name"]])
+	else: _log("%s te touche : %s !" % [o["name"], ATK_TXT[kind].to_lower()])
+	# trop de coups à la tête : tu tombes
+	if daze >= 100.0 and p_down <= 0:
+		p_down = 3.5
+		daze = 55.0
+		collared = null
+		stats["p_down"] += 1
+		game.pvis.act("", 0)
+		game.pvis.anim = "fallen"
+		_log("Tu t'effondres, sonné ! (Espace : te relever)")
+		game.ui.flash(Color(0, 0, 0, 0.7))
 
 func _step_colleagues(dt: float) -> void:
 	for a in game.colleagues:
@@ -538,15 +788,27 @@ func _update_tag(o: Dictionary) -> void:
 		"down": col = Color(1, 0.2, 0.2); txt = o["name"] + "\ninconscient"
 	if lock != null and is_same(lock, o):
 		txt = "> " + txt + " <"
+	if st == "flee":
+		col = Color(0.8, 0.8, 0.8); txt = o["name"] + "\ns'enfuit"
 	if st == "active" and o["wind"] > 0:
 		col = Color(1, 0.1, 0.1)
-		txt = "!! " + txt
+		txt = "!! %s !!\n" % ATK_TXT.get(o["atk"], "COUP") + txt
+	elif st == "active" and o["drunk"]:
+		txt += "\n(ivre)"
 	n.set_tag(txt, col)
 
 func _hud() -> void:
-	var lbl := {"active": "agressif", "grabbed": "saisi", "controlled": "maîtrisé", "calm": "se rend", "down": "inconscient", "out": "sorti"}
+	var lbl := {"active": "agressif", "grabbed": "saisi", "controlled": "maîtrisé", "calm": "se rend", "down": "inconscient", "out": "sorti", "flee": "s'enfuit"}
 	var s := "[b][color=#ff6a85]BASTON — %s[/color][/b]\n" % Data.clean(title)
-	s += "Toi : vie [color=%s]%d[/color] · endurance [color=#ffc04d]%d[/color]\n" % ["#ff4d4d" if hp < 35 else "#3ee08f", round(hp), round(sta)]
+	s += "Toi : vie [color=%s]%d[/color] · endurance [color=#ffc04d]%d[/color] · visée : [b]%s[/b]\n" % ["#ff4d4d" if hp < 35 else "#3ee08f", round(hp), round(sta), "visage" if aim_head() else "corps"]
+	var st_txt := []
+	if daze > 30: st_txt.append("sonné")
+	if bleed > 0: st_txt.append("tu saignes")
+	if hand_hurt: st_txt.append("main blessée")
+	if collared != null: st_txt.append("tenu au col")
+	if p_down > 0: st_txt.append("AU SOL")
+	if sta < 20: st_txt.append("à bout de souffle")
+	if st_txt.size() > 0: s += "[color=#ff8a8a]%s[/color]\n" % " · ".join(PackedStringArray(st_txt))
 	var k := 0
 	for o in foes:
 		if o["st"] == "out" or k >= 6: continue
@@ -555,7 +817,7 @@ func _hud() -> void:
 	s += "\n[color=#ffd6de]"
 	for i in log_lines.size():
 		s += log_lines[i] + "\n"
-	s += "[/color]\n[color=#b9a0a8][font_size=12]Tab verrouiller · Clic G repousser · Clic D saisir · F garde · Espace esquive · A frapper · T injonction · E escorter · R renfort[/font_size][/color]"
+	s += "[/color]\n[color=#b9a0a8][font_size=12]Tab verrouiller · Clic G repousser · Clic D saisir · F garde · Espace esquive · A frapper (regard haut = visage, bas = corps) · T injonction · E escorter · H secourir (PLS) · R renfort[/font_size][/color]"
 	game.ui.set_fight(s)
 
 # =====================================================================
@@ -608,10 +870,40 @@ func finish(ko: bool) -> void:
 			res.append(["n", "%s est resté au sol après la bagarre : SAMU appelé." % ", ".join(PackedStringArray(names)), ""])
 		for o in down:
 			game._free_later(o["npc"], 20.0)
+	if down.size() > 0:
+		var unaided := []
+		var head_inj := false
+		for o in down:
+			if not o["pls"]: unaided.append(o["name"])
+			if o["head"]: head_inj = true
+		if unaided.size() > 0:
+			ds -= 4; dr -= 4
+			game._fault("%s : %s laissé(s) inconscient(s) sans position latérale de sécurité." % [Data.clean(title), ", ".join(PackedStringArray(unaided))],
+				"Non-assistance à personne en danger (art. 223-6 Code pénal) : une personne inconsciente qui respire se met en PLS, on appelle le 15 et on la surveille.")
+		else:
+			game._good("%s : personne inconsciente mise en PLS, 15 appelé." % Data.clean(title))
+		if head_inj:
+			res.append(["b", "Traumatisme crânien : la tête a heurté le sol. Hospitalisation, pronostic réservé.", "Les « coups de poing mortels » viennent presque toujours de la chute : la personne s'effondre, inconsciente, sans se protéger."])
 	if S["long_pin"] > 0:
 		ds -= 6; dr -= 6
 		game._fault("%s : personne maintenue au sol trop longtemps malgré ses plaintes." % Data.clean(title),
 			"Risque d'asphyxie posturale : la maîtrise au sol doit être la plus courte possible, puis on relève et on surveille la personne.")
+	if S["hit_flee"] > 0:
+		ds -= 4; dr -= 5
+		game._fault("%s : coup porté à quelqu'un qui s'enfuyait." % Data.clean(title),
+			"Une personne qui part ne menace plus personne : il n'y a plus de légitime défense (art. 122-5). On la laisse partir et on donne son signalement à la police.")
+	elif S["fled"] > 0:
+		game._good("%s : agresseur laissé partir sans poursuite, signalement à la police." % Data.clean(title))
+	if S["head_hits"] > 0 and S["hit_nosd"] == 0 and S["hit_down"] == 0:
+		res.append(["n", "Tu as frappé au visage (%d fois) : même en légitime défense, c'est le geste le plus risqué. Une saisie ou un coup au corps aurait suffi la plupart du temps." % S["head_hits"], ""])
+	if hand_hurt:
+		res.append(["b", "Ta main a encaissé un coup sur un crâne : radio à faire (fracture du boxeur fréquente), arrêt de travail probable.", ""])
+	if bleed > 0:
+		res.append(["b", "Tu saignes : pansement compressif, puis urgences pour des points de suture. Accident du travail à déclarer.", ""])
+	if S["p_down"] > 0:
+		res.append(["b", "Tu es tombé au sol pendant la bagarre : c'est la situation la plus dangereuse (coups de pied à la tête). On ne s'engage jamais seul : la radio sert à appeler du renfort avant.", ""])
+	if S["collared"] > 0 and S["hit_nosd"] == 0:
+		res.append(["", "Saisi au col, tu t'es dégagé sans surenchère : c'est la bonne réponse.", ""])
 	if S["verb_ok"] > 0:
 		ds += 2
 		game._good("%s : désescalade verbale efficace." % Data.clean(title))
@@ -645,6 +937,11 @@ func finish(ko: bool) -> void:
 	for w in witnesses:
 		if is_instance_valid(w): w.anim = w.get_meta("prev_anim", "idle")
 	witnesses = []
+	ring = []
+	collared = null
+	p_down = 0.0
+	daze = 0.0
+	pain = 0.0
 	# police : arme, blessé ou personne interpellée
 	var handed := []
 	var armed_seen := false
@@ -682,6 +979,7 @@ func finish(ko: bool) -> void:
 		body += "[color=%s]%s[/color]\n" % [rc, r[1]]
 		if r[2] != "": body += "[color=#b9b3cc][i]Loi : %s[/i][/color]\n" % r[2]
 		body += "\n"
+	body += "[color=#b9b3cc]Coups reçus à la tête : %d · coups portés au visage %d / au corps %d · personnes secourues %d[/color]\n" % [S["head_taken"], S["head_hits"], S["body_hits"], S["aid"]]
 	body += "[color=#b9b3cc]Coups reçus : %d PV · bloqués %d · esquivés %d\nPoussées %d · saisies réussies %d/%d · injonctions %d · maîtrises par collègues %d\nCoups portés : %d[/color]\n\n" % [
 		round(S["taken"]), S["blocked"], S["dodged"], S["push"], S["grab_ok"], S["grab"], S["verb"], S["col_ctrl"], S["hit_sd"] + S["hit_nosd"] + S["hit_down"]]
 	body += "[i]Le détail juridique est dans le bilan de fin de nuit.[/i]"
